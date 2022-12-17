@@ -174,30 +174,20 @@ class node extends Draggable {
         this.neighbour[p].node.x - this.x, 
         this.neighbour[p].node.y - this.y);
 
-      let arrowlen = newlen.mulNew(0.35);
-      let costlen = newlen.mulNew(0.28);
 
-      this.arrow(s, this.x + arrowlen.x, this.y + arrowlen.y, arrowlen.normalise)
-      let benny = this.showcost(this.x + costlen.x, this.y + costlen.y, this.neighbour[p].cost);
-      cs.push(benny);
+      if (this.g.showArrows){
+        let arrowlen = newlen.mulNew(0.35);
+        this.arrow(s, this.x + arrowlen.x, this.y + arrowlen.y, arrowlen.normalise)
+      }
+      let costlen = newlen.mulNew(0.28);
+      //let benny = this.showcost(this.x + costlen.x, this.y + costlen.y, this.neighbour[p].cost);
+      //cs.push(benny);
+      cs.push(new costDeferred(this,this.neighbour[p].node,this.neighbour[p].cost,
+         this.x + costlen.x, this.y + costlen.y));
     }
     s.pop();
   }
-  showcost(x, y, c) {
-    let coentry = [];
-    coentry.push(x); coentry.push(y); coentry.push(c);
-    return coentry;
-  }
-  static showcostS(s, costdata) {
-    s.push();
 
-    s.stroke(255); s.fill(140);
-    s.circle(costdata[0], costdata[1], 25);
-
-    s.stroke(255); s.fill(255); s.textAlign(s.CENTER, s.CENTER);
-    s.text(costdata[2], costdata[0], costdata[1]);
-    s.pop();
-  }
   arrow(s, x, y, grad) {
 
     s.line(x + grad.x * 10, y + grad.y * 10, x - grad.y * 10, y + grad.x * 10);

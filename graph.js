@@ -1,3 +1,26 @@
+class costDeferred{
+    nS;
+    nG;
+    cost;
+    x;
+    y;
+    draw = true;
+    protect = false;
+    constructor(nS, nG, cost, x, y){
+        this.nS = nS;
+        this.nG = nG;
+        this.cost = cost;
+        this.x = x;
+        this.y = y;
+    }
+    dontDraw(){
+        this.protect = false;
+        this.draw = false;
+    }
+    same(b){
+        return this.nS === b.nG && this.nG === b.nS && this.cost == b.cost;
+    }
+}
 class Graph {
     
     lifetimecount;
@@ -5,6 +28,10 @@ class Graph {
     g = [];
     name = "untitled";
     startNode = null;
+    #arrows = true;
+    // need this so we can edit different direction neighbours
+    #duplicates = true;
+    get showArrows(){return this.#arrows;}
     isStart(n) {return this.startNode === n; }
     notStart(n) { return this.startNode !== n; }
     setStart(n) {
@@ -68,6 +95,9 @@ class Graph {
     shrink(s){
 
     }
+
+    toggleArrows(){this.#arrows = !this.#arrows;}
+    toggleDuplicates(){this.#duplicates = !this.#duplicates;}
     //costD needs turning into a class definition for clarity
     //instead of an array of array which is a bit mad
     draw(s) {
@@ -77,23 +107,39 @@ class Graph {
             this.g[p].drawNeighbours(s, costD);
 
         //now do deferred rendering of costs (so on top of lines)
+        if (!this.#duplicates) this.removeDupeCosts(costD);
         for (let p = 0; p < costD.length; p++) {
-            this.showcostS(s, costD[p]);
+            if (costD[p].draw)
+                this.showcostS(s, costD[p]);
         }
 
         for (let p = 0; p < this.size; p++)
             this.g[p].show(s);
     }
+    removeDupeCosts(c){
+        for (let p = 0; p < c.length; p++) {
+            for (let k = 0; k < c.length; k++) {
+                if (k != p)
+                {
+                    if (c[p].same(c[k]) && !c[k].protect){
+                        c[k].dontDraw();
+                        c[p].protect = true;
+                    }
+                }
+            }
+        }
+    }
+
     Over(n) { this.over = true; }
     //this should be in the costD class
-    showcostS(s, costdata) {
+    showcostS(s, cd) {
         s.push();
 
         s.stroke(255); s.fill(140);
-        s.circle(costdata[0], costdata[1], 25);
+        s.circle(cd.x, cd.y, 25);
 
         s.stroke(255); s.fill(255); s.textAlign(s.CENTER, s.CENTER);
-        s.text(costdata[2], costdata[0], costdata[1]);
+        s.text(cd.cost, cd.x, cd.y);
         s.pop();
     }
     

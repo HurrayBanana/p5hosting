@@ -53,8 +53,11 @@ const s = ( s ) => {
   }
 
   s.generalUI = (g) => {
-      if (inpM.kPressed(kH)){
+      if (inpM.kPressed(kH) && !insketcharea(s, s.mouseX, s.mouseY)){
         co.Visible = !co.Visible;
+      }
+      if (inpM.kPressed(kH) && insketcharea(s, s.mouseX, s.mouseY)){
+        graph.toggleDuplicates();
       }
       if (inpM.kPressed(kE))
         filestuff.arrStringFromGraph(s, graph);
@@ -63,6 +66,9 @@ const s = ( s ) => {
       }
       if (inpM.kPressed(kC)){
         graph.centre(s);
+      }
+      if (inpM.kPressed(kA)){
+        graph.toggleArrows();
       }
   }
   s.newGraph=(g)=>{
