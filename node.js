@@ -89,13 +89,13 @@ class node extends Draggable {
     s.pop();
   }
 
+  
   hoverkeys() {
-    if (inpM.kPressed(kS) && this.g.setStart(this)) {
-      co.log("start[" + this.g.startNode.name + "] goal[" + this.g.goalNode.name + "]");
-    }
-    if (inpM.kPressed(kG) && this.g.setGoal(this)) {
-      co.log("start[" + this.g.startNode.name + "] goal[" + this.g.goalNode.name + "]");
-    }
+    if (inpM.kPressed(kS) && this.g.setStart(this)) 
+      this.g.showStartGoal();
+      
+    if (inpM.kPressed(kG) && this.g.setGoal(this)) 
+      this.g.showStartGoal();
 
     if (inpM.kPressed(kX)) {
       this.remove = true;

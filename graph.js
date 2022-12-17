@@ -170,6 +170,10 @@ class Graph {
             this.g[p].removeNeighbour(name);
         }
     }
+    showStartGoal(){
+        co.log("start[" + (this.startNode == null ? "not set":this.startNode.name) +
+         "] goal[" + (this.goalNode==null ? "not set":this.goalNode.name) + "]");
+    }
     //takes a node string from a file and produces a new node
     //need to set the start and goal nodes if set
     AddNodeString(nodedata) {
@@ -181,8 +185,8 @@ class Graph {
         let parts = nodedata.split(",");
         let n = new node(parseInt(parts[x]), parseInt(parts[y]), parts[name], 0, 0);
         this.AddNode(n);
-        if (parts[start] == "True") this.setStart(n);
-        if (parts[goal] == "True") this.setGoal(n);
+        if (parts[start].toLowerCase() == "true") this.setStart(n);
+        if (parts[goal].toLowerCase() == "true") this.setGoal(n);
     }
     AddNeighbourString(neighbourdata) {
         const source = 1;
