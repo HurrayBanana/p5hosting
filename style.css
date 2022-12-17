@@ -22,6 +22,7 @@ canvas {
   display: none;
 }
 #overoptions{
+  display:none;
   background-color:#efe;
   clear: both;
   border-radius: 5px;
@@ -29,6 +30,7 @@ canvas {
   border-style:none none dashed dashed ;
 }
 #joinnode{
+  display:none;
   clear: both;
   background-color:#eef;
   border-radius: 5px;
@@ -36,6 +38,7 @@ canvas {
   border-style:none none dashed dashed ;
 }
 #removenode{
+  display:none;
   clear: both;
   background-color:#fee;
   border-radius: 5px;
