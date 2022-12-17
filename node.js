@@ -52,11 +52,11 @@ class node extends Draggable {
     if (this.g.startNode != null && this.g.startNode.name == this.name) {
       s.fill(Graph.cSTART);
       s.circle(this.x, this.y, this.rad * 4);
-      this.textCircle(s, "START", this.x, this.y, this.rad * 1.5, 2 * s.PI / 5, s.PI / 5);
+      this.textCircle(s, "START", this.x, this.y, this.rad * 1.5, 3 * s.PI / 9, s.PI / 6);
     } else if (this.g.goalNode != null && this.g.goalNode.name == this.name) {
       s.fill(Graph.cGOAL);
       s.circle(this.x, this.y, this.rad * 4);
-      this.textCircle(s, "GOAL", this.x, this.y, this.rad * 1.5, s.PI / 3, s.PI / 5);
+      this.textCircle(s, "GOAL", this.x, this.y, this.rad * 1.5, 2*s.PI / 8, s.PI / 6);
     }
     s.pop();
   }
@@ -161,7 +161,6 @@ class node extends Draggable {
     }
   }
 
-
   drawNeighbours(s, cs) {
     let dist = 0.35;
     s.push();
@@ -171,12 +170,15 @@ class node extends Draggable {
       s.line(this.x, this.y,
         this.neighbour[p].node.x, this.neighbour[p].node.y);
 
-      //trying to put a marker 30% along from this circle
-      let lenx = this.neighbour[p].node.x - this.x;
-      let leny = this.neighbour[p].node.y - this.y;
+      let newlen = new vector2(
+        this.neighbour[p].node.x - this.x, 
+        this.neighbour[p].node.y - this.y);
 
-      this.arrow(s, this.x + lenx * dist, this.y + leny * dist, vector2.normalised(lenx, leny))
-      let benny = this.showcost(this.x + lenx * dist * 0.8, this.y + leny * dist * 0.8, this.neighbour[p].cost);
+      let arrowlen = newlen.mulNew(0.35);
+      let costlen = newlen.mulNew(0.28);
+
+      this.arrow(s, this.x + arrowlen.x, this.y + arrowlen.y, arrowlen.normalise)
+      let benny = this.showcost(this.x + costlen.x, this.y + costlen.y, this.neighbour[p].cost);
       cs.push(benny);
     }
     s.pop();
@@ -209,7 +211,6 @@ class node extends Draggable {
       outty += this.neighbour[p].node.name + "[" + this.neighbour[p].cost + "] ";
     }
     outty += " }";
-    //console.log(outty);
     co.log(outty);
   }
   /*
@@ -223,7 +224,14 @@ class node extends Draggable {
     s.noStroke();
     let w = -s.PI / 2 - offset;// top
     for (let p = 0; p < txt.length; p++) {
-      s.text(txt[p], x + rad * s.cos(w), y + rad * s.sin(w));
+      let xp = x + rad * s.cos(w);
+      let yp = y + rad * s.sin(w);
+      s.push();
+      s.translate(xp,yp);
+      s.rotate(w+s.PI/2);
+      s.text(txt[p], 0,0);
+      s.pop();
+      //s.text(txt[p], x + rad * s.cos(w), y + rad * s.sin(w));
       w += spread;
     }
     s.pop();

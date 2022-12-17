@@ -1,4 +1,5 @@
 class Graph {
+    
     lifetimecount;
     static #passthrough;
     g = [];
@@ -63,6 +64,9 @@ class Graph {
                 this.g[p].x += dx; this.g[p].y += dy;
             }
         }
+    }
+    shrink(s){
+
     }
     //costD needs turning into a class definition for clarity
     //instead of an array of array which is a bit mad
