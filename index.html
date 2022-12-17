@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>graphy</title>
+    <!--
+    nice discussion of css float https://css-tricks.com/almanac/properties/f/float/
+    -->
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.5.0/p5.js"></script>
+    <!--<script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.5.0/addons/p5.sound.min.js"></script>-->
+    <link rel="stylesheet" type="text/css" href="style.css">
+    <meta charset="utf-8" />
+
+  </head>
+  <body>
+    <label for="filepicker"><input title="load" type="file" id="upload" ></label>
+    <div id="sketcharea">
+
+    </div>
+    <div id="console"></div>
+    <div id="overoptions">
+      <p><span class='key'>S</span> start node&nbsp;
+        <span class='key'>G</span> end node&nbsp;
+        <span class='key'>X</span> remove node&nbsp;
+        <!--<span class='key'>P</span> select node</p>-->
+    </div>
+    <div id="joinnode">
+      <p>create neighbour from <span id="createfrom"></span>&nbsp;
+        <span class='key'>D</span> directed neighbour&nbsp;
+        <span class='key'>U</span> undirected neighbour
+      </p>
+    </div>
+    <div id="removenode">
+      <p>remove from <span id="destroyfrom"></span>&nbsp;
+        <span id="allfromme"><span class='key'>A</span> all connections from me&nbsp;</span>
+        <span id="alltome"><span class='key'>T</span> all connections to me&nbsp;</span>
+        <span id="metoactive"><span class='key'>F</span> from me to active node&nbsp;</span>
+        <span id="activetome"><span class='key'>P</span> active node to me&nbsp;</span>
+      </p>
+    </div>
+    <script src="filestuff.js"></script>
+    <script src="graph.js"></script>
+    <script src="input.js"></script>
+    <script src="console.js"></script>
+    <script src="utils.js"></script>
+    <script src="draggable.js"></script>
+    <script src="vector2.js"></script>
+    <!--<script src="nodeworker.js"></script>-->
+    <script src="node.js"></script>
+    <script src="sketch.js" defer></script>
+  </body>
+</html>
