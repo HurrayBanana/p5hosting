@@ -1,14 +1,3 @@
-/* placed here so we don't have to do a separate script link
-in the html documennt - and it's logical
-does complicate things as we need to pass reference to sketch around
-*/
-class neighbour {
-  constructor(n, c) {
-    this.node = n;
-    this.cost = c;
-  }
-}
-
 class node extends Draggable {
   //technically should only be one occurance so could bin out of loop on splice
   removeNeighbour(name) {
@@ -20,23 +9,20 @@ class node extends Draggable {
     }
   }
 
-  #prevx;
-  #prevy;
   g;//reference to my parent graph
   vx;
   vy;
   rad;
   remove = false;
 
-  constructor(x, y, item, vx, vy) {
+  constructor(x, y, item){
     super(x, y);
 
     this.remove = false;
     this.name = item;
     this.neighbour = [];
     this.rad = 15;
-    this.vx = (vx !== undefined) ? vx : 0;
-    this.vy = (vy !== undefined) ? vy : 0;
+
   }
   setParentGraph(g) { this.g = g; }
   isover(s) {
@@ -123,7 +109,7 @@ class node extends Draggable {
   //need to stop duplicate neighbours and make it a toggle
   addNeighbour(n, cost) {
     if (!this.neighbourExists(this, n)) {
-      this.neighbour.push(new neighbour(n, cost));
+      this.neighbour.push(new neighbour(this, n, cost));
       return true;
     }
     else {
@@ -132,67 +118,23 @@ class node extends Draggable {
     }
 
   }
-  //determines if neighbour is here already
+  //determines if neighbour is here already 
   neighbourExists(nodeS, nodeE) {
     for (let p = 0; p < nodeS.neighbour.length; p++)
-      if (nodeS.neighbour[p].node.name == nodeE.name) return true;
+      if (nodeS.neighbour[p].node === nodeE) return true;
     return false;
   }
-  position(x, y) {
-    this.#prevx = this.x;
-    this.#prevy = this.y;
-    super.position(x, y);
-  }
-  //===== visualisation code =======              
-  move() {
-    this.#prevx = this.x;
-    this.#prevy = this.y;
-    this.x += this.vx;
-    this.y += this.vy;
 
-    //check bounds testing needs environment info
-    if (this.x < 0 || this.x > sW) {
-      this.x = this.#prevx;
-      this.vx = - this.vx;
-    }
-    if (this.y < 0 || this.y > sH) {
-      this.y = this.#prevy;
-      this.vy *= -1;
-    }
-  }
-
-  drawNeighbours(s, cs) {
-    let dist = 0.35;
+  drawNeighboursPart1(s, cs) {
     s.push();
+    s.stroke(neighbour.cLINE_STROKE);
     for (let p = 0; p < this.neighbour.length; p++) {
-      s.stroke(0, 0, 0);
-
-      s.line(this.x, this.y,
-        this.neighbour[p].node.x, this.neighbour[p].node.y);
-
-      let newlen = new vector2(
-        this.neighbour[p].node.x - this.x, 
-        this.neighbour[p].node.y - this.y);
-
-
-      if (this.g.showArrows){
-        let arrowlen = newlen.mulNew(0.35);
-        this.arrow(s, this.x + arrowlen.x, this.y + arrowlen.y, arrowlen.normalise)
-      }
-      let costlen = newlen.mulNew(0.28);
-      //let benny = this.showcost(this.x + costlen.x, this.y + costlen.y, this.neighbour[p].cost);
-      //cs.push(benny);
-      cs.push(new costDeferred(this,this.neighbour[p].node,this.neighbour[p].cost,
-         this.x + costlen.x, this.y + costlen.y));
+      this.neighbour[p].update(s, this.g.showArrows);
+      cs.push(new costDeferred(this.neighbour[p]));
     }
     s.pop();
   }
 
-  arrow(s, x, y, grad) {
-
-    s.line(x + grad.x * 10, y + grad.y * 10, x - grad.y * 10, y + grad.x * 10);
-    s.line(x + grad.x * 10, y + grad.y * 10, x + grad.y * 10, y - grad.x * 10);
-  }
   outNeighbours() {
     let outty = "=> " + this.neighbour.length +
       " neighbour" + (this.neighbour.length == 1 ? "" : "s") + //use ternary operator for plural

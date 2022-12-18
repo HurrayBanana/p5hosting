@@ -1,24 +1,29 @@
 class costDeferred{
-    nS;
+    nbour;
+    /*nS;
     nG;
     cost;
     x;
-    y;
+    y;*/
     draw = true;
     protect = false;
-    constructor(nS, nG, cost, x, y){
-        this.nS = nS;
+    constructor(ng){//nS, nG, cost, x, y){
+        this.nbour = ng;
+        /*this.nS = nS;
         this.nG = nG;
         this.cost = cost;
         this.x = x;
-        this.y = y;
+        this.y = y;*/
     }
     dontDraw(){
         this.protect = false;
         this.draw = false;
     }
     same(b){
-        return this.nS === b.nG && this.nG === b.nS && this.cost == b.cost;
+        return  this.nbour.parent === b.nbour.node &&
+                this.nbour.node === b.nbour.parent &&
+                this.nbour.cost == b.nbour.cost;
+        //return this.nS === b.nG && this.nG === b.nS && this.cost == b.cost;
     }
 }
 class Graph {
@@ -123,24 +128,27 @@ class Graph {
 
     toggleArrows(){this.#arrows = !this.#arrows;}
     toggleDuplicates(){this.#duplicates = !this.#duplicates;}
-    //costD needs turning into a class definition for clarity
-    //instead of an array of array which is a bit mad
+    
     draw(s) {
         let sk = this.size > 0 ? this.g[0].s : null;
         let costD = [];
         for (let p = 0; p < this.size; p++)
-            this.g[p].drawNeighbours(s, costD);
+            this.g[p].drawNeighboursPart1(s, costD);
 
         //now do deferred rendering of costs (so on top of lines)
         if (!this.#duplicates) this.removeDupeCosts(costD);
         for (let p = 0; p < costD.length; p++) {
-            if (costD[p].draw)
-                this.showcostS(s, costD[p]);
+            if (costD[p].draw){
+                costD[p].nbour.show(s);
+            }
         }
 
         for (let p = 0; p < this.size; p++)
             this.g[p].show(s);
     }
+    
+
+    //needs to be re-written so neighbour object does drawing
     removeDupeCosts(c){
         for (let p = 0; p < c.length; p++) {
             for (let k = 0; k < c.length; k++) {
@@ -156,18 +164,7 @@ class Graph {
     }
 
     Over(n) { this.over = true; }
-    //this should be in the costD class
-    showcostS(s, cd) {
-        s.push();
 
-        s.stroke(255); s.fill(140);
-        s.circle(cd.x, cd.y, 25);
-
-        s.stroke(255); s.fill(255); s.textAlign(s.CENTER, s.CENTER);
-        s.text(cd.cost, cd.x, cd.y);
-        s.pop();
-    }
-    
     update(s) {
         this.over = false;
         this.removenodes();

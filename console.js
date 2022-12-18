@@ -17,6 +17,10 @@ class con{
     set Visible(value) {this.#On = value;if (value) this.show();else this.pause();}
     On(){this.#On = true;this.show();}
     Off(){this.#On = false;this.pause();}
+    clear(){
+        this.#myelement.innerHTML =""; 
+        this.#line.length = 0;
+        this.log("====> console cleared <====");}
 
     log(t){
         this.#line.push(t);

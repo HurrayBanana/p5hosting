@@ -63,13 +63,26 @@ class vector2{
       this.x = this.#x / scalar;
       this.y = this.#y / scalar;
     }
-    add(vec){
-      this.x = this.#x + vec.#x;
-      this.y = this.#y + vec.#y;
+    add(vec, y){
+      if (y === undefined){// if just a vector
+        this.#x = this.#x + vec.x;
+        this.#y = this.#y + vec.y;
+
+      } else {
+        this.#x += vec;
+        this.#y += y;
+      }
+      this.#calcdist();
     }
-    sub(vec){
-      this.x = this.#x - vec.#x;
-      this.y = this.#y - vec.#y;
+    sub(vec, y){
+      if (y === undefined){// if just a vector
+        this.#x -= vec.x;
+        this.#y -= vec.y;
+      } else {
+        this.#x -= vec;
+        this.#y -= y;
+      }
+      this.#calcdist();
     }
     static sub(v1, v2){
       return  new vector2(v1.#x - v2.#x, v1.#y - v2.#y);

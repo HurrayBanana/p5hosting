@@ -4,6 +4,8 @@ const kA = 65;const kD = 68;const kG = 71;const kS = 83;
 const kX = 88;const kC = 67;const kU = 85;const kP = 80;
 const kR = 82;const kH = 72;const kF = 70;const kT = 84;
 const kE = 69;const kL = 76;
+const kPlus = 187;
+const kMinus = 189;
 
 
 //simple input manager using dictionaries (no searching required)

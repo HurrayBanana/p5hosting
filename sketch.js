@@ -64,8 +64,11 @@ const s = ( s ) => {
       if (inpM.kPressed(kL)){
         Graph.loadGraph(s.newGraph);
       }
-      if (inpM.kPressed(kC)){
+      if (inpM.kPressed(kC) && insketcharea(s, s.mouseX, s.mouseY)){
         graph.centre(s, true);
+      }
+      if (inpM.kPressed(kC) && !insketcharea(s, s.mouseX, s.mouseY)){
+        co.clear();
       }
       if (inpM.kPressed(kA)){
         graph.toggleArrows();
