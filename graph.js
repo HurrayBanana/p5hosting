@@ -75,25 +75,50 @@ class Graph {
     }
     get size() { return this.g.length; }
 
-    centre(s) {
+    centre(s, keepaspect) {
         if (this.size > 0){
-            let l = this.g[0].x;let r = this.g[0].x;
-            let t = this.g[0].y;let b = this.g[0].y;
             let dx = 0; let dy = 0;
-            for (let p = 1; p < this.size; p++){
-                if (this.g[p].x < l) l = this.g[p].x;
-                if (this.g[p].x > r) r = this.g[p].x;
-                if (this.g[p].y < t) t = this.g[p].y;
-                if (this.g[p].y > b) b = this.g[p].y;
-            }
+            let { l, r,  t, b } = this.calcextents();
             dx = s.width/2 - (l + r)/2; dy = s.height/2 - (t + b)/2;
             for (let p = 0; p < this.size; p++){
                 this.g[p].x += dx; this.g[p].y += dy;
             }
+            this.scale(s,r-l, b-t, 60, keepaspect);
         }
+        
     }
-    shrink(s){
+    calcextents() {
+        let l = this.g[0].x; let r = this.g[0].x;
+        let t = this.g[0].y; let b = this.g[0].y;
+        for (let p = 1; p < this.size; p++) {
+            if (this.g[p].x < l)
+                l = this.g[p].x;
+            if (this.g[p].x > r)
+                r = this.g[p].x;
+            if (this.g[p].y < t)
+                t = this.g[p].y;
+            if (this.g[p].y > b)
+                b = this.g[p].y;
+        }
+        return {l, r, t, b };
+    }
 
+    scale(s,w,h,m, aspect){
+        let sx = (s.width-m)/w;
+        let sy = (s.height-m)/h;
+        if (aspect!== undefined){
+            if (sx > sy)
+                sx = sy;
+            else
+                sy = sx;
+        }
+        let ss = sx > sy ? sy : sx;
+        let cx = s.width/2;
+        let cy = s.height/2;
+        for (let p = 0; p < this.size; p++){
+            this.g[p].x = (this.g[p].x - cx) * sx + cx;
+            this.g[p].y = (this.g[p].y - cy) * sy + cy;
+        }
     }
 
     toggleArrows(){this.#arrows = !this.#arrows;}

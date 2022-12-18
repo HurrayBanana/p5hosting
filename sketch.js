@@ -9,8 +9,8 @@ let co;
 /* END OF GLOBALS */
 const s = ( s ) => {
   let cBACK = [220,220,255];
-  let sW = 800;
-  let sH = 800;  
+  let sW = 600;
+  let sH = 600;  
   
   s.setup = () => {
     //ref to canvas
@@ -65,7 +65,7 @@ const s = ( s ) => {
         Graph.loadGraph(s.newGraph);
       }
       if (inpM.kPressed(kC)){
-        graph.centre(s);
+        graph.centre(s, true);
       }
       if (inpM.kPressed(kA)){
         graph.toggleArrows();
@@ -73,7 +73,7 @@ const s = ( s ) => {
   }
   s.newGraph=(g)=>{
     graph = g;
-    g.centre(s);
+    g.centre(s, true);
   }    
   s.draw = () => {
     s.logic();
