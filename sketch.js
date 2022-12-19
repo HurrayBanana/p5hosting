@@ -61,7 +61,7 @@ const s = ( s ) => {
       }
       if (inpM.kPressed(kE))
         filestuff.arrStringFromGraph(s, graph);
-      if (inpM.kPressed(kL)){
+      if (inpM.kPressed(kL) && !insketcharea(s, s.mouseX, s.mouseY)){
         Graph.loadGraph(s.newGraph);
       }
       if (inpM.kPressed(kC) && insketcharea(s, s.mouseX, s.mouseY)){

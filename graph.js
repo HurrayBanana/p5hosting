@@ -121,8 +121,8 @@ class Graph {
         let cx = s.width/2;
         let cy = s.height/2;
         for (let p = 0; p < this.size; p++){
-            this.g[p].x = (this.g[p].x - cx) * sx + cx;
-            this.g[p].y = (this.g[p].y - cy) * sy + cy;
+            this.g[p].x = Math.floor((this.g[p].x - cx) * sx + cx);
+            this.g[p].y = Math.floor((this.g[p].y - cy) * sy + cy);
         }
     }
 
@@ -271,7 +271,7 @@ class Graph {
     asArrayString() {
         let arr = []
         for (let p = 0; p < this.size; p++) {
-            let line = "node,";
+            /*let line = "node,";
             line += this.g[p].name + ",";
             line += "0" + ",";
             line += "0" + ",";
@@ -279,17 +279,19 @@ class Graph {
             line += this.g[p].x + ",";
             line += this.g[p].y + ",";
             line += this.isStart(this.g[p]).toString() + ",";
-            line += this.isGoal(this.g[p].name).toString();
-            arr.push(line);
+            line += this.isGoal(this.g[p].name).toString();*/
+            //arr.push(line);
+            arr.push(this.g[p].asString);
         }
         for (let p = 0; p < this.size; p++) {
             for (let q = 0; q < this.g[p].neighbour.length; q++) {
-                let line = "neig,";
+                /*let line = "neig,";
                 line += this.g[p].name + ",";
                 line += this.g[p].neighbour[q].node.name + ",";
                 line += this.g[p].neighbour[q].cost + ",";
                 line += "0";
-                arr.push(line);
+                arr.push(line);*/
+                arr.push(this.g[p].neighbour[q].asString);
             }
         }
         return arr;

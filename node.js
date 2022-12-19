@@ -95,10 +95,20 @@ class node extends Draggable {
     //need to make this pick up current cost if a neighbour exists in one of the directions
     if (inpM.kPressed(kU) && this.g.nodeActive) {
       let cost = ranI(10, 30);
-      if (this.g.active.addNeighbour(this, cost))
+      let n1 = new neighbour(this.g.active, this, cost);
+      let n2 = new neighbour(this, this.g.active, cost);
+
+      let a=this.g.active.addNeighbour2(n1);
+      let b=this.addNeighbour2(n2);
+      neighbour.link(a, b);
+      if (a === n1)
         co.log("new neighbour " + this.g.active.name + "->" + this.name + "[" + cost + "]");
-      if (this.addNeighbour(this.g.active, cost))
+      if (b === n2)
         co.log("new neighbours " + this.name + "->" + this.g.active.name + "[" + cost + "]");
+      //c if (this.g.active.addNeighbour(this, cost))
+      //c  co.log("new neighbour " + this.g.active.name + "->" + this.name + "[" + cost + "]");
+      //c if (this.addNeighbour(this.g.active, cost))
+      //c  co.log("new neighbours " + this.name + "->" + this.g.active.name + "[" + cost + "]");
     }
 
     showcontainer("overoptions");
@@ -116,13 +126,30 @@ class node extends Draggable {
       co.log(this.name + " already has " + n.name + " as a neighbour");
       return false;
     }
-
+  }
+  addNeighbour2(nb) {
+    let found = this.neighbourIfExists(nb.parent, nb.node)
+    if (found == null) {
+      this.neighbour.push(nb);
+      return nb;
+    }
+    else {
+      co.log(this.name + " already has " + n.name + " as a neighbour");
+      return found;
+    }
   }
   //determines if neighbour is here already 
   neighbourExists(nodeS, nodeE) {
     for (let p = 0; p < nodeS.neighbour.length; p++)
       if (nodeS.neighbour[p].node === nodeE) return true;
     return false;
+  }
+  //returns neighbour if found of null
+  neighbourIfExists(nodeS, nodeE){
+    for (let p = 0; p < nodeS.neighbour.length; p++)
+      if (nodeS.neighbour[p].node === nodeE) 
+        return nodeS.neighbour[p];
+    return null;
   }
 
   drawNeighboursPart1(s, cs) {
@@ -167,5 +194,18 @@ class node extends Draggable {
       w += spread;
     }
     s.pop();
+  }
+
+  get asString(){
+    let line = "node,";
+    line += this.name + ",";
+    line += "0" + ",";
+    line += "0" + ",";
+    line += "0" + ",";
+    line += this.x + ",";
+    line += this.y + ",";
+    line += this.g.isStart(this).toString() + ",";
+    line += this.g.isGoal(this).toString();
+    return line;
   }
 }
