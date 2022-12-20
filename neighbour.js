@@ -49,6 +49,7 @@ class neighbour extends Clickable{
       s.fill(neighbour.cOVER);
       this.hoverkeys();
     }
+    
     hoverkeys(){
       if (inpM.kPressed(kPlus)){ 
         this.cost++;
@@ -105,6 +106,7 @@ class neighbour extends Clickable{
         s.line(x + grad.x * 10, y + grad.y * 10, x - grad.y * 10, y + grad.x * 10);
         s.line(x + grad.x * 10, y + grad.y * 10, x + grad.y * 10, y - grad.x * 10);
     }
+    //when loading need to apply neigbours one by one
     get asString(){
       let line = "neig,";
       line += this.parent.name + ",";

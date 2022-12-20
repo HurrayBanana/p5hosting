@@ -9,12 +9,13 @@ let co;
 /* END OF GLOBALS */
 const s = ( s ) => {
   let cBACK = [220,220,255];
-  let sW = 600;
-  let sH = 600;  
+  let sW = 750;
+  let sH = 750;  
   
   s.setup = () => {
     //ref to canvas
     var can = s.createCanvas(sW, sH);
+    s.setHTMLcanvas();
     let p = document.getElementById("console");
     p.style.height = sH + "px";
     co = new con(p,30);
@@ -25,6 +26,11 @@ const s = ( s ) => {
     //create mouse event only triggered over canvas area
     can.mousePressed(s.canvasdown);
   };
+  s.setHTMLcanvas=()=>{
+    let p = document.getElementById("sketcharea");
+    p.style.height = s.height + "px";
+    p.style.width = s.width + "px";
+  }
 
   //used for individual key press cases
   s.keyPressed = () => {

@@ -109,20 +109,26 @@ class Graph {
     }
 
     scale(s,w,h,m, aspect){
-        let sx = (s.width-m)/w;
-        let sy = (s.height-m)/h;
-        if (aspect!== undefined){
-            if (sx > sy)
-                sx = sy;
-            else
-                sy = sx;
-        }
-        let ss = sx > sy ? sy : sx;
-        let cx = s.width/2;
-        let cy = s.height/2;
-        for (let p = 0; p < this.size; p++){
-            this.g[p].x = Math.floor((this.g[p].x - cx) * sx + cx);
-            this.g[p].y = Math.floor((this.g[p].y - cy) * sy + cy);
+        //don't attempt scaling with a single item
+        if (this.g.length > 1){
+            let sx = (s.width-m)/w;
+            let sy = (s.height-m)/h;
+            if (aspect!== undefined){
+                if (sx > sy)
+                    sx = sy;
+                else
+                    sy = sx;
+            }
+            //co.log("sx:"+sx + " sy:"+sy);
+            //only scale if we need to shrink
+            if (sx < 1 || sy < 1){
+                let cx = s.width/2;
+                let cy = s.height/2;
+                for (let p = 0; p < this.size; p++){
+                    this.g[p].x = Math.floor((this.g[p].x - cx) * sx + cx);
+                    this.g[p].y = Math.floor((this.g[p].y - cy) * sy + cy);
+                }
+            }
         }
     }
 
