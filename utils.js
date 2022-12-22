@@ -16,17 +16,7 @@ function ranI(low,high){
   function getCh(code){
     return String.fromCharCode(code);
   }
-  /*
-  function AddNewNode(s, g) {
-      let num = nodew.lifetimecount;
-      let ch = dblName(num);
-      //console.log("trying to add node:" + ch);
-      co.log("trying to add node:" + ch);
-      g.push(
-      new node(s, s.mouseX,s.mouseY, ch,
-           ranF(-1,1),ranF(-1,1)));
-  }
-  */
+
   function makenodes(sketch, g, num, w, h){
       for (let p = 0; p < num; p++){
         ch= dblName(p);
@@ -37,18 +27,6 @@ function ranI(low,high){
       //bodge
       g.startNode = g.g[0];
       g.goalNode = g.g[g.g.length-1];
-      /* IGNORE START END NODES FOR NOW
-      //random start and end nodes
-      nodew.startnode = g[ranI(0,g.length)].name;
-      let endpick = g[ranI(0,g.length)].name;
-      while (endpick == nodew.startnode)
-         endpick = g[ranI(0,g.length)].name;
-      nodew.endnode = endpick;
-      //console.log("start:" + nodew.startnode);
-      co.log("start:" + nodew.startnode);
-      //console.log("end:" + nodew.endnode);
-      co.log("end:" + nodew.endnode);
-      */
   }
   
   function addrandomfriends(g,maxN,minG, maxG){
@@ -103,3 +81,4 @@ function ranI(low,high){
             y >= 0 &&
             y <= s.height;
   }
+

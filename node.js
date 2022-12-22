@@ -94,6 +94,8 @@ class node extends Draggable {
     }
     //need to make this pick up current cost if a neighbour exists in one of the directions
     if (inpM.kPressed(kU) && this.g.nodeActive) {
+      this.generateUndirectedNeighbour(this.g.active, this);
+      /*
       let cost = ranI(10, 30);
       let n1 = new neighbour(this.g.active, this, cost);
       let n2 = new neighbour(this, this.g.active, cost);
@@ -105,6 +107,7 @@ class node extends Draggable {
         co.log("new neighbour " + this.g.active.name + "->" + this.name + "[" + cost + "]");
       if (b === n2)
         co.log("new neighbours " + this.name + "->" + this.g.active.name + "[" + cost + "]");
+      */
       //c if (this.g.active.addNeighbour(this, cost))
       //c  co.log("new neighbour " + this.g.active.name + "->" + this.name + "[" + cost + "]");
       //c if (this.addNeighbour(this.g.active, cost))
@@ -115,7 +118,20 @@ class node extends Draggable {
     if (this.g.notActiveNode(this)) { showcontainer("joinnode"); }
     neighbourRemovalVisibility(this, this.g.active);
   }
+    //z->graph.active in neighbour from honverkeys
+    generateUndirectedNeighbour(z){
+      let cost = ranI(10, 30);
+      let n1 = new neighbour(z, this, cost);
+      let n2 = new neighbour(this, z, cost);
 
+      let a=z.addNeighbour2(n1);
+      let b=this.addNeighbour2(n2);
+      neighbour.link(a, b);
+      if (a === n1)
+        co.log("new neighbour " + z.name + "->" + this.name + "[" + cost + "]");
+      if (b === n2)
+        co.log("new neighbours " + this.name + "->" + z.name + "[" + cost + "]");
+    }
   //need to stop duplicate neighbours and make it a toggle
   addNeighbour(n, cost) {
     if (!this.neighbourExists(this, n)) {
@@ -134,7 +150,7 @@ class node extends Draggable {
       return nb;
     }
     else {
-      co.log(this.name + " already has " + n.name + " as a neighbour");
+      co.log(this.name + " already has " + nb.name + " as a neighbour");
       return found;
     }
   }

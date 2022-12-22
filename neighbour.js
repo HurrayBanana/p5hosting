@@ -29,6 +29,7 @@ class neighbour extends Clickable{
     static link(a,b){
       a.linked = b;
       b.linked = a;
+      b.#cost = a.#cost;
     }
     static unlink(a,b){
       a.linked = null;

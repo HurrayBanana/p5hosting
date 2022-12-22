@@ -15,7 +15,7 @@ class filestuff{
     static arrStringFromGraph(s, g)
     {
         let arr=g.asArrayString();
-        const w = s.createWriter('concept.graph');
+        const w = s.createWriter(g.name + '.graph');
         co.log('writing file concept.graph - contents follow');
         for (let p=0; p < arr.length; p++){
             w.print(arr[p]);
@@ -25,5 +25,36 @@ class filestuff{
         w.close();
         w.clear();
     }
-
+    static #wordset = [
+        "class","cost","deferred","draw","true",
+        "protect","false","constructor","this","dont","draw","false",
+        "same","return","parent","node","return","graph","life","time","count",
+        "static","passthrough","untitled","start","null","arrows","need",
+        "this","can","edit","different","direction","neighbours",
+        "duplicates","show","works","dynamic","distances",
+        "get","arrows","not","set","goal","active","over","size","length",
+        "centre","keep","aspect","let","calc","extents","width","height",
+        "scale","attempt","scaling","with","single","item","undefined",
+        "only","shrink","Math","floor","toggle","part","rendering","lines","remove","dupe",
+        "written","object","drawing","update","position","log","name",
+        "splice","takes","string","from","file","produces","const","parts","parse",
+        "lower","case","source","dest","query","fatal",
+        "error","reading","exists","attempt","pressed","sketch","area","mouse",
+        "modify","active","push","pick","released","outputs","output"
+      ];
+      static #pickword(){
+        let p = ranI(0,filestuff.#wordset.length-1);
+        while (filestuff.#lastpicks.includes(p)){
+          p = ranI(0,filestuff.#wordset.length-1);
+        }
+        filestuff.#lastpicks.push(p);
+        if (filestuff.#lastpicks.length > 20) {
+            filestuff.#lastpicks.splice(0,1);
+        }
+        return filestuff.#wordset[p];
+      }
+      static getnewName(){
+        return filestuff.#pickword()+filestuff.#pickword()+filestuff.#pickword();
+      }
+      static #lastpicks = [];
 }
