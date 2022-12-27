@@ -6,6 +6,8 @@
 //graph = [];
 let graph;
 let co;
+textentryactive = false;
+
 /* END OF GLOBALS */
 const s = ( s ) => {
   let cBACK = [220,220,255];
@@ -24,7 +26,8 @@ const s = ( s ) => {
     s.createUI();
     graph = new Graph();
     co.log("made:" + graph.name);
-    nameInput.value(graph.name);
+    setTextboxValue("filename", graph.name);
+    
     s.buildgraph(graph);
     //create mouse event only triggered over canvas area
     can.mousePressed(s.canvasdown);
@@ -45,35 +48,17 @@ const s = ( s ) => {
   };
 
   s.createUI=()=>{
-    nameInput = s.createInput('');
-    nameInput.position(5, 5);
-    nameInput.size(200);
-    nameInput.input(s.nameChanged);
-    //nameInput.value("brian");
-    //nameInput.focus
+
+  }
+  s.nameedit=()=>{
+    let b = document.getElementById("filename");
+    b.className = "editname"
   }
   s.nameChanged=()=> {
     co.log('you are typing: ', nameInput.value());
     graph.name = nameInput.value();
   }
-/*
-  rdmethod = createRadio();
-  rdmethod.option('0','Next available position');
-  rdmethod.option('1','overflow');
-  rdmethod.selected('1');
-  rdmethod.position(200,10);
-  rdmethod.mouseClicked(methodchanged);
 
-  tbwords = createElement('textarea');
-  tbwords.attribute('rows',5);
-  tbwords.style('resize','none');
-  tbwords.position(10,35);
-  tbwords.size(width - 50);
-  tbwords.value('Enter a series of words. Each one will be entered into the hash table, duplicates will be ignored, maximum unique words is 100');
-  tbwords.input(typed);
-*/
-
-  
 
   //******** for testing *************
   s.buildgraph = (g) => {
@@ -87,17 +72,17 @@ const s = ( s ) => {
     //hidecontainer("removenode");
     
     s.generalUI(graph);
-    //if (once > 0){
-    //  once--;
-    //  co.log(graph.name);  
-    //}
-    //if (nameInput.value() != graph.name){
-    //  nameInput.value(graph.name);
-    //}
+
     graph.update(s);
   }
-//let once = 2;
   s.generalUI = (g) => {
+    if (!textentryactive){
+      if (inpM.kPressed(kD) && !insketcharea(s, s.mouseX, s.mouseY)){
+        s.dijsolve(g);
+      }
+      if (inpM.kPressed(kA) && !insketcharea(s, s.mouseX, s.mouseY)){
+        s.astarsolve(g);
+      }
       if (inpM.kPressed(kH) && !insketcharea(s, s.mouseX, s.mouseY)){
         co.Visible = !co.Visible;
       }
@@ -105,7 +90,7 @@ const s = ( s ) => {
         graph.toggleDuplicates();
       }
       if (inpM.kPressed(kE)){
-        g.name = nameInput.value();
+        g.name = getTextboxValue("filename");
         filestuff.arrStringFromGraph(s, graph);
       }
       if (inpM.kPressed(kL) && !insketcharea(s, s.mouseX, s.mouseY)){
@@ -117,20 +102,46 @@ const s = ( s ) => {
       if (inpM.kPressed(kC) && !insketcharea(s, s.mouseX, s.mouseY)){
         co.clear();
       }
-      if (inpM.kPressed(kA)){
+      if (inpM.kPressed(kA) && insketcharea(s, s.mouseX, s.mouseY)){
         graph.toggleArrows();
       }
+    }
+  }
+  let dij = null;
+  let astar = null;
+  s.dijsolve=(g)=>{
+    if (dij == null|| dij.finished ) {
+      dij = new Dijkstra(g);
+      dij.cycles = 1;
+    } else {
+      dij.solve();
+    }
+    let htc = document.getElementById("console");
+    htc.innerHTML = dij.showStateHTML();
+  }
+  s.astarsolve=(g)=>{
+    if (astar == null|| astar.finished ) {
+      astar = new Astar(g);
+      astar.cycles = 1;
+    } else {
+      astar.solve();
+    }
+      let htc = document.getElementById("console");
+      htc.innerHTML = astar.showStateHTML();
   }
   s.newGraph=(g)=>{
     graph = g;
     g.centre(s, true);
-    nameInput.value(g.name);
+    setTextboxValue("filename",g.name);
   }    
   s.draw = () => {
     s.logic();
     s.background(cBACK);
     graph.draw(s);
     //s.drawkeys();
+    if (dij != null && dij.finished && dij.route != null){
+      s.text(dij.show(), 20, 100);
+    }
     s.text("hover:" + graph.over, 10,sH - 30);
     s.after();
   };
@@ -147,7 +158,6 @@ const s = ( s ) => {
   }
 
   s.mouseReleased = () => {
-    //nodew.released(graph);
     graph.released(s);
   };
 };let myp5 = new p5(s, 'sketcharea');

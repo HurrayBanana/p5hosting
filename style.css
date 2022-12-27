@@ -6,6 +6,22 @@ html, body {
 body::-webkit-scrollbar{
   display: none;
 }
+.viewname{
+  background-color: rgb(220,220,255);
+  font-weight: bold;
+  position:absolute;
+  border-style: none;
+  left:5px;
+  top:5px;
+}
+
+.editname{
+  background-color: rgb(255,255,255);
+  position:absolute;
+  left:5px;
+  top:5px;
+  border-style: dashed;
+}
 #sketcharea{
   float:left;
   width:820px;

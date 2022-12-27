@@ -5,6 +5,7 @@ class costDeferred{
     cost;
     x;
     y;*/
+    astar=true;
     draw = true;
     protect = false;
     constructor(ng){//nS, nG, cost, x, y){
@@ -31,7 +32,9 @@ class Graph {
     lifetimecount;
     static #passthrough;
     g = [];
-    name = "untitled";
+    #name = "untitled";
+    get name() {return this.#name;}
+    set name(value){this.#name = filestuff.caps(value.split(" "));}
     startNode = null;
     #arrows = true;
     // need this so we can edit different direction neighbours
@@ -77,7 +80,7 @@ class Graph {
 
     constructor(name) {
         co.log("Graph given:"+name);
-        this.name = (name === undefined ? filestuff.getnewName() : name);
+        this.name = (name === undefined ? filestuff.getnewName(true) : name);
         co.log("Graph set:"+this.name);
         this.lifetimecount = 0;
     }
@@ -211,8 +214,10 @@ class Graph {
         const start = 7;
         const goal = 8;
         const name = 1;
+        const heur = 2;
         let parts = nodedata.split(",");
-        let n = new node(parseInt(parts[x]), parseInt(parts[y]), parts[name], 0, 0);
+        let n = new SolverNode(parseInt(parts[x]), parseInt(parts[y]), parts[name], parseInt(parts[heur]));
+        //let n = new node(parseInt(parts[x]), parseInt(parts[y]), parts[name], 0, 0);
         this.AddNode(n);
         if (parts[start].toLowerCase() == "true") this.setStart(n);
         if (parts[goal].toLowerCase() == "true") this.setGoal(n);
@@ -270,7 +275,8 @@ class Graph {
     pressed(s) {
         if (!this.over && insketcharea(s, s.mouseX, s.mouseY)) {
             let ch = dblName(this.lifetimecount);
-            let n = new node(s.mouseX, s.mouseY, ch, 0, 0);
+            let n = new SolverNode(s.mouseX, s.mouseY, ch, 0, 0);
+            //let n = new node(s.mouseX, s.mouseY, ch, 0, 0);
             this.AddNode(n);
         }
         for (let p = 0; p < this.size; p++) {

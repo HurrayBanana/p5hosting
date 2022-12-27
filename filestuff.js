@@ -53,8 +53,23 @@ class filestuff{
         }
         return filestuff.#wordset[p];
       }
-      static getnewName(){
-        return filestuff.#pickword()+filestuff.#pickword()+filestuff.#pickword();
+      static getnewName(upper){
+        if (upper === undefined){
+          return filestuff.#pickword()+filestuff.#pickword()+filestuff.#pickword();
+        } else {
+              let a = [filestuff.#pickword(),filestuff.#pickword(),filestuff.#pickword()];
+              return filestuff.caps(a);
+        }
       }
       static #lastpicks = [];
+      static splitAndCaps(s){
+        return filestuff.caps(s.split(" "));
+      }
+      static caps(arr){
+        let s = "";
+        for (let p = 0; p < arr.length; p++){
+          s = s + arr[p].substring(0,1).toUpperCase() +arr[p].substring(1,arr[p].length);
+        }
+        return s;
+      }
 }

@@ -1,3 +1,4 @@
+
 class node extends Draggable {
   //technically should only be one occurance so could bin out of loop on splice
   removeNeighbour(name) {
@@ -10,19 +11,22 @@ class node extends Draggable {
   }
 
   g;//reference to my parent graph
-  vx;
-  vy;
   rad;
   remove = false;
-
-  constructor(x, y, item){
+  name;
+  neighbour;
+  heuristic;
+  constructor(x, y, item, h){
     super(x, y);
 
     this.remove = false;
     this.name = item;
     this.neighbour = [];
     this.rad = 15;
-
+    this.heuristic = new Heuristic(this);
+    if (h !== undefined){
+      this.heuristic.value = h;
+    }
   }
   setParentGraph(g) { this.g = g; }
   isover(s) {
@@ -66,12 +70,17 @@ class node extends Draggable {
     s.push();
     s.textAlign(s.CENTER, s.CENTER);
     this.checkterminators(s);
+    if (this.g.astar){
+      this.heuristic.show(s);
+    }
 
     super.show(s);
     s.circle(this.x, this.y, this.rad * 2);
 
     s.fill(0);
     s.text(this.name, this.x, this.y);
+
+    this.heuristic.show(s);
     s.pop();
   }
 
@@ -95,43 +104,26 @@ class node extends Draggable {
     //need to make this pick up current cost if a neighbour exists in one of the directions
     if (inpM.kPressed(kU) && this.g.nodeActive) {
       this.generateUndirectedNeighbour(this.g.active, this);
-      /*
-      let cost = ranI(10, 30);
-      let n1 = new neighbour(this.g.active, this, cost);
-      let n2 = new neighbour(this, this.g.active, cost);
-
-      let a=this.g.active.addNeighbour2(n1);
-      let b=this.addNeighbour2(n2);
-      neighbour.link(a, b);
-      if (a === n1)
-        co.log("new neighbour " + this.g.active.name + "->" + this.name + "[" + cost + "]");
-      if (b === n2)
-        co.log("new neighbours " + this.name + "->" + this.g.active.name + "[" + cost + "]");
-      */
-      //c if (this.g.active.addNeighbour(this, cost))
-      //c  co.log("new neighbour " + this.g.active.name + "->" + this.name + "[" + cost + "]");
-      //c if (this.addNeighbour(this.g.active, cost))
-      //c  co.log("new neighbours " + this.name + "->" + this.g.active.name + "[" + cost + "]");
     }
 
     showcontainer("overoptions");
     if (this.g.notActiveNode(this)) { showcontainer("joinnode"); }
-    neighbourRemovalVisibility(this, this.g.active);
+      neighbourRemovalVisibility(this, this.g.active);
   }
-    //z->graph.active in neighbour from honverkeys
-    generateUndirectedNeighbour(z){
-      let cost = ranI(10, 30);
-      let n1 = new neighbour(z, this, cost);
-      let n2 = new neighbour(this, z, cost);
+   
+  generateUndirectedNeighbour(z){
+    let cost = ranI(10, 30);
+    let n1 = new neighbour(z, this, cost);
+    let n2 = new neighbour(this, z, cost);
 
-      let a=z.addNeighbour2(n1);
-      let b=this.addNeighbour2(n2);
-      neighbour.link(a, b);
-      if (a === n1)
-        co.log("new neighbour " + z.name + "->" + this.name + "[" + cost + "]");
-      if (b === n2)
-        co.log("new neighbours " + this.name + "->" + z.name + "[" + cost + "]");
-    }
+    let a=z.addNeighbour2(n1);
+    let b=this.addNeighbour2(n2);
+    neighbour.link(a, b);
+    if (a === n1)
+      co.log("new neighbour " + z.name + "->" + this.name + "[" + cost + "]");
+    if (b === n2)
+      co.log("new neighbours " + this.name + "->" + z.name + "[" + cost + "]");
+  }
   //need to stop duplicate neighbours and make it a toggle
   addNeighbour(n, cost) {
     if (!this.neighbourExists(this, n)) {
@@ -206,22 +198,10 @@ class node extends Draggable {
       s.rotate(w+s.PI/2);
       s.text(txt[p], 0,0);
       s.pop();
-      //s.text(txt[p], x + rad * s.cos(w), y + rad * s.sin(w));
+      
       w += spread;
     }
     s.pop();
   }
 
-  get asString(){
-    let line = "node,";
-    line += this.name + ",";
-    line += "0" + ",";
-    line += "0" + ",";
-    line += "0" + ",";
-    line += this.x + ",";
-    line += this.y + ",";
-    line += this.g.isStart(this).toString() + ",";
-    line += this.g.isGoal(this).toString();
-    return line;
-  }
 }

@@ -1,6 +1,8 @@
 class neighbour extends Clickable{
-    static cNORM = [140,140,140];
-    static cOVER = [255,140,140];
+    static cNORM = [255,40,40];
+    static cOVER = [255,200,100];
+    static cLINK = [40,40,255];
+    static cLINKOVER = [100,200,255];
     static cLINE_STROKE = [0,0,0];
     rad=25;
     parent;
@@ -44,10 +46,18 @@ class neighbour extends Clickable{
         Math.abs(this.y - s.mouseY) < this.rad;
     }
     shownormal(s) {
-      s.fill(neighbour.cNORM);
+      if (this.linked) {
+        s.fill(neighbour.cLINK);
+      } else {
+        s.fill(neighbour.cNORM);
+      }
     }
     showover(s) {
-      s.fill(neighbour.cOVER);
+      if (this.linked) {
+        s.fill(neighbour.cLINKOVER);
+      } else {
+        s.fill(neighbour.cOVER);
+      }
       this.hoverkeys();
     }
     
@@ -112,7 +122,7 @@ class neighbour extends Clickable{
       let line = "neig,";
       line += this.parent.name + ",";
       line += this.node.name + ",";
-      line += this.cost + ",";
+      line += Math.floor(this.cost) + ",";
       line += "0" + ",";
       line += (this.linked != null).toString();
       return line;

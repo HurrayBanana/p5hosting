@@ -20,8 +20,10 @@ function ranI(low,high){
   function makenodes(sketch, g, num, w, h){
       for (let p = 0; p < num; p++){
         ch= dblName(p);
-        let n = new node(ranI(50,w-50),ranI(50,h-50),ch,
-          ranF(-1,1),ranF(-1,1));
+        let n = new SolverNode(ranI(50,w-50),ranI(50,h-50),ch,
+          10);
+/*        let n = new node(ranI(50,w-50),ranI(50,h-50),ch,
+          ranF(-1,1),ranF(-1,1));*/
         g.AddNode(n)
       }
       //bodge
@@ -74,7 +76,26 @@ function ranI(low,high){
     let el = document.getElementById(id);
     el.style.display = "block";  
   }
-  
+  function filenameSelect(id){
+    textentryactive = true;
+    let b = document.getElementById(id);
+    b.className = "editname";
+  }
+  function filenameDone(id){
+    textentryactive = false;
+
+    let b = document.getElementById(id);
+    b.className = "viewname";
+  }
+  function setTextboxValue(id, value){
+    let b = document.getElementById(id);
+    b.value = value;
+  }
+  function getTextboxValue(id){
+    let b = document.getElementById(id);
+    return b.value;
+  }
+
   function insketcharea(s,x,y){
     return  x >= 0 && 
             x<= s.width &&
