@@ -17,6 +17,7 @@
     <div id="sketcharea">
 
     </div>
+    <input title="filename" id="filename" class="viewname" onfocus="filenameSelect(this.id);" onblur="filenameDone(this.id);"></input>
     <div id="console"></div>
     <div id="overoptions">
       <p><span class='key'>S</span> start node&nbsp;
@@ -38,17 +39,29 @@
         <span id="activetome"><span class='key'>P</span> active node to me&nbsp;</span>
       </p>
     </div>
-    <script src="filestuff.js"></script>
+    <!-- nodes -->
+    <script src="dijkstranode.js"></script>
+    <script src="astarnode.js"></script>
+    <!-- solvers -->
+    <script src="pathsolver.js"></script>
+    <script src="astar.js"></script>
+    <script src="dijkstra.js"></script>
+
+    <!-- dynamic elements -->
+    <script src="clickable.js"></script>
+    <script src="draggable.js"></script>
+    <script src="node.js"></script>
+    <script src="solvernode.js"></script>
+    <script src="heuristic.js"></script>
+    <script src="neighbour.js"></script>
     <script src="graph.js"></script>
+    <!-- utils -->
+    <script src="vector2.js"></script>
+    <script src="filestuff.js"></script>
     <script src="input.js"></script>
     <script src="console.js"></script>
     <script src="utils.js"></script>
-    <script src="clickable.js"></script>
-    <script src="draggable.js"></script>
-    <script src="vector2.js"></script>
-    <script src="neighbour.js"></script>
-    <!--<script src="nodeworker.js"></script>-->
-    <script src="node.js"></script>
+    <!-- main sketch -->
     <script src="sketch.js" defer></script>
   </body>
 </html>
