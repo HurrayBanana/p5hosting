@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>graphy</title>
+    <!--
+    nice discussion of css float https://css-tricks.com/almanac/properties/f/float/
+    -->
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.5.0/p5.js"></script>
+    <!--<script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.5.0/addons/p5.sound.min.js"></script>-->
+    <link rel="stylesheet" type="text/css" href="style.css">
+    <meta charset="utf-8" />
+
+  </head>
+  <body onload="registertoggles();">
+    <label for="filepicker"><input title="load" type="file" id="upload" ></label>
+    <div id="sketcharea">
+
+    </div>
+    <input title="filename" id="filename" class="viewname" onfocus="filenameSelect(this);" onblur="filenameDone(this);"></input>
+    <div>
+      <div id="controls">
+        <div class="buttonholder">
+          <label for="barrows" >arrows</label>
+          <button id="barrows" name="barrows" 
+          data-msgtype="arrowschanged" 
+          data-handler="binaryset"
+          onclick="MsgBus.send(msgT.arrows,this);">on</button>
+        </div>
+        <div class="buttonholder">
+          <label for="bduplicates" >duplicates</label>
+          <button id="bduplicates"
+          data-msgtype="duplicateschanged" 
+          data-handler="binaryset"
+          onclick="MsgBus.send(msgT.duplicates,this);">on</button>
+        </div>
+        <div class="buttonholder">
+          <label for="bcostmode" >cost mode</label>
+          <button id="bcostmode"
+          data-msgtype="costmodechanged" 
+          data-handler="binaryset"
+          onclick="MsgBus.send(msgT.costmode,this);">static</button>
+        </div>
+        <div class="buttonholder">
+          <label for="bshownodecost" >Node costs</label>
+          <button id="bshownodecost"
+          data-msgtype="shownodecostchanged" 
+          data-handler="binaryset"
+          onclick="MsgBus.send(msgT.shownodecost,this);">on</button>
+        </div>
+        <div class="buttonholder">
+          <label for="bsolvemethod" >solve method</label>
+          <button id="bsolvemethod" 
+          data-msgtype="solvemethodchanged" 
+          data-handler="binaryset"
+          onclick="MsgBus.send(msgT.solvemethod,this);">dijkstra</button>
+        </div>
+        <div class="buttonholder">
+          <label for="bsolve" >solve</label>
+          <button id="bsolve" 
+          onclick="MsgBus.send(msgT.solve,this);">step</button>
+        </div>
+        <div class="buttonholder">
+          <label for="bsolvestyle" >solve style</label>
+          <button id="bsolvestyle"
+          data-msgtype="solvestylechanged" 
+          data-handler="binaryset"
+          onclick="MsgBus.send(msgT.solvestyle,this);">auto</button>
+        </div>
+        <div class="buttonholder">
+          <label for="bsolvehistory" >solve history</label>
+          <button id="bsolvehistory"
+          data-msgtype="solvehistorychanged" 
+          data-handler="binaryset"
+          onclick="MsgBus.send(msgT.solvehistory,this);">on</button>
+        </div>
+        <div class="buttonholder">
+          <label for="bconsole" >console</label>
+          <button id="bconsole"
+          data-msgtype="consolechanged" 
+          data-handler="binaryset"
+          onclick="MsgBus.send(msgT.console,this);">on</button>
+        </div>
+      </div>
+      <div id="console"></div>
+    </div>
+    <div id="overoptions">
+      <p><span class='key'>S</span> start node&nbsp;
+        <span class='key'>G</span> end node&nbsp;
+        <span class='key'>X</span> remove node&nbsp;
+        <!--<span class='key'>P</span> select node</p>-->
+    </div>
+    <div id="joinnode">
+      <p>create neighbour from <span id="createfrom"></span>&nbsp;
+        <span class='key'>D</span> directed neighbour&nbsp;
+        <span class='key'>U</span> undirected neighbour
+      </p>
+    </div>
+    <div id="removenode">
+      <p>remove from <span id="destroyfrom"></span>&nbsp;
+        <span id="allfromme"><span class='key'>A</span> all connections from me&nbsp;</span>
+        <span id="alltome"><span class='key'>T</span> all connections to me&nbsp;</span>
+        <span id="metoactive"><span class='key'>F</span> from me to active node&nbsp;</span>
+        <span id="activetome"><span class='key'>P</span> active node to me&nbsp;</span>
+      </p>
+    </div>
+    <!-- nodes -->
+    <script src="dijkstranode.js"></script>
+    <script src="astarnode.js"></script>
+    <!-- solvers -->
+    <script src="pathsolver.js"></script>
+    <script src="astar.js"></script>
+    <script src="dijkstra.js"></script>
+
+    <!-- dynamic elements -->
+    <script src="clickable.js"></script>
+    <script src="draggable.js"></script>
+    <script src="node.js"></script>
+    <script src="solvernode.js"></script>
+    <script src="heuristic.js"></script>
+    <script src="neighbour.js"></script>
+    <script src="graph.js"></script>
+    <!-- utils -->
+    <script src="messagebus.js"></script>
+    <script src="vector2.js"></script>
+    <script src="filestuff.js"></script>
+    <script src="input.js"></script>
+    <script src="console.js"></script>
+    <script src="utils.js"></script>
+    <!-- main sketch -->
+    <script src="sketch.js" defer></script>
+  </body>
+</html>

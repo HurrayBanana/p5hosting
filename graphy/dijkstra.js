@@ -1,63 +1,60 @@
-//TODO need a toggle for solving mode A* or Dijkstra or maybe separate key  button
-class Astar extends PathSolver {
+class Dijkstra extends PathSolver {
 
     constructor(g){
         super(g);
     }
 
+    /*
+    init(){
+        super.init();
+    }*/
     start(){
-        //super.init();
         super.start();
-
+        //let g = this.gnodes;
         for (let p = 0; p < this.gnodes.length; p++){
-            this.gnodes[p].resetSolver();
+            let dn = this.gnodes[p];//quick ref
+            dn.resetSolver();
+            if (this.graph.isStart(dn)){
+                dn.setcosts(0,null);//updatecosts(0, null);
+            } else {
+                dn.setcosts(Number.MAX_SAFE_INTEGER, null);//updatecosts(Number.MAX_SAFE_INTEGER, null);
+            }
+            this.addToSet(this.openSet, dn);
         }
-
-        if (this.graph.startNode != null && this.graph.goalNode != null) {
-            let sn = this.graph.startNode;
-            this.addToSet(this.openSet, sn);
-            sn.setcosts(0,null, sn.hcost)
-            //let dave = sn.gcost + sn.hcost;
-            //sn.updatecosts(0, null, dave);
-            this.graph.goalNode.hcost = 0;
-
-        }
-        
     }
     //dijkstra implementation
     iterate(count){
         MsgBus.send(msgT.hi_liteclear);
-
         while (this.openSet.length > 0 && count > 0){
             count--;
-            let current = this.getCheapestFG();
+            let current = this.getCheapest();
             MsgBus.send(msgT.hi_litecurrent, current);
-
+            if (current.gcost == Number.MAX_SAFE_INTEGER){
+                this.openSet = [];
+                this.finished = true;
+                this.started = false;
+                return false; // no route
+            }
             this.removeOpenAndClose(current);
             //stop if visited goal
             if (this.graph.isGoal(current)){
-                this.finished = true;
                 this.started = false;
+                this.finished = true;
                 this.traverse(current);
                 return true;
             }
-            //need to sort adding neighbours if not in open set
             for (let p = 0; p < current.neighbour.length; p++) {
                 let nbNode = current.neighbour[p].node;
                 if (!this.closedSet.includes(nbNode)){
-                    if (!this.openSet.includes(nbNode)){
-                        this.addToSet(this.openSet,nbNode);
-                        let calccost = current.gcost + current.neighbour[p].cost;
-                        nbNode.setcosts(calccost, current, calccost + nbNode.heuristic.value);
-                        MsgBus.send(msgT.hi_liteneighbour, nbNode);
-
-                    }
                     let calccost = current.gcost + current.neighbour[p].cost;
                     if (calccost < nbNode.gcost){
-                            nbNode.updatecosts(calccost, current, calccost + nbNode.heuristic.value);
+                        if (nbNode.gcost == Number.MAX_SAFE_INTEGER){
+                            MsgBus.send(msgT.hi_liteneighbour, nbNode);
+                        } else {
                             MsgBus.send(msgT.hi_liteneighbourupdate, nbNode);
-
-                    }
+                        }
+                        nbNode.updatecosts(calccost, current);
+                    } 
                 }
             }
         }
@@ -65,13 +62,11 @@ class Astar extends PathSolver {
     }    
 
     //dumb ass linear search for now
-    getCheapestFG(){
+    getCheapest(){
         let cheap = this.openSet[0];
         for (let p = 1; p < this.openSet.length; p++) {
-            if (this.openSet[p].fcost < cheap.fcost){
+            if (this.openSet[p].gcost < cheap.gcost){
                 cheap = this.openSet[p];
-            } else if (this.openSet[p].fcost == cheap.fcost && this.openSet[p].hcost <= cheap.hcost){
-                        cheap = this.openSet[p];
             }
         }
         this.picked(cheap);
@@ -79,9 +74,9 @@ class Astar extends PathSolver {
     }
 
     showStateHTML(){
-        let html = "<table>" + this.headingsHTML("G-cost");
+        let html = "<table>" + this.headingsHTML("cost");
         for (let p = 0; p < this.gnodes.length; p++){
-            html += "<tr>" + this.gnodes[p].stateHTMLAstar + "</tr>";
+            html += "<tr>" + this.gnodes[p].stateHTMLDijkstra + "</tr>";
         }
         html += "</table>"
         html += super.showStateHTML();
@@ -94,8 +89,6 @@ class Astar extends PathSolver {
         tr += "<th>Node</th>";
         tr += "<th>Parent</th>";//want changes array
         tr += "<th>" + costname + "</th>";//want changes array
-        tr += "<th>H-cost</th>";//want changes array
-        tr += "<th>F-cost</th>";//want changes array
         return tr;
     }
 

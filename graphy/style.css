@@ -1,0 +1,141 @@
+.spancurr{
+  background-color:rgb(244, 244, 91);
+  /*display: block;*/
+  font-weight: bold;
+}
+.spanneig{
+  background-color:rgb(86, 202, 251);
+  font-weight: bold;
+  /*display: block;*/
+}
+.spanupdt{
+  background-color:rgb(251, 163, 87);
+  font-weight: bold;
+  /*display: block;*/
+}
+table, th, td {
+  border: 1px solid;
+  border-color: #888;
+}
+th {
+  background-color:#ccc;
+}
+table {
+border-collapse: collapse;
+}
+button{
+  height:40px;
+  width: 60px;
+  border-radius:4px;
+}
+label{
+  display: block;
+}
+#controls{
+  clear:both;
+  float:left;
+}
+.buttonholder{
+  border-style:dashed;
+  border-width: 1px;
+  padding: 3px;
+  float:left;
+  text-align: center;
+}
+.buttonfalse{
+  background-color: #aaa;
+  height:40px;
+  width: 60px;
+  border-radius:4px;
+}
+.buttontrue{
+  background-color: #73ADff;
+  height:40px;
+  width: 60px;
+  border-radius:4px;
+}
+html, body {
+  margin: 0;
+  padding: 0;
+  font-family: monospace;
+}
+body::-webkit-scrollbar{
+  display: none;
+}
+.viewname{
+  background-color: rgb(220,220,255);
+  font-weight: bold;
+  position:absolute;
+  border-style: none;
+  left:5px;
+  top:5px;
+}
+
+.editname{
+  background-color: rgb(255,255,255);
+  position:absolute;
+  left:5px;
+  top:5px;
+  border-style: dashed;
+}
+#sketcharea{
+  float:left;
+  width:820px;
+  height:820px;  
+  overflow-y:auto;
+  overflow-x:auto;
+}
+canvas {
+  display: block;
+  float:left;
+  width:600px;
+  height:600px;
+}
+#upload{
+  display: none;
+}
+#overoptions{
+  background-color:#efe;
+  clear: both;
+  border-radius: 5px;
+  border: 2px solid #73ADff;
+  border-style:none none dashed dashed ;
+}
+#joinnode{
+  clear: both;
+  background-color:#eef;
+  border-radius: 5px;
+  border: 2px solid #73ADff;
+  border-style:none none dashed dashed ;
+}
+#removenode{
+  clear: both;
+  background-color:#fee;
+  border-radius: 5px;
+  border: 2px solid #73ADff;
+  border-style:none none dashed dashed ;
+}
+#console{
+  overflow-y:scroll;
+  overflow-x:hidden;
+  /*scrollbar-width:thin;*/
+}
+#console::-webkit-scrollbar {
+  width: 40px; /* Mostly for vertical scrollbars */
+  /*height: 10px; /* Mostly for horizontal scrollbars */
+}
+#createfrom{
+  color:#3030dd;
+  font-weight:bold;
+}
+#destroyfrom{
+  color:#dd3030;
+  font-weight:bold;
+}
+.key{
+  background-color:#ddd;
+  color:#303030;
+  font-weight:bold;
+    border-radius: 5px;
+  border: 2px solid #73ADff;
+}
