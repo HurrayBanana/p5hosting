@@ -7,6 +7,7 @@
 let graph;
 let co;
 textentryactive = false;
+solveDijkstra = true;
 
 /* END OF GLOBALS */
 const s = ( s ) => {
@@ -15,12 +16,15 @@ const s = ( s ) => {
   let sH = 750;  
   let nameInput;
   let htc;
+  let dij = null;
+  let astar = null;
+  let outputdata = false;
   s.setup = () => {
     //ref to canvas
     var can = s.createCanvas(sW, sH);
     s.setHTMLcanvas();
     let p = document.getElementById("console");
-    p.style.height = sH + "px";
+    //p.style.height = sH + "px";
     co = new con(p,30);
     //co.Off();
     s.createUI();
@@ -32,6 +36,7 @@ const s = ( s ) => {
     //create mouse event only triggered over canvas area
     can.mousePressed(s.canvasdown);
     htc = document.getElementById("console");
+    s.broadcastAllStates();
 
   };
   s.setHTMLcanvas=()=>{
@@ -50,8 +55,30 @@ const s = ( s ) => {
   };
 
   s.createUI=()=>{
-
+    MsgBus.sub(msgT.solvemethod, s.toggleSolveMethod, s);
+    MsgBus.sub(msgT.solve, s.solvegraph, s);
   }
+
+  s.solvegraph=()=>{
+    if (solveDijkstra){
+      s.dijsolve(graph);
+    } else {
+      s.astarsolve(graph);
+    }
+  }
+  s.toggleSolveMethod=()=>{
+    solveDijkstra = !solveDijkstra;
+    dij = null;
+    astar = null;
+    //graph.clearRoute();
+    s.broadcastSolveMethod();
+  }
+  s.broadcastAllStates=()=>{
+    s.broadcastSolveMethod();
+  }
+  s.broadcastSolveMethod=()=>[
+    MsgBus.send(msgT.solvemethodchanged, {state:solveDijkstra, txtT:"Dijkstra", txtF:"A *"})
+  ]
   s.nameedit=()=>{
     let b = document.getElementById("filename");
     b.className = "editname"
@@ -77,8 +104,12 @@ const s = ( s ) => {
 
     graph.update(s);
   }
+
   s.generalUI = (g) => {
     if (!textentryactive){
+      if (inpM.kPressed(kP)){
+        MsgBus.send(msgT.solve);
+      }
       if (inpM.kPressed(kD) && !insketcharea(s, s.mouseX, s.mouseY)){
         s.dijsolve(g);
       }
@@ -111,45 +142,59 @@ const s = ( s ) => {
       }
     }
   }
-  let dij = null;
-  let astar = null;
+
   s.dijsolve=(g)=>{
-    if (dij == null|| dij.finished ) {
+    if (dij == null){//|| dij.finished ) {
       dij = new Dijkstra(g);
+      dij.start();
+      outputdata = true;
       dij.cycles = 1;
     } else {
       if (!dij.started){
         dij.start();
-      } else {
+      } else if (!dij.finished){
         dij.solve();
       }
     }
-    if (g.solveHistory){
-      co.log(dij.showStateHTML());
-    } else {
-      htc.innerHTML = dij.showStateHTML();
+    if (outputdata){
+      if (g.solveHistory){
+        co.log(dij.showStateHTML());
+      } else {
+        htc.innerHTML = dij.showStateHTML();
+      }
+    } 
+    if (dij.finished) {
+      outputdata = false;
     }
   }
   s.astarsolve=(g)=>{
-    if (astar == null|| astar.finished ) {
+    if (astar == null){//|| astar.finished ) {
       astar = new Astar(g);
+      astar.start();
+      outputdata = true;
       astar.cycles = 1;
     } else {
       if (!astar.started){
         astar.start();
-      } else {
+      } else if (!astar.finished){
         astar.solve();
       }
     }
-    if (g.solveHistory){
-      co.log(astar.showStateHTML());
-    } else {
-      htc.innerHTML = astar.showStateHTML();
-    }    
-
+    if (outputdata){
+      if (g.solveHistory){
+        co.log(astar.showStateHTML());
+      } else {
+        htc.innerHTML = astar.showStateHTML();
+      }    
+    }
+    if (astar.finished) {
+      outputdata = false;
+    }
   }
   s.newGraph=(g)=>{
     graph.cleanup();
+    dij=null;
+    astar=null;
     graph = g;
     g.centre(s, true);
     setTextboxValue("filename",g.name);
@@ -158,13 +203,9 @@ const s = ( s ) => {
     s.logic();
     s.background(cBACK);
     graph.draw(s);
-    //s.drawkeys();
+    
     if (dij != null && dij.finished && dij.route != null){
       s.text(dij.show(), 20, 100);
-    }
-    if (dij != null){
-      s.text("dij finished:" + dij.finished, 10,sH - 30);
-      s.text("dij started:" + dij.started, 10,sH - 10);
     }
     s.after();
   };

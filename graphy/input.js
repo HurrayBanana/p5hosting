@@ -6,6 +6,7 @@ const kR = 82;const kH = 72;const kF = 70;const kT = 84;
 const kE = 69;const kL = 76;const kJ = 74
 const kPlus = 187;
 const kMinus = 189;
+const kSpace = 32;
 
 
 //simple input manager using dictionaries (no searching required)

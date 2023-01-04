@@ -37,7 +37,6 @@ class Astar extends PathSolver {
             //stop if visited goal
             if (this.graph.isGoal(current)){
                 this.finished = true;
-                this.started = false;
                 this.traverse(current);
                 return true;
             }
@@ -61,6 +60,9 @@ class Astar extends PathSolver {
                 }
             }
         }
+        if (this.openSet.length == 0){
+            this.finished = true;
+        }
         return false;
     }    
 
@@ -79,9 +81,17 @@ class Astar extends PathSolver {
     }
 
     showStateHTML(){
-        let html = "<table>" + this.headingsHTML("G-cost");
+        let html = "<table><tr>" + this.headingsHTML("G-cost") + "</tr>";
         for (let p = 0; p < this.gnodes.length; p++){
-            html += "<tr>" + this.gnodes[p].stateHTMLAstar + "</tr>";
+            if (this.graph.isStart(this.gnodes[p])){
+                html += "<tr class='startrow'>" + this.gnodes[p].stateHTMLAstar + "</tr>";
+
+            } else if (this.graph.isGoal(this.gnodes[p])){
+                html += "<tr class='goalrow'>" + this.gnodes[p].stateHTMLAstar + "</tr>";
+
+            } else {
+                html += "<tr>" + this.gnodes[p].stateHTMLAstar + "</tr>";
+            }
         }
         html += "</table>"
         html += super.showStateHTML();

@@ -1,3 +1,37 @@
+/*experiment with grid and flexbox*/
+.grid:after{
+  clear:both;
+  display: block;
+}
+#graphsettings{
+  box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2); /* this adds the "card" effect */
+  padding: 16px;
+  background-color: #f1f1f1;
+  float:left;
+  width:auto;
+}
+#controls{
+  box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2); /* this adds the "card" effect */
+  padding: 16px;
+  background-color: #f1f1f1;
+  float:left;
+  width:auto;
+}
+#sketcharea {
+  float:left;
+  width:80%;
+}
+#console {
+  float:left;
+  width:20%;
+}
+/*experiment with grid and flexbox*/
+.clearfix::after {
+  display: block;
+  clear: both;
+  content: "";
+}
+
 .spancurr{
   background-color:rgb(244, 244, 91);
   /*display: block;*/
@@ -13,6 +47,7 @@
   font-weight: bold;
   /*display: block;*/
 }
+
 table, th, td {
   border: 1px solid;
   border-color: #888;
@@ -21,7 +56,14 @@ th {
   background-color:#ccc;
 }
 table {
-border-collapse: collapse;
+  break-inside: avoid;
+  border-collapse: collapse;
+}
+.startrow{
+  background-color: rgb(214, 148, 227);
+}
+.goalrow{
+  background-color: rgb(166, 223, 175);
 }
 button{
   height:40px;
@@ -31,10 +73,11 @@ button{
 label{
   display: block;
 }
+/*
 #controls{
-  clear:both;
-  float:left;
+  float:inline-end;
 }
+*/
 .buttonholder{
   border-style:dashed;
   border-width: 1px;
@@ -69,28 +112,33 @@ body::-webkit-scrollbar{
   border-style: none;
   left:5px;
   top:5px;
+  width: fit-content;
 }
-
+#mainarea{
+  position: relative;
+}
 .editname{
   background-color: rgb(255,255,255);
   position:absolute;
   left:5px;
   top:5px;
+  width: fit-content;
   border-style: dashed;
 }
 #sketcharea{
-  float:left;
-  width:820px;
-  height:820px;  
-  overflow-y:auto;
-  overflow-x:auto;
+  /*float:left;
+  width:80%;
+  height:80%;  */
+  position: relative;
 }
-canvas {
+/*
+#canvas {
   display: block;
   float:left;
   width:600px;
   height:600px;
 }
+*/
 #upload{
   display: none;
 }
@@ -115,15 +163,28 @@ canvas {
   border: 2px solid #73ADff;
   border-style:none none dashed dashed ;
 }
-#console{
+/*
+#console {
+  clear:right;
+ 
+  float:left;
+  height: auto;
   overflow-y:scroll;
   overflow-x:hidden;
-  /*scrollbar-width:thin;*/
 }
-#console::-webkit-scrollbar {
+*/
+@media screen and (max-width: 850px) {
+  #console {
+    clear: both;
+    height:auto;
+    float:none;
+    overflow-y:visible;
+  }
+}
+/*#console::-webkit-scrollbar {
   width: 40px; /* Mostly for vertical scrollbars */
   /*height: 10px; /* Mostly for horizontal scrollbars */
-}
+
 #createfrom{
   color:#3030dd;
   font-weight:bold;
@@ -138,4 +199,18 @@ canvas {
   font-weight:bold;
     border-radius: 5px;
   border: 2px solid #73ADff;
+}
+@media print {
+  #graphsettings {display:none;}
+  #controls {display:none;}
+  #overoptions {display:none;}
+  #joinnode {display:none;} 
+  #removenode {display:none;}
+  #console {
+    clear: both;
+    height:auto;
+    float:none;
+    width:100%;
+    overflow-y:visible;
+  }
 }

@@ -4,6 +4,7 @@ class Dijkstra extends PathSolver {
         super(g);
     }
 
+    
     /*
     init(){
         super.init();
@@ -32,13 +33,11 @@ class Dijkstra extends PathSolver {
             if (current.gcost == Number.MAX_SAFE_INTEGER){
                 this.openSet = [];
                 this.finished = true;
-                this.started = false;
                 return false; // no route
             }
             this.removeOpenAndClose(current);
             //stop if visited goal
             if (this.graph.isGoal(current)){
-                this.started = false;
                 this.finished = true;
                 this.traverse(current);
                 return true;
@@ -74,9 +73,17 @@ class Dijkstra extends PathSolver {
     }
 
     showStateHTML(){
-        let html = "<table>" + this.headingsHTML("cost");
+        let html = "<table><tr>" + this.headingsHTML("cost") + "</tr>";
         for (let p = 0; p < this.gnodes.length; p++){
-            html += "<tr>" + this.gnodes[p].stateHTMLDijkstra + "</tr>";
+            if (this.graph.isStart(this.gnodes[p])){
+                html += "<tr class='startrow'>" + this.gnodes[p].stateHTMLDijkstra + "</tr>";
+
+            } else if (this.graph.isGoal(this.gnodes[p])){
+                html += "<tr class='goalrow'>" + this.gnodes[p].stateHTMLDijkstra + "</tr>";
+
+            } else {
+                html += "<tr>" + this.gnodes[p].stateHTMLDijkstra + "</tr>";
+            }
         }
         html += "</table>"
         html += super.showStateHTML();

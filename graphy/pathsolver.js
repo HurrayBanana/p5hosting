@@ -25,7 +25,9 @@ class PathSolver {
 
     start(){
         this.started = true;
+        MsgBus.send(msgT.hi_liteclear);
     }
+
     picked(n){
         n.visitnum = ++this.#picks;
     }

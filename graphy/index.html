@@ -13,77 +13,62 @@
 
   </head>
   <body onload="registertoggles();">
-    <label for="filepicker"><input title="load" type="file" id="upload" ></label>
-    <div id="sketcharea">
-
-    </div>
-    <input title="filename" id="filename" class="viewname" onfocus="filenameSelect(this);" onblur="filenameDone(this);"></input>
-    <div>
-      <div id="controls">
+    <div class="grid">
+      <div id="graphsettings">
+        <p>Graph setttings</p>
         <div class="buttonholder">
           <label for="barrows" >arrows</label>
-          <button id="barrows" name="barrows" 
-          data-msgtype="arrowschanged" 
-          data-handler="binaryset"
-          onclick="MsgBus.send(msgT.arrows,this);">on</button>
+          <button id="barrows" name="barrows" onclick="MsgBus.send(msgT.arrows,this);">on</button>
         </div>
         <div class="buttonholder">
           <label for="bduplicates" >duplicates</label>
-          <button id="bduplicates"
-          data-msgtype="duplicateschanged" 
-          data-handler="binaryset"
-          onclick="MsgBus.send(msgT.duplicates,this);">on</button>
+          <button id="bduplicates" onclick="MsgBus.send(msgT.duplicates,this);">on</button>
         </div>
         <div class="buttonholder">
           <label for="bcostmode" >cost mode</label>
-          <button id="bcostmode"
-          data-msgtype="costmodechanged" 
-          data-handler="binaryset"
-          onclick="MsgBus.send(msgT.costmode,this);">static</button>
+          <button id="bcostmode" onclick="MsgBus.send(msgT.costmode,this);">static</button>
         </div>
         <div class="buttonholder">
           <label for="bshownodecost" >Node costs</label>
-          <button id="bshownodecost"
-          data-msgtype="shownodecostchanged" 
-          data-handler="binaryset"
-          onclick="MsgBus.send(msgT.shownodecost,this);">on</button>
+          <button id="bshownodecost" onclick="MsgBus.send(msgT.shownodecost,this);">on</button>
         </div>
+      </div>
+
+      <div id="controls">
+        <p>Solve operation settings</p>
         <div class="buttonholder">
           <label for="bsolvemethod" >solve method</label>
-          <button id="bsolvemethod" 
-          data-msgtype="solvemethodchanged" 
-          data-handler="binaryset"
-          onclick="MsgBus.send(msgT.solvemethod,this);">dijkstra</button>
+          <button id="bsolvemethod" onclick="MsgBus.send(msgT.solvemethod,this);">dave</button>
         </div>
         <div class="buttonholder">
           <label for="bsolve" >solve</label>
-          <button id="bsolve" 
-          onclick="MsgBus.send(msgT.solve,this);">step</button>
+          <button id="bsolve" onclick="MsgBus.send(msgT.solve,this);">step</button>
         </div>
         <div class="buttonholder">
           <label for="bsolvestyle" >solve style</label>
-          <button id="bsolvestyle"
-          data-msgtype="solvestylechanged" 
-          data-handler="binaryset"
-          onclick="MsgBus.send(msgT.solvestyle,this);">auto</button>
+          <button id="bsolvestyle" onclick="MsgBus.send(msgT.solvestyle,this);">auto</button>
         </div>
         <div class="buttonholder">
           <label for="bsolvehistory" >solve history</label>
-          <button id="bsolvehistory"
-          data-msgtype="solvehistorychanged" 
-          data-handler="binaryset"
-          onclick="MsgBus.send(msgT.solvehistory,this);">on</button>
+          <button id="bsolvehistory" onclick="MsgBus.send(msgT.solvehistory,this);">on</button>
         </div>
         <div class="buttonholder">
           <label for="bconsole" >console</label>
-          <button id="bconsole"
-          data-msgtype="consolechanged" 
-          data-handler="binaryset"
-          onclick="MsgBus.send(msgT.console,this);">on</button>
+          <button id="bconsole" onclick="MsgBus.send(msgT.console,this);">on</button>
         </div>
       </div>
-      <div id="console"></div>
     </div>
+    <div class="grid">
+      <div id="sketcharea">
+        <label for="filepicker"><input title="load" type="file" id="upload" ></label>
+        <input title="filename" id="filename" class="viewname" onfocus="filenameSelect(this);" onblur="filenameDone(this);"></input>
+      </div>
+      <div id="console"></div>
+    </div><!--grid-->
+  
+    
+    
+
     <div id="overoptions">
       <p><span class='key'>S</span> start node&nbsp;
         <span class='key'>G</span> end node&nbsp;

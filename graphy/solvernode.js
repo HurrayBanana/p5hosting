@@ -52,9 +52,9 @@ class SolverNode extends node{
 
     }
     clearhighlight(){
-      this.highCurrent = false;
-      this.highNeighbour = false;
-      this.highUpdate = false;
+      this.highCurrent = null;
+      this.highNeighbour = null;
+      this.highUpdate = null;
     }
     acceptCurrent(n){
       if (n === this){
@@ -163,11 +163,18 @@ class SolverNode extends node{
     }
     get stateHTMLDijkstra(){
       let tr = "<td>" + this.visitnum + "</td>";
-      tr += "<td>" + getSpan(this.state) + "</td>";
+      tr += "<td>" + getSpan(this.expandState(this.state)) + "</td>";
       tr += "<td>" + getSpan(this.name,this.explored) + "</td>";
       tr += "<td>" + (this.#parent == null ? "null" : this.nodeArrayNames(this.#parent)) + "</td>";//want changes array
       tr += "<td>" + (this.#gcost == null ? "null" : this.nodeCost(this.#gcost)) + "</td>";//want changes array
       return tr;
+    }
+    expandState(state){
+      switch (state){
+        case "X": return "CLOSED";
+        case "O": return "OPEN";
+        default: return state;
+      }
     }
     get explored(){
       if (this.highCurrent) {

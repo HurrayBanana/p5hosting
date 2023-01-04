@@ -110,8 +110,7 @@ class neighbour extends Clickable{
 
         let dirVec = new vector2(this.node.x - px, this.node.y - py);
         let aVec = dirVec.mulNew(0.35);
-        let cVec = dirVec.mulNew(0.28);
-        this.position(cVec.x+ px, cVec.y + py);
+        let cVec = dirVec.mulNew((!this.parent.g.duplicates && this.linked) ? 0.5 : 0.28);        this.position(cVec.x+ px, cVec.y + py);
         this.drawLine(s);
         if (arrow && !this.linked) 
             this.arrow(s,aVec.x + px, aVec.y + py, aVec.normalise);

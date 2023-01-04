@@ -35,6 +35,7 @@ class Graph {
     #arrows = true;
     // need this so we can edit different direction neighbours
     #duplicates = true;
+    get duplicates(){return this.#duplicates;}
     #shownodecost = false;
     get showNodeCost(){return this.#shownodecost;}
     #solveHistory = false;
@@ -367,6 +368,7 @@ class Graph {
         arr.push("arrow," + this.#arrows);
         arr.push("dupe," + this.#duplicates);
         arr.push("dyna," + this.#dynamic);
+        arr.push("costnode," + this.#shownodecost);
         for (let p = 0; p < this.size; p++) {
             arr.push(this.g[p].asString);
         }
@@ -406,7 +408,10 @@ class Graph {
                 case "name":
                     newgraph.name = Graph.getSglStringFromData(fa[p],1);
                     break;
-                case "dupe":
+                case "cost":
+                    newgraph.#shownodecost = Graph.getSglBoolFromData(fa[p], 1);
+                    break;
+                    case "dupe":
                     newgraph.#duplicates = Graph.getSglBoolFromData(fa[p], 1);
                     break;
                 case "arro":
@@ -429,6 +434,7 @@ class Graph {
             }
 
         }
+        newgraph.brodcastAllStates();
         co.log("Graph name once loaded:" + newgraph.name)
         if (Graph.#passthrough != null) {
             Graph.#passthrough(newgraph);
