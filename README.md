@@ -3,17 +3,20 @@
 
 This is wip and will contain bugs
 
+### naming
+Click graph name (top left of graph area) to change it (have to export the grapj
+
 ### Mouse
-click on graph - drop next node
-click on node - selects that node - goes yellow
-hold left button over node - drag and drop node to new place
+- click on graph - drop next node
+- click on node - selects that node - goes yellow
+- hold left button over node - drag and drop node to new place
 
 ### Keys
 =====
 #### Mouse Over console area
 - H - hide/show console output
 - L - load a graph from local storage
-- E - save current graph (goes to current browser download location)
+- E - export the current graph (goes to current browser download location)
 - C - clear console window
 - P - next iteration in current graph solve
 
