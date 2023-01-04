@@ -3,8 +3,9 @@
 
 This is wip and will contain bugs
 
-### naming
-Click graph name (top left of graph area) to change it (have to export the grapj
+### General
+- Click graph name (top left of graph area) to change it (have to export the grapj
+- Print the page allows you to see the graph and all steps of solution (if Solve history was chosen - clear the console before starting the solve)
 
 ### Mouse
 - click on graph - drop next node
