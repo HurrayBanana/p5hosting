@@ -1,5 +1,5 @@
 # p5hosting
-[Graphy](https://hurraybanana.github.io/p5hosting/graphy/index.html)
+[Graphy application](https://hurraybanana.github.io/p5hosting/graphy/index.html)
 
 This is wip and will contain bugs
 
