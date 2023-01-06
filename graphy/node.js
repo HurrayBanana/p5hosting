@@ -86,8 +86,10 @@ class node extends Draggable {
     s.fill(0);
     s.text(this.name, this.x, this.y);
 
-
-    this.heuristic.show(s);
+    if (!this.g.dijkstra)
+    {
+      this.heuristic.show(s);
+    }
     s.pop();
 
   }

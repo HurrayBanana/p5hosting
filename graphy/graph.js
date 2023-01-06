@@ -99,6 +99,7 @@ class Graph {
         MsgBus.sub(msgT.solvehistory, this.toggleHistory, this);
         MsgBus.sub(msgT.divisorChange, this.setdivisor, this);
         MsgBus.sub(msgT.setmode, this.toggleSetMode, this);
+        MsgBus.sub(msgT.solvemethodchanged, this.logMethod, this);
     }
     cleanup(){
         MsgBus.drop(msgT.arrows, this.toggleArrows, this);
@@ -106,8 +107,15 @@ class Graph {
         MsgBus.drop(msgT.costmode, this.toggleCost, this);
         MsgBus.drop(msgT.shownodecost, this.toggleNodeCost, this);
         MsgBus.drop(msgT.solvehistory, this.toggleHistory, this);
+        MsgBus.drop(msgT.divisorChange, this.setdivisor, this);
+        MsgBus.drop(msgT.setmode, this.toggleSetMode, this);
+        MsgBus.drop(msgT.solvemethodchanged, this.logMethod, this);
     }
     get size() { return this.g.length; }
+
+    logMethod(data){
+        this.dijkstra = data.state;
+    }
 
     centre(s, keepaspect) {
         if (this.size > 0){

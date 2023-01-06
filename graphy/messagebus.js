@@ -53,17 +53,18 @@ class MsgBus{
             this.#subs = {};
         }
     }
+    
     static drop(messageType, handler, instance){
         let callbacks = this.#subs[messageType];
         if (callbacks != null) {
             let p = 0;
-            while (p < callbacks.length && 
-                callbacks[p].handler !== handler &&
-                callbacks[p].instance !== instance ){}
+            while (p < callbacks.length && callbacks[p].handler !== handler && callbacks[p].instance !== instance ){
+                p++;
+            }
             if (p < callbacks.length) {   
                 callbacks.splice(p,1);
                 this.#subs[messageType] = callbacks;
-            }
+            } 
         }
     }
 
