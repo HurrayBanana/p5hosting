@@ -10,7 +10,13 @@ class neighbour extends Clickable{
     rad=25;
     parent;
     #cost = 10;
-    get cost(){return this.#cost;}
+    get cost(){
+      if (!this.parent.g.isDynamicCost){
+        return this.#cost;
+      } else {
+        return Math.floor(this.parent.distanceBetween(this.node)/this.parent.g.dynamicDivisor);
+      }
+    }
     set cost(value){
       this.#cost = value;
       if (this.linked != null){
@@ -59,12 +65,16 @@ class neighbour extends Clickable{
       }
     }
     showover(s) {
-      if (this.linked) {
-        s.fill(neighbour.cLINKOVER);
+      if (!this.parent.g.isDynamicCost){
+        if (this.linked) {
+          s.fill(neighbour.cLINKOVER);
+        } else {
+          s.fill(neighbour.cOVER);
+        }
+        this.hoverkeys();
       } else {
-        s.fill(neighbour.cOVER);
+        this.shownormal(s);
       }
-      this.hoverkeys();
     }
     
     hoverkeys(){

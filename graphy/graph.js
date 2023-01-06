@@ -42,6 +42,10 @@ class Graph {
     get solveHistory(){return this.#solveHistory;}
     //show/worksith static or dynamic distances
     #dynamic = false;
+    #setmodesimple = true;
+    get setModeVerbose(){return !this.#setmodesimple;}
+    dynamicDivisor = 1;
+    get isDynamicCost(){return this.#dynamic;}
     get showArrows(){return this.#arrows;}
     isStart(n) {return this.startNode === n; }
     notStart(n) { return this.startNode !== n; }
@@ -52,7 +56,7 @@ class Graph {
         }
         return false;
     }
-
+    get canSolve() {return this.startNode != null && this.goalNode != null;}
     goalNode = null;
     isGoal(n) {return this.goalNode === n; }
     notGoal(n) { return this.goalNode !== n; }
@@ -85,6 +89,7 @@ class Graph {
         this.broadcastCostState();
         this.broadcastSolveHistory();
         this.broadcastNodeCost();
+        this.broadcastSetModeState();
     }
     #subscriptions(){
         MsgBus.sub(msgT.arrows, this.toggleArrows, this);
@@ -92,6 +97,8 @@ class Graph {
         MsgBus.sub(msgT.costmode, this.toggleCost, this);
         MsgBus.sub(msgT.shownodecost, this.toggleNodeCost, this);
         MsgBus.sub(msgT.solvehistory, this.toggleHistory, this);
+        MsgBus.sub(msgT.divisorChange, this.setdivisor, this);
+        MsgBus.sub(msgT.setmode, this.toggleSetMode, this);
     }
     cleanup(){
         MsgBus.drop(msgT.arrows, this.toggleArrows, this);
@@ -152,6 +159,9 @@ class Graph {
             }
         }
     }
+    setdivisor(value){
+        this.dynamicDivisor = value;
+    }
     toggleCost(){//button){
         this.#dynamic = !this.#dynamic;
         this.broadcastCostState();
@@ -176,6 +186,13 @@ class Graph {
     toggleArrows(){//button){
         this.#arrows = !this.#arrows;
         this.broadcastArrowsState();
+    }
+    toggleSetMode(){//button){
+        this.#setmodesimple = !this.#setmodesimple;
+        this.broadcastSetModeState();
+    }
+    broadcastSetModeState(){
+        MsgBus.send(msgT.setmodechanged,{state:this.#setmodesimple, txtT:"compact xo", txtF:"verbose"});
     }
     broadcastArrowsState(){
         MsgBus.send(msgT.arrowschanged,{state:this.#arrows, txtT:"on", txtF:"off"});
@@ -369,6 +386,8 @@ class Graph {
         arr.push("dupe," + this.#duplicates);
         arr.push("dyna," + this.#dynamic);
         arr.push("costnode," + this.#shownodecost);
+        arr.push("divisor," + this.dynamicDivisor);
+        arr.push("sets," + this.#setmodesimple);
         for (let p = 0; p < this.size; p++) {
             arr.push(this.g[p].asString);
         }
@@ -378,6 +397,15 @@ class Graph {
             }
         }
         return arr;
+    }
+    static getSglValFromData(data, pos){
+        //(parts[start].toLowerCase() == "true")
+        let parts = data.split(",");
+        if (parts.length <= pos){
+            co.log("fatal error reading:" + data);
+        } else {
+            return parts[pos];
+        }
     }
     static getSglBoolFromData(data, pos){
         //(parts[start].toLowerCase() == "true")
@@ -408,10 +436,16 @@ class Graph {
                 case "name":
                     newgraph.name = Graph.getSglStringFromData(fa[p],1);
                     break;
+                case "divi":
+                    newgraph.dynamicDivisor = Graph.getSglValFromData(fa[p], 1);
+                    break;
                 case "cost":
                     newgraph.#shownodecost = Graph.getSglBoolFromData(fa[p], 1);
                     break;
-                    case "dupe":
+                case "sets":
+                    newgraph.#setmodesimple = Graph.getSglBoolFromData(fa[p], 1);
+                    break;
+                case "dupe":
                     newgraph.#duplicates = Graph.getSglBoolFromData(fa[p], 1);
                     break;
                 case "arro":

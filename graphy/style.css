@@ -18,6 +18,13 @@
   float:left;
   width:auto;
 }
+#misc{
+  box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2); /* this adds the "card" effect */
+  padding: 16px;
+  background-color: #f1f1f1;
+  float:left;
+  width:auto;
+}
 #sketcharea {
   float:left;
   /*width:80%;*/
@@ -69,6 +76,7 @@ table {
 button{
   height:40px;
   width: 60px;
+  text-align: center;
   border-radius:4px;
 }
 label{
@@ -85,18 +93,28 @@ label{
   padding: 3px;
   float:left;
   text-align: center;
+  padding: 0;
+  height:60px;
+  width:75px;
 }
 .buttonfalse{
-  background-color: #aaa;
+  background-color: rgb(182, 224, 233);
   height:40px;
   width: 60px;
+  text-align: center;
   border-radius:4px;
+  padding: 0;
 }
 .buttontrue{
-  background-color: #73ADff;
+  background-color: #85c8f5;
   height:40px;
   width: 60px;
+  text-align: center;
+  padding: 0;
   border-radius:4px;
+}
+#rdivisor{
+  width:60px;
 }
 html, body {
   margin: 0;
@@ -202,6 +220,7 @@ body::-webkit-scrollbar{
   border: 2px solid #73ADff;
 }
 @media print {
+  #misc {display:none;}
   #graphsettings {display:none;}
   #controls {display:none;}
   #overoptions {display:none;}

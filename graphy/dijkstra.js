@@ -11,28 +11,33 @@ class Dijkstra extends PathSolver {
     }*/
     start(){
         super.start();
-        //let g = this.gnodes;
-        for (let p = 0; p < this.gnodes.length; p++){
-            let dn = this.gnodes[p];//quick ref
-            dn.resetSolver();
-            if (this.graph.isStart(dn)){
-                dn.setcosts(0,null);//updatecosts(0, null);
-            } else {
-                dn.setcosts(Number.MAX_SAFE_INTEGER, null);//updatecosts(Number.MAX_SAFE_INTEGER, null);
+            //let g = this.gnodes;
+            for (let p = 0; p < this.gnodes.length; p++){
+                let dn = this.gnodes[p];//quick ref
+                dn.resetSolver();
+                if (this.graph.isStart(dn)){
+                    dn.setcosts(0,null);//updatecosts(0, null);
+                } else {
+                    dn.setcosts(Number.MAX_SAFE_INTEGER);//, null);//updatecosts(Number.MAX_SAFE_INTEGER, null);
+                }
+                this.addToSet(this.openSet, dn);
             }
-            this.addToSet(this.openSet, dn);
-        }
+        //}
     }
     //dijkstra implementation
     iterate(count){
-        MsgBus.send(msgT.hi_liteclear);
+//        MsgBus.send(msgT.hi_liteclear);
         while (this.openSet.length > 0 && count > 0){
+            MsgBus.send(msgT.hi_liteclear);
             count--;
             let current = this.getCheapest();
-            MsgBus.send(msgT.hi_litecurrent, current);
+            MsgBus.send(msgT.hi_litecurrent, {node:current,auto:this.autoSolve});
             if (current.gcost == Number.MAX_SAFE_INTEGER){
                 this.openSet = [];
                 this.finished = true;
+                this.history.push(this.showStateHTML());
+                //leave the current showing if exhausted route
+                //MsgBus.send(msgT.hi_liteclear);
                 return false; // no route
             }
             this.removeOpenAndClose(current);
@@ -40,6 +45,8 @@ class Dijkstra extends PathSolver {
             if (this.graph.isGoal(current)){
                 this.finished = true;
                 this.traverse(current);
+                MsgBus.send(msgT.hi_liteclear);
+                this.history.push(this.showStateHTML());
                 return true;
             }
             for (let p = 0; p < current.neighbour.length; p++) {
@@ -48,14 +55,15 @@ class Dijkstra extends PathSolver {
                     let calccost = current.gcost + current.neighbour[p].cost;
                     if (calccost < nbNode.gcost){
                         if (nbNode.gcost == Number.MAX_SAFE_INTEGER){
-                            MsgBus.send(msgT.hi_liteneighbour, nbNode);
+                            MsgBus.send(msgT.hi_liteneighbour, {node:nbNode,auto:this.autoSolve});
                         } else {
-                            MsgBus.send(msgT.hi_liteneighbourupdate, nbNode);
+                            MsgBus.send(msgT.hi_liteneighbourupdate, {node:nbNode,auto:this.autoSolve});
                         }
                         nbNode.updatecosts(calccost, current);
                     } 
                 }
             }
+            this.history.push(this.showStateHTML());
         }
         return false;
     }    

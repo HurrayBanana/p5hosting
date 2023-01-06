@@ -15,7 +15,7 @@
   <body onload="registertoggles();">
     <div class="grid">
       <div id="graphsettings">
-        <p>Graph setttings</p>
+        <div>Graph setttings</div>
         <div class="buttonholder">
           <label for="barrows" >arrows</label>
           <button id="barrows" name="barrows" onclick="MsgBus.send(msgT.arrows,this);">on</button>
@@ -25,36 +25,74 @@
           <button id="bduplicates" onclick="MsgBus.send(msgT.duplicates,this);">on</button>
         </div>
         <div class="buttonholder">
+          <label for="bshownodecost" >node costs</label>
+          <button id="bshownodecost" onclick="MsgBus.send(msgT.shownodecost,this);">on</button>
+        </div>
+        <div class="buttonholder">
+          <label for="bsetmode" >set mode</label>
+          <button id="bsetmode" onclick="MsgBus.send(msgT.setmode,this);">XO</button>
+        </div>
+        <div class="buttonholder">
           <label for="bcostmode" >cost mode</label>
           <button id="bcostmode" onclick="MsgBus.send(msgT.costmode,this);">static</button>
         </div>
         <div class="buttonholder">
-          <label for="bshownodecost" >Node costs</label>
-          <button id="bshownodecost" onclick="MsgBus.send(msgT.shownodecost,this);">on</button>
+          <label id="rdivisortop" for="rdivisor" >divisor</label>
+          <input id="rdivisor" type="range" min="1" max="20" value="10"
+          oninput="MsgBus.send(msgT.divisorChange,this.value);">
+          <label id="rdivisorlabel" >divisor</label>
         </div>
       </div>
 
       <div id="controls">
-        <p>Solve operation settings</p>
+        <div>Solving settings</div>
         <div class="buttonholder">
-          <label for="bsolvemethod" >solve method</label>
+          <label for="breset" >solution</label>
+          <button id="breset" onclick="MsgBus.send(msgT.reset,this);">reset</button>
+        </div>
+        <div class="buttonholder">
+          <label for="bsolve" >perform</label>
+          <button id="bsolve" onclick="MsgBus.send(msgT.solve,this);">next step</button>
+        </div>
+        <div class="buttonholder">
+          <label for="bsolvemethod" >method</label>
           <button id="bsolvemethod" onclick="MsgBus.send(msgT.solvemethod,this);">dave</button>
         </div>
         <div class="buttonholder">
-          <label for="bsolve" >solve</label>
-          <button id="bsolve" onclick="MsgBus.send(msgT.solve,this);">step</button>
-        </div>
-        <div class="buttonholder">
-          <label for="bsolvestyle" >solve style</label>
+          <label for="bsolvestyle" >style</label>
           <button id="bsolvestyle" onclick="MsgBus.send(msgT.solvestyle,this);">auto</button>
         </div>
         <div class="buttonholder">
-          <label for="bsolvehistory" >solve history</label>
+          <label for="bsolvehistory" >history</label>
           <button id="bsolvehistory" onclick="MsgBus.send(msgT.solvehistory,this);">on</button>
         </div>
+      </div>
+
+      <div id="misc">
+        <div>miscellaneous</div>
         <div class="buttonholder">
           <label for="bconsole" >console</label>
           <button id="bconsole" onclick="MsgBus.send(msgT.console,this);">on</button>
+        </div>
+        <div class="buttonholder">
+          <label for="bconsole" >console</label>
+          <button id="bconsole" onclick="MsgBus.send(msgT.clearcon,this);">clear</button>
+        </div>
+        <div class="buttonholder">
+          <label for="bload" >graph</label>
+          <button id="bload" onclick="MsgBus.send(msgT.cleargraph,this);">clear</button>
+        </div>
+        <div class="buttonholder">
+          <label for="bload" >graph</label>
+          <button id="bload" onclick="MsgBus.send(msgT.load,this);">load</button>
+        </div>
+        <div class="buttonholder">
+          <label for="bexport" >graph</label>
+          <button id="bexport" onclick="MsgBus.send(msgT.export,this);">export</button>
+        </div>
+        <div class="buttonholder">
+          <label for="bhelp" >Help</label>
+          <button id="bhelp" onclick="MsgBus.send(msgT.help,this);">show</button>
         </div>
       </div>
     </div>
@@ -89,6 +127,7 @@
         <span id="activetome"><span class='key'>P</span> active node to me&nbsp;</span>
       </p>
     </div>
+
     <!-- nodes -->
     <!--<script src="dijkstranode.js"></script>-->
     <!--<script src="astarnode.js"></script>-->

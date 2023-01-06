@@ -10,6 +10,14 @@ class msgT{
     static solve = "solve";
     static solvestyle = "solvestyle";
     static solvehistory = "solvehistory";
+    static clearcon = "clearcon";
+    static load = "load";
+    static export = "export";
+    static divisorChange = "divisorChange";
+    static cleargraph = "cleargraph";
+    static setmode = "setmode";
+    static help = "help";
+    static helpChanged = "helpChanged";
 
     static arrowschanged = "arrowschanged";
     static consolechanged = "consolechanged";
@@ -19,6 +27,7 @@ class msgT{
     static solvemethodchanged = "solvemethodchanged";
     static solvestylechanged = "solvemodechanged";
     static solvehistorychanged = "solvehistorychanged";
+    static setmodechanged = "setmodechanged";
     //static solverchanged = "solverchanged";
     //highlighting
     static hi_liteclear = "highlightclear";

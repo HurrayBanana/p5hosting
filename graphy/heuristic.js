@@ -4,7 +4,20 @@ class Heuristic extends Clickable{
     static cLINE_STROKE = [0,0,0];
     parent;
     #value = 10;
-    get value(){return this.#value;}
+    get value(){
+      if (!this.parent.g.isDynamicCost){
+        return this.#value;
+      } else {
+        return Math.floor(this.parent.distanceBetween(this.parent.g.goalNode)/this.parent.g.dynamicDivisor);
+      }
+    }
+/*
+    if (!this.parent.g.isDynamicCost){
+      return this.#cost;
+    } else {
+      return Math.floor(this.parent.distanceBetween(this.node)/this.parent.g.dynamicDivisor);
+    }*/
+
     set value(h){
       this.#value = h;
     }
@@ -38,17 +51,21 @@ class Heuristic extends Clickable{
       s.fill(Heuristic.cNORM);
     }
     showover(s) {
-      s.fill(Heuristic.cOVER);
-      this.hoverkeys();
+      if (!this.parent.g.isDynamicCost){
+        s.fill(Heuristic.cOVER);
+        this.hoverkeys();
+      } else {
+        this.shownormal(s);
+      }
     }
-    
+
     hoverkeys(){
-      if (inpM.kPressed(kPlus)){ 
-        this.value++;
-      }
-      if (inpM.kPressed(kMinus)) {
-        this.value--;
-      }
+        if (inpM.kPressed(kPlus)){ 
+          this.value++;
+        }
+        if (inpM.kPressed(kMinus)) {
+          this.value--;
+        }
     }
 
     show(s) {

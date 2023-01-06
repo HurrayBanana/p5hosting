@@ -235,5 +235,9 @@ class node extends Draggable {
     }
     s.pop();
   }
-
+  distanceBetween(n){
+    let dx = this.x - n.x;
+    let dy = this.y - n.y;
+    return Math.sqrt(dx*dx + dy*dy);
+  }
 }

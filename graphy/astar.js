@@ -6,38 +6,38 @@ class Astar extends PathSolver {
     }
 
     start(){
-        //super.init();
-        super.start();
+       super.start();
+            for (let p = 0; p < this.gnodes.length; p++){
+                this.gnodes[p].resetSolver();
+            }
 
-        for (let p = 0; p < this.gnodes.length; p++){
-            this.gnodes[p].resetSolver();
-        }
+            if (this.graph.startNode != null && this.graph.goalNode != null) {
+                let sn = this.graph.startNode;
+                this.addToSet(this.openSet, sn);
+                sn.setcosts(0,null, sn.hcost)
+                //let dave = sn.gcost + sn.hcost;
+                //sn.updatecosts(0, null, dave);
+                this.graph.goalNode.hcost = 0;
 
-        if (this.graph.startNode != null && this.graph.goalNode != null) {
-            let sn = this.graph.startNode;
-            this.addToSet(this.openSet, sn);
-            sn.setcosts(0,null, sn.hcost)
-            //let dave = sn.gcost + sn.hcost;
-            //sn.updatecosts(0, null, dave);
-            this.graph.goalNode.hcost = 0;
-
-        }
-        
+            }
+       // }
     }
     //dijkstra implementation
     iterate(count){
-        MsgBus.send(msgT.hi_liteclear);
 
         while (this.openSet.length > 0 && count > 0){
+            MsgBus.send(msgT.hi_liteclear);
             count--;
             let current = this.getCheapestFG();
-            MsgBus.send(msgT.hi_litecurrent, current);
+            MsgBus.send(msgT.hi_litecurrent, {node:current,auto:this.autoSolve});
 
             this.removeOpenAndClose(current);
             //stop if visited goal
             if (this.graph.isGoal(current)){
                 this.finished = true;
                 this.traverse(current);
+                MsgBus.send(msgT.hi_liteclear);
+                this.history.push(this.showStateHTML());
                 return true;
             }
             //need to sort adding neighbours if not in open set
@@ -48,20 +48,22 @@ class Astar extends PathSolver {
                         this.addToSet(this.openSet,nbNode);
                         let calccost = current.gcost + current.neighbour[p].cost;
                         nbNode.setcosts(calccost, current, calccost + nbNode.heuristic.value);
-                        MsgBus.send(msgT.hi_liteneighbour, nbNode);
+                        MsgBus.send(msgT.hi_liteneighbour, {node:nbNode,auto:this.autoSolve});
 
                     }
                     let calccost = current.gcost + current.neighbour[p].cost;
                     if (calccost < nbNode.gcost){
                             nbNode.updatecosts(calccost, current, calccost + nbNode.heuristic.value);
-                            MsgBus.send(msgT.hi_liteneighbourupdate, nbNode);
+                            MsgBus.send(msgT.hi_liteneighbourupdate, {node:nbNode,auto:this.autoSolve});
 
                     }
                 }
             }
+            this.history.push(this.showStateHTML());
         }
         if (this.openSet.length == 0){
             this.finished = true;
+            //this.history.push(this.showStateHTML());
         }
         return false;
     }    

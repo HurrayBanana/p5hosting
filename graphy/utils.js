@@ -116,8 +116,18 @@ function ranI(low,high){
     MsgBus.sub(msgT.solvestylechanged, binaryset, document.getElementById("bsolvestyle"));
     MsgBus.sub(msgT.solvehistorychanged, binaryset, document.getElementById("bsolvehistory"));
     MsgBus.sub(msgT.consolechanged, binaryset, document.getElementById("bconsole"));
+    MsgBus.sub(msgT.divisorChange, showDivisor, document.getElementById("rdivisorlabel"));
+    MsgBus.sub(msgT.divisorChange, setDivisorUI, document.getElementById("rdivisor"));
+    MsgBus.sub(msgT.setmodechanged, binaryset, document.getElementById("bsetmode"));
+    MsgBus.sub(msgT.helpChanged, binaryset, document.getElementById("bhelp"));
   }
-  
+
+  function setDivisorUI(value){
+    this.value = value;
+  }
+  function showDivisor(value){
+    this.innerHTML = value;
+  }
   // value of this is passed when MsgBus.sub is registered (3rd parameter)
   //picks on of two choices
   function binaryset(data){
@@ -133,3 +143,10 @@ function ranI(low,high){
 
   }
 
+  function IframeFrom(url, height, width){
+    let s = "<iframe src='" + url + "'" + 
+    " title='notes' " + 
+    "height='" +height + "' " +
+    "width='" + width + "'><iframe>";
+    return s;
+  }

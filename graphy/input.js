@@ -7,6 +7,7 @@ const kE = 69;const kL = 76;const kJ = 74
 const kPlus = 187;
 const kMinus = 189;
 const kSpace = 32;
+const kSlashQmark = 191;
 
 
 //simple input manager using dictionaries (no searching required)

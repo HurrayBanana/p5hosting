@@ -37,6 +37,7 @@ class SolverNode extends node{
     highCurrent = false;
     highNeighbour = false;
     highUpdate = false;
+    highHTMLonly = false;
 
     constructor(x,y,item, h){
       super(x,y,item, h);
@@ -57,18 +58,21 @@ class SolverNode extends node{
       this.highUpdate = null;
     }
     acceptCurrent(n){
-      if (n === this){
+      if (n.node === this){
         this.highCurrent = true;
+        this.highHTMLonly = n.auto;
       }
     }
     acceptNeighbour(n){
-      if (n === this){
+      if (n.node === this){
         this.highNeighbour = true;
+        this.highHTMLonly = n.auto;
       }
     }
     acceptUpdate(n){
-      if (n === this){
+      if (n.node === this){
         this.highUpdate = true;
+        this.highHTMLonly = n.auto;
       }
     }
     cleanup(){
@@ -87,19 +91,23 @@ class SolverNode extends node{
   
     setcosts(cost, parent, fcost){
       this.#gcost = [cost];
-      this.#parent = [parent];
+      if (parent !== undefined){
+        this.#parent = [parent];
+      }
       if (fcost !== undefined){
         this.#fcost = [fcost];
       }      
     }
     get exploredColour(){
-      if (this.highCurrent) {
-        return SolverNode.cnCURR;
-      } else if (this.highNeighbour) {
-        return SolverNode.cnNEIG;
-      } else if (this.highUpdate) {  
-        return SolverNode.cnUPDT;
-      }    
+      if (!this.highHTMLonly){
+        if (this.highCurrent) {
+          return SolverNode.cnCURR;
+        } else if (this.highNeighbour) {
+          return SolverNode.cnNEIG;
+        } else if (this.highUpdate) {  
+          return SolverNode.cnUPDT;
+        }    
+      }
       return SolverNode.cnCOST;
     }
 
@@ -170,11 +178,13 @@ class SolverNode extends node{
       return tr;
     }
     expandState(state){
-      switch (state){
-        case "X": return "CLOSED";
-        case "O": return "OPEN";
-        default: return state;
-      }
+      if (this.g.setModeVerbose){
+        switch (state){
+          case "X": return "CLOSED";
+          case "O": return "OPEN";
+          default: return state;
+        }
+      } else {return state;}
     }
     get explored(){
       if (this.highCurrent) {
@@ -190,7 +200,7 @@ class SolverNode extends node{
 
     get stateHTMLAstar(){
         let tr = "<td>" + this.visitnum + "</td>";
-        tr += "<td>" + getSpan(this.state) + "</td>";
+        tr += "<td>" + getSpan(this.expandState(this.state)) + "</td>";
         tr += "<td>" + getSpan(this.name,this.explored) + "</td>";
         tr += "<td>" + (this.#parent == null ? "null" : this.nodeArrayNames(this.#parent)) + "</td>";//want changes array
         tr += "<td>" + (this.#gcost == null ? "null" : this.nodeCost(this.#gcost)) + "</td>";//want changes array
@@ -228,6 +238,13 @@ class SolverNode extends node{
         }
       }
       return s;
+    }
+    ignoreNullName(p, n){
+      if (n != null && p == 0 && n.name == null && n.g.isStart(n)){
+        return null;
+      } else {
+        return n.name;
+      }
     }
     get asString(){
       let line = "node,";

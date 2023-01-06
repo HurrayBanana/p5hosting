@@ -12,7 +12,7 @@ class PathSolver {
     #cycles = 0;
     get cycles(){return this.#cycles;}
     set cycles(value){this.#cycles = value;}
-
+    history = [];
     autoSolve = false;
 
     constructor(g){
@@ -24,10 +24,23 @@ class PathSolver {
     }
 
     start(){
+        this.history=[];
         this.started = true;
         MsgBus.send(msgT.hi_liteclear);
+        return this.graph.canSolve;
     }
-
+    get lastHistory(){
+        if (this.history.length > 0){
+            return this.history[this.history.length - 1];
+        } else { return "";}
+    }
+    get allHistory(){
+        let s ="";
+        for (let p = 0; p  < this.history.length; p++){
+            s += this.history[p];
+        }
+        return s;
+    }
     picked(n){
         n.visitnum = ++this.#picks;
     }
@@ -74,13 +87,12 @@ class PathSolver {
     }
 
     solve(){
-        if (this.autoSolve || !this.started){
-            this.restartSearch();
-        }
-        this.iterate(this.autoSolve ? this.gnodes.length : this.#cycles);
-        if (this.finished){
-            if (this.route != null){
-                this.displayRoute();
+        if (this.graph.canSolve) {
+            this.iterate(this.autoSolve ? this.gnodes.length : this.#cycles);
+            if (this.finished){
+                if (this.route != null){
+                    this.displayRoute();
+                }
             }
         }
     }

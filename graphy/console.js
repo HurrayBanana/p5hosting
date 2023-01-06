@@ -10,7 +10,7 @@ class con{
         MsgBus.sub(msgT.console, this.toggleview, this);
         this.#myelement = element;
         this.#rows = rows;
-        this.log("====> console starting <====");
+        //this.log("====> console starting <====");
         this.On();
         this.broadcastStatus();
     }
@@ -39,7 +39,8 @@ class con{
     clear(){
         this.#myelement.innerHTML =""; 
         this.#line.length = 0;
-        this.log("====> console cleared <====");}
+        //this.log("====> console cleared <====");
+    }
 
     log(t){
         this.#line.push(t);
