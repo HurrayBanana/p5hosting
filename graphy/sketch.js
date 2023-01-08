@@ -5,11 +5,13 @@
 //and transformation work can then happen in there.
 //graph = [];
 let graph;
+//let picklist;
 let co;
 textentryactive = false;
 solveDijkstra = true;
 auto = false;
 help = false;
+let pick;
 
 /* END OF GLOBALS */
 const s = ( s ) => {
@@ -26,11 +28,12 @@ const s = ( s ) => {
     var can = s.createCanvas(sW, sH);
     s.setHTMLcanvas();
     let p = document.getElementById("console");
-    //p.style.height = sH + "px";
     co = new con(p,30);
     //co.Off();
     s.createUI();
     graph = new Graph();
+    pick = new Picker(graph, sW-16);
+
     co.log("made:" + graph.name);
     setTextboxValue("filename", graph.name);
     
@@ -39,7 +42,9 @@ const s = ( s ) => {
     can.mousePressed(s.canvasdown);
     htc = document.getElementById("console");
     s.broadcastAllStates();
-
+    //pick = new Picker(graph, sW-16);
+    
+    let a=6;
   };
   s.setHTMLcanvas=()=>{
     let p = document.getElementById("sketcharea");
@@ -66,13 +71,19 @@ const s = ( s ) => {
     MsgBus.sub(msgT.solvestyle, s.toggleSolveStyle, s);
     MsgBus.sub(msgT.cleargraph, s.clearGraph,s);
     MsgBus.sub(msgT.help,s.toggleHelp,s);
+    MsgBus.sub(msgT.droppedNewNode, s.newNodeDropped, s);
   }
+
   s.clearGraph=()=>{
     graph = new Graph();
+    pick.graph = graph;
   }
   s.toggleHelp=()=>{
     help = !help;
     if (help){
+      if (auto){
+        MsgBus.send(msgT.solvestyle,this);
+      }
       htc.innerHTML = IframeFrom("info.html", 700,500);
     } else {
       s.clearconsole();
@@ -84,6 +95,9 @@ const s = ( s ) => {
   }
   s.toggleSolveStyle=()=>{
     auto = !auto;
+    if (auto && help){
+      MsgBus.send(msgT.help,this);
+    }
     s.broadcastSolveStyle();
   }
   s.broadcastSolveStyle=()=>{
@@ -110,7 +124,7 @@ const s = ( s ) => {
     s.broadcastSolveStyle();
     s.broadcastHelp();
 
-    MsgBus.send(msgT.divisorChange,1);
+    MsgBus.send(msgT.divisorChange,10);
   }
   s.broadcastSolveMethod=()=>{
     MsgBus.send(msgT.solvemethodchanged, {state:solveDijkstra, txtT:"Dijkstra", txtF:"A *"})
@@ -138,11 +152,8 @@ const s = ( s ) => {
     s.generalUI(graph);
 
     graph.update(s);
-    //testing autosolve - this works - sort off
-    //hook up properly and astar
-    //hook up button
-    //now need to record solve history properly so its an array of html entries
-    //which can be displayed to the console
+    pick.update(s);
+
     if (auto){
       s.reset();
       if (solveDijkstra){
@@ -169,19 +180,20 @@ const s = ( s ) => {
       }
     }
   }
-
   s.generalUI = (g) => {
     if (!textentryactive){
       if (inpM.kPressed(kP)){
         MsgBus.send(msgT.solve);
       }
       if (inpM.kPressed(kD) && !insketcharea(s, s.mouseX, s.mouseY)){
+        MsgBus.send(msgT.startPickInc,1);
         //s.dijsolve(g);
       }
       if (inpM.kPressed(kSlashQmark)){
         MsgBus.send(msgT.help);
       }
       if (inpM.kPressed(kA) && !insketcharea(s, s.mouseX, s.mouseY)){
+        MsgBus.send(msgT.startPickDec,1);
         //s.astarsolve(g);
       }
       if (inpM.kPressed(kH) && !insketcharea(s, s.mouseX, s.mouseY)){
@@ -200,11 +212,9 @@ const s = ( s ) => {
         graph.centre(s, true);
       }
       if (inpM.kPressed(kA) && insketcharea(s, s.mouseX, s.mouseY)){
-        //graph.toggleArrows();
         MsgBus.send(msgT.arrows);
       }
       if (inpM.kPressed(kH) && insketcharea(s, s.mouseX, s.mouseY)){
-        //graph.toggleDuplicates();
         MsgBus.send(msgT.duplicates);
       }
     }
@@ -239,12 +249,6 @@ const s = ( s ) => {
       } else {
         htc.innerHTML = dij.lastHistory;
       }
-      /*
-      if (g.solveHistory){
-        co.log(dij.showStateHTML());
-      } else {
-        htc.innerHTML = dij.showStateHTML();
-      }*/
     } 
     if (dij.finished) {
       outputdata = false;
@@ -269,13 +273,6 @@ const s = ( s ) => {
       } else {
         htc.innerHTML =astar.lastHistory;
       }     
-      /*
-      if (g.solveHistory){
-        co.log(astar.showStateHTML());
-      } else {
-        htc.innerHTML = astar.showStateHTML();
-      }
-      */    
     }
     if (astar.finished) {
       outputdata = false;
@@ -288,12 +285,14 @@ const s = ( s ) => {
     graph = g;
     g.centre(s, true);
     setTextboxValue("filename",g.name);
+    pick.graph = graph;
+
   }    
   s.draw = () => {
     s.logic();
     s.background(cBACK);
     graph.draw(s);
-    
+    pick.show(s);
     s.after();
   };
   s.after=()=>{
@@ -305,10 +304,21 @@ const s = ( s ) => {
   
   //mouse button down event only over canvas
   s.canvasdown=()=>{
-    graph.pressed(s);
+    if (graph.pressed(s, pick.nextName)) {
+      pick.refresh();
+    }
+    pick.pressed(s);
+
+  }
+
+  s.newNodeDropped=(data)=>{
+    let n = new SolverNode(data.x, data.y, data.name, 0, 0);
+    graph.AddNode(n);
+    pick.refresh();
   }
 
   s.mouseReleased = () => {
     graph.released(s);
+    pick.released(s);
   };
 };let myp5 = new p5(s, 'sketcharea');

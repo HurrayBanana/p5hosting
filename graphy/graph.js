@@ -44,7 +44,7 @@ class Graph {
     #dynamic = false;
     #setmodesimple = true;
     get setModeVerbose(){return !this.#setmodesimple;}
-    dynamicDivisor = 1;
+    dynamicDivisor = 10;
     get isDynamicCost(){return this.#dynamic;}
     get showArrows(){return this.#arrows;}
     isStart(n) {return this.startNode === n; }
@@ -257,7 +257,7 @@ class Graph {
     update(s) {
         this.over = false;
         this.removenodes();
-
+        
         for (let p = 0; p < this.size; p++) {
             this.g[p].update(s);
         }
@@ -267,11 +267,18 @@ class Graph {
         //let position = -1;
         for (let p = 0; p < this.size; p++) {
             if (this.g[p].remove) {
+                if (this.isStart(this.g[p])){
+                    this.startNode = null;
+                }
+                if (this.isGoal(this.g[p])){
+                    this.goalNode = null;
+                }
                 co.log("found:" + this.g[p].name);
                 this.removeNeighboursOfNode(this.g[p]);
                 //this.removeNeighboursOf(this.g[p].name);
                 this.g.splice(p, 1);
                 co.log("removed:" + p + " len now:" + this.size);
+                MsgBus.send(msgT.nodeDeleted);
                 return;
             }
         }
@@ -296,7 +303,7 @@ class Graph {
         const name = 1;
         const heur = 2;
         let parts = nodedata.split(",");
-        let n = new SolverNode(parseInt(parts[x]), parseInt(parts[y]), parts[name], parseInt(parts[heur]));
+        let n = new SolverNode(parseInt(parts[x]), parseInt(parts[y]), parts[name].toUpperCase(), parseInt(parts[heur]));
         //let n = new node(parseInt(parts[x]), parseInt(parts[y]), parts[name], 0, 0);
         this.AddNode(n);
         if (parts[start].toLowerCase() == "true") this.setStart(n);
@@ -309,8 +316,8 @@ class Graph {
         const costQuery = 4;
         const link = 5;
         let parts = neighbourdata.split(",");
-        let sourceNode = this.nodeFromName(parts[source]);
-        let destNode = this.nodeFromName(parts[dest]);
+        let sourceNode = this.nodeFromName(parts[source].toUpperCase());
+        let destNode = this.nodeFromName(parts[dest].toUpperCase());
         let costing = parseInt(parts[cost]);
         if (sourceNode == null || destNode == null)
             co.log("Fatal error reading neighbour data:" + neighbourdata);
@@ -350,14 +357,20 @@ class Graph {
     AddNode(n) {
         this.g.push(n);
         n.setParentGraph(this);
-        this.lifetimecount++;
+        /*
+        if (noincrement === undefined){
+            this.lifetimecount++;
+        }*/
     }
-    pressed(s) {
-        if (!this.over && insketcharea(s, s.mouseX, s.mouseY)) {
-            let ch = dblName(this.lifetimecount);
-            let n = new SolverNode(s.mouseX, s.mouseY, ch, 0, 0);
+    pressed(s, name) {
+        let added = false;
+        if (!this.over && insketcharea(s, s.mouseX, s.mouseY, 30)) {
+            
+            //let ch = dblName(this.lifetimecount);
+            let n = new SolverNode(s.mouseX, s.mouseY, name, 0, 0);
             //let n = new node(s.mouseX, s.mouseY, ch, 0, 0);
             this.AddNode(n);
+            added = true;
         }
         for (let p = 0; p < this.size; p++) {
             if (this.g[p].pressed(s)) {
@@ -365,6 +378,7 @@ class Graph {
                 this.modifyActiveNode(this.g[p], p);
             }
         }
+        return added;
     }
     //toggles active node or sets a new one
     modifyActiveNode(n, p) {
@@ -445,7 +459,8 @@ class Graph {
                     newgraph.name = Graph.getSglStringFromData(fa[p],1);
                     break;
                 case "divi":
-                    newgraph.dynamicDivisor = Graph.getSglValFromData(fa[p], 1);
+                    MsgBus.send(msgT.divisorChange, Graph.getSglValFromData(fa[p], 1));
+                    //newgraph.dynamicDivisor = Graph.getSglValFromData(fa[p], 1);
                     break;
                 case "cost":
                     newgraph.#shownodecost = Graph.getSglBoolFromData(fa[p], 1);

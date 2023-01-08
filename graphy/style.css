@@ -131,7 +131,7 @@ body::-webkit-scrollbar{
   border-style: none;
   left:5px;
   top:5px;
-  width: fit-content;
+  width: 300px;
 }
 #mainarea{
   position: relative;
@@ -141,7 +141,7 @@ body::-webkit-scrollbar{
   position:absolute;
   left:5px;
   top:5px;
-  width: fit-content;
+  width:300px;
   border-style: dashed;
 }
 #sketcharea{

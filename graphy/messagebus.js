@@ -18,6 +18,8 @@ class msgT{
     static setmode = "setmode";
     static help = "help";
     static helpChanged = "helpChanged";
+    static startPickInc = "startPickInc";
+    static startPickDec = "startPickDec";
 
     static arrowschanged = "arrowschanged";
     static consolechanged = "consolechanged";
@@ -35,6 +37,8 @@ class msgT{
     static hi_liteneighbourupdate = "updating"; //orange
     static hi_litecurrent = "current";//yellow
     static hi_liteneighbour = "neighbour";//blue
+    //other stuff
+    static droppedNewNode = "droppedNewNode";
 }
 class MsgBus{
     static #subs = {};

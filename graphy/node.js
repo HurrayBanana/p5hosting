@@ -1,3 +1,88 @@
+class pickerNode extends Draggable{
+  static cNORM = [128, 128, 128, 220];
+  static cOVER = [230, 230, 230, 220];
+  static cDRAG = [210, 210, 210, 220];
+  static cCIRC = [128, 210, 238, 220];
+  
+  name;
+  rad;
+  #hoopOver = null;
+  #hoopDrag = null;
+  constructor(x,y,name){
+    super(x,y);
+    this.name = name;
+    this.rad = 15;
+  }
+  isover(s) {
+    return Math.abs(this.x - s.mouseX) < this.rad &&
+      Math.abs(this.y - s.mouseY) < this.rad;
+  }
+  showdrag(s) {
+    this.#hoopDrag = pickerNode.cDRAG;
+    s.fill(pickerNode.cDRAG);
+  }
+  shownormal(s) {
+    s.fill(pickerNode.cNORM);
+  }
+  showover(s) {
+    this.#hoopOver = pickerNode.cOVER;
+    s.fill(pickerNode.cOVER);
+  }
+  hoop(s, ctxt){
+    s.fill(pickerNode.cCIRC);
+    s.circle(this.x, this.y, this.rad * 4);
+    this.textCircle(s, ctxt, this.x, this.y, this.rad * 1.5, ctxt.length * s.PI/16, s.PI / 6);
+    this.ang += 0.01;
+  }
+  show(s) {
+    this.#hoopOver = null;
+    this.#hoopDrag = null;
+    s.push();
+    s.textAlign(s.CENTER, s.CENTER);
+    super.show(s);
+    this.drawhoop(s);
+    s.circle(this.x, this.y, this.rad * 2);
+    s.fill(0);
+    s.text(this.name, this.x, this.y);
+    s.pop();
+  }
+  drawhoop(s){
+    s.push();
+    if (this.#hoopDrag != null) {
+      s.fill(this.#hoopDrag);
+      this.hoop(s,"DROP ME");
+    } else if (this.#hoopOver != null){
+      s.fill(this.#hoopOver);
+      this.hoop(s,"DRAG ME");
+    }
+    s.pop();
+  }
+  released(){
+    if (this.dragging){
+      super.released();
+      MsgBus.send(msgT.droppedNewNode,{name:this.name,x:this.x,y:this.y});
+    } 
+  }
+  ang = 0;
+  textCircle(s, txt, x, y, rad, offset, spread) {
+    s.push();
+    s.fill(0);
+    s.noStroke();
+    let w = -s.PI / 2 - offset + this.ang;// top
+    for (let p = 0; p < txt.length; p++) {
+      let xp = x + rad * s.cos(w);
+      let yp = y + rad * s.sin(w);
+      s.push();
+      s.translate(xp,yp);
+      s.rotate(w+s.PI/2);
+      s.text(txt[p], 0,0);
+      s.pop();
+      
+      w += spread;
+    }
+    s.pop();
+  }
+}
 
 class node extends Draggable {
 

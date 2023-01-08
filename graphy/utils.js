@@ -6,25 +6,14 @@ function ranI(low,high){
   function ranF(low,high){
     return low + Math.random()*(high-low);
   }
-  // generates a string name using alphas from a number
-  function dblName(p){
-      let ch = "";
-      let key = Math.floor(p/26);
-      //return p < 26 ? char(65+p) :  char(64 + key) + char(65 + p % 26); 
-      return p < 26 ? getCh(65+p) :  getCh(64 + key) + getCh(65 + p % 26); 
-  }
-  function getCh(code){
-    return String.fromCharCode(code);
-  }
 
   function makenodes(sketch, g, num, w, h){
       for (let p = 0; p < num; p++){
-        ch= dblName(p);
+        ch = pick.nextName;
         let n = new SolverNode(ranI(50,w-50),ranI(50,h-50),ch,
           10);
-/*        let n = new node(ranI(50,w-50),ranI(50,h-50),ch,
-          ranF(-1,1),ranF(-1,1));*/
-        g.AddNode(n)
+        g.AddNode(n);
+        pick.refresh(g);
       }
       //bodge
       g.startNode = g.g[0];
@@ -97,9 +86,9 @@ function ranI(low,high){
     return b.value;
   }
 
-  function insketcharea(s,x,y){
+  function insketcharea(s,x,y, rightBorder){
     return  x >= 0 && 
-            x<= s.width &&
+            x<= s.width - (rightBorder === undefined ? 0: rightBorder) &&
             y >= 0 &&
             y <= s.height;
   }
@@ -150,3 +139,26 @@ function ranI(low,high){
     "width='" + width + "'><iframe>";
     return s;
   }
+/*
+  //generates an array of nodes to drag onto graph
+  function next25(graph, xp){
+    let picks = [];
+    nodelist = [];
+    for (let p = 0; p < graph.g.length; p++){
+      picks.push(numberFromName(graph.g[p].name));
+    }
+    let p = 0;
+    while (nodelist.length < 25){
+      if (!picks.includes(p)){
+        let ch = dblName(p);
+        let n = new pickerNode(xp, 15 + nodelist.length * 30,ch);
+        nodelist.push(n);
+      }
+      p++;
+    }
+    return nodelist;
+  }
+  
+  function numberFromName(name){
+    return name.length == 1 ? name.charCodeAt(0) - 65 : (name.charCodeAt(0) - 64) * 26 + name.charCodeAt(1) - 65;
+  }*/

@@ -35,11 +35,12 @@ class Draggable extends Clickable {
     }
   
     show(s) {
+      super.show(s);
+
       // Different fill based on state
       if (this.dragging) {
         this.showdrag(s);
       }
-      super.show(s);
       /*c  else if (this.isover(s)) {
         this.showover(s);
       } else {
@@ -64,7 +65,7 @@ class Draggable extends Clickable {
       return false;
     }
   
-    released(s) {
+    released() {
       // Quit dragging
       this.dragging = false;
       Draggable.available = true; //allow another object to be dragged
