@@ -14,9 +14,10 @@ class filestuff{
     //need name giving code
     static arrStringFromGraph(s, g)
     {
-        let arr=g.asArrayString();
+        //let arr=g.asArrayString();
+        let arr=GCoding.exportGraph(g);
         const w = s.createWriter(g.name + '.graph');
-        co.log('writing file concept.graph - contents follow');
+        co.log('writing file [" + g.name + "] contents follow');
         for (let p=0; p < arr.length; p++){
             w.print(arr[p]);
             co.log(arr[p]);

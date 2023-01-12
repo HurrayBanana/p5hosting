@@ -25,28 +25,19 @@ class Graph {
     static cDRAG = [255, 220, 220, 220];
     static cACTV = [255, 255, 100, 220];
 
-    lifetimecount;
+    //need to set these dynamically
+    //Hmethod = HeuristicMethod.euler;
+    Hmethod = HeuristicMethod.euler;
+
     static #passthrough;
     g = [];
+    get size() { return this.g.length; }
+
     #name = "untitled";
     get name() {return this.#name;}
     set name(value){this.#name = filestuff.caps(value.split(" "));}
+
     startNode = null;
-    #arrows = true;
-    // need this so we can edit different direction neighbours
-    #duplicates = true;
-    get duplicates(){return this.#duplicates;}
-    #shownodecost = false;
-    get showNodeCost(){return this.#shownodecost;}
-    #solveHistory = false;
-    get solveHistory(){return this.#solveHistory;}
-    //show/worksith static or dynamic distances
-    #dynamic = false;
-    #setmodesimple = true;
-    get setModeVerbose(){return !this.#setmodesimple;}
-    dynamicDivisor = 10;
-    get isDynamicCost(){return this.#dynamic;}
-    get showArrows(){return this.#arrows;}
     isStart(n) {return this.startNode === n; }
     notStart(n) { return this.startNode !== n; }
     setStart(n) {
@@ -56,7 +47,7 @@ class Graph {
         }
         return false;
     }
-    get canSolve() {return this.startNode != null && this.goalNode != null;}
+
     goalNode = null;
     isGoal(n) {return this.goalNode === n; }
     notGoal(n) { return this.goalNode !== n; }
@@ -67,13 +58,47 @@ class Graph {
         }
         return false;
     }
+
+    get canSolve() {return this.startNode != null && this.goalNode != null;}
+
+    #arrows = true;
+    get showArrows(){return this.#arrows;}
+    set showArrows(val){this.#arrows = val;}
+
+    // need this so we can edit different direction neighbours
+    #duplicates = true;
+    get duplicates(){return this.#duplicates;}
+    set duplicates(val){this.#duplicates = val;}
+
+    #shownodecost = false;
+    get showNodeCost(){return this.#shownodecost;}
+    set showNodeCost(val){this.#shownodecost=val;}
+    
+    #solveHistory = false;
+    get solveHistory(){return this.#solveHistory;}
+    set solveHistory(val){this.#solveHistory = val;}
+    //show/worksith static or dynamic distances
+    #dynamic = false;
+    get isDynamicCost(){return this.#dynamic;}
+    set dynamic(val){this.#dynamic=val;}
+    #setmodesimple = true;
+    get setModesimple(){return this.#setmodesimple;}
+    get setModeVerbose(){return !this.#setmodesimple;}
+    set setModeVerbose(val){this.#setmodesimple=val;}
+    dynamicDivisor = 10;
+
     active = null;
-    //is there an active node
     get nodeActive() { return this.active != null; }
     //is this node not the active one
     activeNode(n) { return this.active === n; }
     notActiveNode(n) { return this.nodeActive && this.active !== n; }
+    
     over = false;
+
+    dijkstra = false;
+    logMethod(data){
+        this.dijkstra = data.state;
+    }
 
     constructor(name) {
         this.#subscriptions();
@@ -100,6 +125,7 @@ class Graph {
         MsgBus.sub(msgT.divisorChange, this.setdivisor, this);
         MsgBus.sub(msgT.setmode, this.toggleSetMode, this);
         MsgBus.sub(msgT.solvemethodchanged, this.logMethod, this);
+        MsgBus.sub(msgT.heuristic, this.setHeuristicMode, this);
     }
     cleanup(){
         MsgBus.drop(msgT.arrows, this.toggleArrows, this);
@@ -111,61 +137,8 @@ class Graph {
         MsgBus.drop(msgT.setmode, this.toggleSetMode, this);
         MsgBus.drop(msgT.solvemethodchanged, this.logMethod, this);
     }
-    get size() { return this.g.length; }
-
-    logMethod(data){
-        this.dijkstra = data.state;
-    }
-
-    centre(s, keepaspect) {
-        if (this.size > 0){
-            let dx = 0; let dy = 0;
-            let { l, r,  t, b } = this.calcextents();
-            dx = s.width/2 - (l + r)/2; dy = s.height/2 - (t + b)/2;
-            for (let p = 0; p < this.size; p++){
-                this.g[p].x += dx; this.g[p].y += dy;
-            }
-            this.scale(s,r-l, b-t, 60, keepaspect);
-        }
-        
-    }
-    calcextents() {
-        let l = this.g[0].x; let r = this.g[0].x;
-        let t = this.g[0].y; let b = this.g[0].y;
-        for (let p = 1; p < this.size; p++) {
-            if (this.g[p].x < l)
-                l = this.g[p].x;
-            if (this.g[p].x > r)
-                r = this.g[p].x;
-            if (this.g[p].y < t)
-                t = this.g[p].y;
-            if (this.g[p].y > b)
-                b = this.g[p].y;
-        }
-        return {l, r, t, b };
-    }
-
-    scale(s,w,h,m, aspect){
-        //don't attempt scaling with a single item
-        if (this.g.length > 1){
-            let sx = (s.width-m)/w;
-            let sy = (s.height-m)/h;
-            if (aspect!== undefined){
-                if (sx > sy)
-                    sx = sy;
-                else
-                    sy = sx;
-            }
-            //only scale if we need to shrink
-            if (sx < 1 || sy < 1){
-                let cx = s.width/2;
-                let cy = s.height/2;
-                for (let p = 0; p < this.size; p++){
-                    this.g[p].x = Math.floor((this.g[p].x - cx) * sx + cx);
-                    this.g[p].y = Math.floor((this.g[p].y - cy) * sy + cy);
-                }
-            }
-        }
+    setHeuristicMode(index){
+        this.Hmethod = HeuristicMethod.available[index];
     }
     setdivisor(value){
         this.dynamicDivisor = value;
@@ -212,6 +185,57 @@ class Graph {
         this.#duplicates = !this.#duplicates;
         this.broadcastDuplicatesState();
     }
+    centre(s, margin, keepaspect) {
+        if (this.size > 0){
+            let dx = 0; let dy = 0;
+            let { l, r,  t, b } = this.calcextents();
+            dx = s.width/2 - (l + r)/2; dy = s.height/2 - (t + b)/2;
+            for (let p = 0; p < this.size; p++){
+                this.g[p].x += dx; this.g[p].y += dy;
+            }
+            this.scale(s,r-l, b-t, margin, keepaspect);
+        }
+        
+    }
+    calcextents() {
+        let l = this.g[0].x; let r = this.g[0].x;
+        let t = this.g[0].y; let b = this.g[0].y;
+        for (let p = 1; p < this.size; p++) {
+            if (this.g[p].x < l)
+                l = this.g[p].x;
+            if (this.g[p].x > r)
+                r = this.g[p].x;
+            if (this.g[p].y < t)
+                t = this.g[p].y;
+            if (this.g[p].y > b)
+                b = this.g[p].y;
+        }
+        return {l, r, t, b };
+    }
+
+    scale(s,w,h,m, aspect){
+        //don't attempt scaling with a single item
+        if (this.g.length > 1){
+            let sx = (s.width-m)/w;
+            let sy = (s.height-m)/h;
+            if (aspect!== undefined){
+                if (sx > sy)
+                    sx = sy;
+                else
+                    sy = sx;
+            }
+            //only scale if we need to shrink
+            if (sx < 1 || sy < 1){
+                let cx = s.width/2;
+                let cy = s.height/2;
+                for (let p = 0; p < this.size; p++){
+                    this.g[p].x = Math.floor((this.g[p].x - cx) * sx + cx);
+                    this.g[p].y = Math.floor((this.g[p].y - cy) * sy + cy);
+                }
+            }
+        }
+    }
+
     clearRoute(){
         for (let p = 0; p < this.size; p++){
             this.g[p].clearRoute();
@@ -235,22 +259,6 @@ class Graph {
         for (let p = 0; p < this.size; p++)
             this.g[p].show(s);
     }
-    
-
-    //needs to be re-written so neighbour object does drawing
-    removeDupeCosts(c){
-        for (let p = 0; p < c.length; p++) {
-            for (let k = 0; k < c.length; k++) {
-                if (k != p)
-                {
-                    if (c[p].same(c[k]) && !c[k].protect){
-                        c[k].dontDraw();
-                        c[p].protect = true;
-                    }
-                }
-            }
-        }
-    }
 
     Over(n) { this.over = true; }
 
@@ -261,8 +269,8 @@ class Graph {
         for (let p = 0; p < this.size; p++) {
             this.g[p].update(s);
         }
-
     }
+
     removenodes() {
         //let position = -1;
         for (let p = 0; p < this.size; p++) {
@@ -289,12 +297,29 @@ class Graph {
             this.g[p].removeNeighbourNode(n);
         }
     }
+
+    //needs to be re-written so neighbour object does drawing
+    removeDupeCosts(c){
+        for (let p = 0; p < c.length; p++) {
+            for (let k = 0; k < c.length; k++) {
+                if (k != p)
+                {
+                    if (c[p].same(c[k]) && !c[k].protect){
+                        c[k].dontDraw();
+                        c[p].protect = true;
+                    }
+                }
+            }
+        }
+    }
+
+
     showStartGoal(){
         co.log("start[" + (this.startNode == null ? "not set":this.startNode.name) +
          "] goal[" + (this.goalNode==null ? "not set":this.goalNode.name) + "]");
     }
     //takes a node string from a file and produces a new node
-    //need to set the start and goal nodes if set
+    //these two functions shouldbe mainly done by gcoding class (whole of node)
     AddNodeString(nodedata) {
         const x = 5;
         const y = 6;
@@ -304,11 +329,11 @@ class Graph {
         const heur = 2;
         let parts = nodedata.split(",");
         let n = new SolverNode(parseInt(parts[x]), parseInt(parts[y]), parts[name].toUpperCase(), parseInt(parts[heur]));
-        //let n = new node(parseInt(parts[x]), parseInt(parts[y]), parts[name], 0, 0);
         this.AddNode(n);
         if (parts[start].toLowerCase() == "true") this.setStart(n);
         if (parts[goal].toLowerCase() == "true") this.setGoal(n);
     }
+
     AddNeighbourString(neighbourdata) {
         const source = 1;
         const dest = 2;
@@ -342,8 +367,6 @@ class Graph {
                 neighbour.link(b,a);
             }
         }
-
-            //sourceNode.addNeighbour(destNode, parseInt(parts[cost]));
     }
 
     nodeFromName(name) {
@@ -357,18 +380,12 @@ class Graph {
     AddNode(n) {
         this.g.push(n);
         n.setParentGraph(this);
-        /*
-        if (noincrement === undefined){
-            this.lifetimecount++;
-        }*/
     }
+
     pressed(s, name) {
         let added = false;
         if (!this.over && insketcharea(s, s.mouseX, s.mouseY, 30)) {
-            
-            //let ch = dblName(this.lifetimecount);
             let n = new SolverNode(s.mouseX, s.mouseY, name, 0, 0);
-            //let n = new node(s.mouseX, s.mouseY, ch, 0, 0);
             this.AddNode(n);
             added = true;
         }
@@ -398,7 +415,7 @@ class Graph {
             this.g[p].released(s);
         }
     }
-
+    /*
     //outputs graph as a string array ready for file output
     asArrayString() {
         let arr = [];
@@ -406,7 +423,7 @@ class Graph {
         arr.push("name," + this.name);
         arr.push("arrow," + this.#arrows);
         arr.push("dupe," + this.#duplicates);
-        arr.push("dyna," + this.#dynamic);
+        arr.push("dynamic," + this.#dynamic);
         arr.push("costnode," + this.#shownodecost);
         arr.push("divisor," + this.dynamicDivisor);
         arr.push("sets," + this.#setmodesimple);
@@ -421,7 +438,6 @@ class Graph {
         return arr;
     }
     static getSglValFromData(data, pos){
-        //(parts[start].toLowerCase() == "true")
         let parts = data.split(",");
         if (parts.length <= pos){
             co.log("fatal error reading:" + data);
@@ -430,7 +446,6 @@ class Graph {
         }
     }
     static getSglBoolFromData(data, pos){
-        //(parts[start].toLowerCase() == "true")
         let parts = data.split(",");
         if (parts.length <= pos){
             co.log("fatal error reading:" + data);
@@ -439,7 +454,6 @@ class Graph {
         }
     }
     static getSglStringFromData(data, pos){
-        //(parts[start].toLowerCase() == "true")
         let parts = data.split(",");
         if (parts.length <= pos){
             co.log("fatal error reading:" + data);
@@ -447,11 +461,14 @@ class Graph {
             return parts[pos];
         }
     }
+    */
     //takes a file array string containing a loaded graph
     static #graphFromArrString(filename, fa) {
         let newgraph = new Graph(filename.split('.')[0]);
         co.log("filename loaded:"+filename);
         co.log("----------------");
+        GCoding.importGraph(newgraph, fa);
+        /*
         for (let p = 0; p < fa.length; p++) {
             co.log("processing ["+ fa[p]+ "]")
             switch (fa[p].slice(0, 4)) {
@@ -460,7 +477,6 @@ class Graph {
                     break;
                 case "divi":
                     MsgBus.send(msgT.divisorChange, Graph.getSglValFromData(fa[p], 1));
-                    //newgraph.dynamicDivisor = Graph.getSglValFromData(fa[p], 1);
                     break;
                 case "cost":
                     newgraph.#shownodecost = Graph.getSglBoolFromData(fa[p], 1);
@@ -478,11 +494,9 @@ class Graph {
                     newgraph.#dynamic = Graph.getSglBoolFromData(fa[p],1);
                     break;
                 case "node":
-                    //co.log("read:" + fa[p]);
                     newgraph.AddNodeString(fa[p]);
                     break;
                 case "neig":
-                    //co.log("read:" + fa[p]);
                     newgraph.AddNeighbourString(fa[p]);
                     break;
                 default:
@@ -491,6 +505,7 @@ class Graph {
             }
 
         }
+        */
         newgraph.brodcastAllStates();
         co.log("Graph name once loaded:" + newgraph.name)
         if (Graph.#passthrough != null) {
@@ -510,14 +525,8 @@ class Graph {
         let r = new FileReader();
         r.onload = function () {
             let textArray = r.result.split(/\r?\n/);
-            //for (let p = 0; p < textArray.length; p++) {
-            //    co.log(textArray[p]);
-            //}
-            //co.log("----------------");
             Graph.#graphFromArrString(fname,textArray);
         };
         r.readAsText(this.files[0]);
     }
-
-
 }

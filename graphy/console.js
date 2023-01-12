@@ -3,7 +3,7 @@
 class con{
     #On = true;
     #line=[];
-    #start = 0;
+    //#start = 0;
     #rows = 10;
     #myelement;
     constructor(element, rows){
@@ -51,16 +51,14 @@ class con{
     }
 
     show(){
-        //let start = this.#rows > this.#line.length ? 0 : this.#line.length - this.#rows;
-        let start = 0;
-        //let count = (this.#line.length - start) - 1;
-        this.#myelement.innerHTML = this.#line[0];
+        //let start = 0;
+        this.#myelement.innerHTML = this.#line.length > 0 ? this.#line[0] : "";
         for (let p = 1; p < this.#line.length; p++){
             this.#myelement.innerHTML += "</br>" + this.#line[p];
         }
 		this.#myelement.scrollTop = this.#myelement.scrollHeight;
     }
     pause(){
-        this.#myelement.innerHTML = "====> console output paused <==== [h to resume]";
+        this.#myelement.innerHTML = "====> console output paused <====";
     }
 }

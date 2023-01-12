@@ -208,7 +208,7 @@ class SolverNode extends node{
         tr += "<td>" + (this.#fcost == null ? "null" : this.nodeCost(this.#fcost)) + "</td>";//want changes array
         return tr;
     }
-  
+
     //x221e is infinity unicode char
     nodeCost(arr){
       let s = "";

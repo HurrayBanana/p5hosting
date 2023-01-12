@@ -93,6 +93,21 @@ function ranI(low,high){
             y <= s.height;
   }
 
+  /*
+  builds any dynamically constructed html elements (like combo boxes)
+  */
+  function setDynamicHTML(){
+    let cb = document.getElementById("cheuristicmode");
+    cb.value = 0;
+    cb.innerHTML =  HeuristicMethod.available[0].name();   
+  }
+  function cycleAndSet(id, arr){
+    id.value = (parseInt(id.value) + 1) % arr.length;
+  }
+  function setHeuristic(value){
+    this.value = value;
+    this.innerHTML = HeuristicMethod.available[value].name();
+  }
   /* needs to process members of controls div to register their events
     that could be autoamtically done with data- attributes
   */
@@ -109,6 +124,8 @@ function ranI(low,high){
     MsgBus.sub(msgT.divisorChange, setDivisorUI, document.getElementById("rdivisor"));
     MsgBus.sub(msgT.setmodechanged, binaryset, document.getElementById("bsetmode"));
     MsgBus.sub(msgT.helpChanged, binaryset, document.getElementById("bhelp"));
+    MsgBus.sub(msgT.heuristic, setHeuristic, document.getElementById("cheuristicmode"));
+    MsgBus.sub(msgT.pickerChanged, binaryset, document.getElementById("bpicker"));
   }
 
   function setDivisorUI(value){
@@ -139,26 +156,4 @@ function ranI(low,high){
     "width='" + width + "'><iframe>";
     return s;
   }
-/*
-  //generates an array of nodes to drag onto graph
-  function next25(graph, xp){
-    let picks = [];
-    nodelist = [];
-    for (let p = 0; p < graph.g.length; p++){
-      picks.push(numberFromName(graph.g[p].name));
-    }
-    let p = 0;
-    while (nodelist.length < 25){
-      if (!picks.includes(p)){
-        let ch = dblName(p);
-        let n = new pickerNode(xp, 15 + nodelist.length * 30,ch);
-        nodelist.push(n);
-      }
-      p++;
-    }
-    return nodelist;
-  }
-  
-  function numberFromName(name){
-    return name.length == 1 ? name.charCodeAt(0) - 65 : (name.charCodeAt(0) - 64) * 26 + name.charCodeAt(1) - 65;
-  }*/
+

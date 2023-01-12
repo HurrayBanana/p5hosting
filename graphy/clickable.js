@@ -11,6 +11,7 @@ class Clickable{
     get y() {return this.#y;}
     set x(value) {this.#x = value;}
     set y(value) {this.#y = value;}
+    
     //need to implement all these in inherited class override completely
     onpress(x,y) {}
     onrelease(s) {}

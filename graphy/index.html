@@ -12,7 +12,7 @@
     <meta charset="utf-8" />
 
   </head>
-  <body onload="registertoggles();">
+  <body onload="setDynamicHTML();registertoggles();">
     <div class="grid">
       <div id="graphsettings">
         <div>Graph setttings</div>
@@ -35,6 +35,10 @@
         <div class="buttonholder">
           <label for="bcostmode" >cost mode</label>
           <button id="bcostmode" onclick="MsgBus.send(msgT.costmode,this);">static</button>
+        </div>
+        <div class="buttonholder">
+          <label for="cheuristicmode" >Heuristic</label>
+          <button id="cheuristicmode" value="0" onclick="cycleAndSet(this,HeuristicMethod.available);MsgBus.send(msgT.heuristic,this.value);"></select>
         </div>
         <div class="buttonholder">
           <label id="rdivisortop" for="rdivisor" >divisor</label>
@@ -75,12 +79,12 @@
           <button id="bconsole" onclick="MsgBus.send(msgT.console,this);">on</button>
         </div>
         <div class="buttonholder">
-          <label for="bconsole" >console</label>
-          <button id="bconsole" onclick="MsgBus.send(msgT.clearcon,this);">clear</button>
+          <label for="bconsoleclear" >console</label>
+          <button id="bconsoleclear" onclick="MsgBus.send(msgT.clearcon,this);">clear</button>
         </div>
         <div class="buttonholder">
-          <label for="bload" >graph</label>
-          <button id="bload" onclick="MsgBus.send(msgT.cleargraph,this);">clear</button>
+          <label for="bgraphclear" >graph</label>
+          <button id="bgraphclear" onclick="MsgBus.send(msgT.cleargraph,this);">clear</button>
         </div>
         <div class="buttonholder">
           <label for="bload" >graph</label>
@@ -91,8 +95,16 @@
           <button id="bexport" onclick="MsgBus.send(msgT.export,this);">export</button>
         </div>
         <div class="buttonholder">
-          <label for="bhelp" >Help</label>
+          <label for="bhelp" >help</label>
           <button id="bhelp" onclick="MsgBus.send(msgT.help,this);">show</button>
+        </div>
+        <div class="buttonholder">
+          <label for="bpicker" >picker</label>
+          <button id="bpicker" onclick="MsgBus.send(msgT.picker,this);">show</button>
+        </div>
+        <div class="buttonholder">
+          <label for="bprint" >print</label>
+          <button id="bprint" onclick="MsgBus.send(msgT.printdoc,this);">show</button>
         </div>
       </div>
     </div>
@@ -128,9 +140,6 @@
       </p>
     </div>
 
-    <!-- nodes -->
-    <!--<script src="dijkstranode.js"></script>-->
-    <!--<script src="astarnode.js"></script>-->
     <!-- solvers -->
     <script src="pathsolver.js"></script>
     <script src="astar.js"></script>
@@ -148,6 +157,7 @@
     <!-- utils -->
     <script src="messagebus.js"></script>
     <script src="vector2.js"></script>
+    <script src="gcoding.js"></script>
     <script src="filestuff.js"></script>
     <script src="input.js"></script>
     <script src="console.js"></script>

@@ -1,9 +1,7 @@
 //uses instance mode for the sketch
 //so we can control what element the sketch ends up inside of
 //globals
-//TODO graph needs converting into a class so fields can be present
-//and transformation work can then happen in there.
-//graph = [];
+
 let graph;
 //let picklist;
 let co;
@@ -11,8 +9,10 @@ textentryactive = false;
 solveDijkstra = true;
 auto = false;
 help = false;
+printdoc = false;
 let pick;
-
+showpick = true;
+let printcheck;
 /* END OF GLOBALS */
 const s = ( s ) => {
   let cBACK = [220,220,255];
@@ -23,10 +23,17 @@ const s = ( s ) => {
   let dij = null;
   let astar = null;
   let outputdata = false;
+  s.preload = () => {
+  }
+  s.loaded=()=>{
+
+  }
+
   s.setup = () => {
     //ref to canvas
     var can = s.createCanvas(sW, sH);
     s.setHTMLcanvas();
+    printcheck = document.getElementById("controls");
     let p = document.getElementById("console");
     co = new con(p,30);
     //co.Off();
@@ -42,9 +49,7 @@ const s = ( s ) => {
     can.mousePressed(s.canvasdown);
     htc = document.getElementById("console");
     s.broadcastAllStates();
-    //pick = new Picker(graph, sW-16);
-    
-    let a=6;
+    MsgBus.send(msgT.divisorChange,10);//bodge need a sensible solution
   };
   s.setHTMLcanvas=()=>{
     let p = document.getElementById("sketcharea");
@@ -72,6 +77,16 @@ const s = ( s ) => {
     MsgBus.sub(msgT.cleargraph, s.clearGraph,s);
     MsgBus.sub(msgT.help,s.toggleHelp,s);
     MsgBus.sub(msgT.droppedNewNode, s.newNodeDropped, s);
+    MsgBus.sub(msgT.printdoc, s.printnow, s);
+    MsgBus.sub(msgT.picker, s.togglePick,s);
+  }
+
+  s.togglePick=()=>{
+    showpick = !showpick;
+    MsgBus.send(msgT.pickerChanged, {state:showpick, txtT:"hide", txtF:"show"});
+  }
+  s.printnow=()=>{
+    printdoc = true;
   }
 
   s.clearGraph=()=>{
@@ -124,7 +139,6 @@ const s = ( s ) => {
     s.broadcastSolveStyle();
     s.broadcastHelp();
 
-    MsgBus.send(msgT.divisorChange,10);
   }
   s.broadcastSolveMethod=()=>{
     MsgBus.send(msgT.solvemethodchanged, {state:solveDijkstra, txtT:"Dijkstra", txtF:"A *"})
@@ -142,9 +156,13 @@ const s = ( s ) => {
   s.buildgraph = (g) => {
     makenodes(s, g, 4, sW, sH);
     addrandomfriends(g.g,2,10,20);
-    g.centre(s);
+    s.centregraph(g);
   };
+  s.centregraph=(g)=>{
+    g.centre(s, 105, true);
+  }
   s.logic = () => {
+    //these need sorting properly
     hidecontainer("overoptions");
     hidecontainer("joinnode");
     //hidecontainer("removenode");
@@ -186,15 +204,13 @@ const s = ( s ) => {
         MsgBus.send(msgT.solve);
       }
       if (inpM.kPressed(kD) && !insketcharea(s, s.mouseX, s.mouseY)){
-        MsgBus.send(msgT.startPickInc,1);
-        //s.dijsolve(g);
+
       }
       if (inpM.kPressed(kSlashQmark)){
         MsgBus.send(msgT.help);
       }
       if (inpM.kPressed(kA) && !insketcharea(s, s.mouseX, s.mouseY)){
-        MsgBus.send(msgT.startPickDec,1);
-        //s.astarsolve(g);
+
       }
       if (inpM.kPressed(kH) && !insketcharea(s, s.mouseX, s.mouseY)){
         co.Visible = !co.Visible;
@@ -209,7 +225,9 @@ const s = ( s ) => {
         s.load();
       }
       if (inpM.kPressed(kC) && insketcharea(s, s.mouseX, s.mouseY)){
-        graph.centre(s, true);
+        s.centregraph(graph);
+
+        //graph.centre(s, 40, true);
       }
       if (inpM.kPressed(kA) && insketcharea(s, s.mouseX, s.mouseY)){
         MsgBus.send(msgT.arrows);
@@ -283,7 +301,10 @@ const s = ( s ) => {
     dij=null;
     astar=null;
     graph = g;
-    g.centre(s, true);
+    s.broadcastAllStates();
+    s.centregraph(g);
+
+//    g.centre(s, 40, true);
     setTextboxValue("filename",g.name);
     pick.graph = graph;
 
@@ -291,12 +312,21 @@ const s = ( s ) => {
   s.draw = () => {
     s.logic();
     s.background(cBACK);
+    
     graph.draw(s);
-    pick.show(s);
+    if (!printdoc && showpick){
+      pick.show(s);
+    }
     s.after();
   };
   s.after=()=>{
     inpM.update();
+    //check for printing after render happens
+    //so we can turn off node picker first 
+    if (printdoc){
+      printdoc = false;
+      window.print();
+    }
   }
   s.drawkeys=()=>{
     s.text(inpM.getKeyState(), 10,10);
@@ -308,7 +338,6 @@ const s = ( s ) => {
       pick.refresh();
     }
     pick.pressed(s);
-
   }
 
   s.newNodeDropped=(data)=>{

@@ -1,4 +1,3 @@
-//TODO need a toggle for solving mode A* or Dijkstra or maybe separate key  button
 class Astar extends PathSolver {
 
     constructor(g){
@@ -7,22 +6,18 @@ class Astar extends PathSolver {
 
     start(){
        super.start();
-            for (let p = 0; p < this.gnodes.length; p++){
-                this.gnodes[p].resetSolver();
-            }
+        for (let p = 0; p < this.gnodes.length; p++){
+            this.gnodes[p].resetSolver();
+        }
 
-            if (this.graph.startNode != null && this.graph.goalNode != null) {
-                let sn = this.graph.startNode;
-                this.addToSet(this.openSet, sn);
-                sn.setcosts(0,null, sn.hcost)
-                //let dave = sn.gcost + sn.hcost;
-                //sn.updatecosts(0, null, dave);
-                this.graph.goalNode.hcost = 0;
-
-            }
-       // }
+        if (this.graph.startNode != null && this.graph.goalNode != null) {
+            let sn = this.graph.startNode;
+            this.addToSet(this.openSet, sn);
+            sn.setcosts(0,null, sn.hcost)
+            this.graph.goalNode.hcost = 0;
+        }
     }
-    //dijkstra implementation
+    //A* implementation
     iterate(count){
 
         while (this.openSet.length > 0 && count > 0){
@@ -40,6 +35,7 @@ class Astar extends PathSolver {
                 this.history.push(this.showStateHTML());
                 return true;
             }
+            
             //need to sort adding neighbours if not in open set
             for (let p = 0; p < current.neighbour.length; p++) {
                 let nbNode = current.neighbour[p].node;
@@ -63,12 +59,11 @@ class Astar extends PathSolver {
         }
         if (this.openSet.length == 0){
             this.finished = true;
-            //this.history.push(this.showStateHTML());
         }
         return false;
     }    
 
-    //dumb ass linear search for now
+    //dumb ass linear search for now, need to keep sorted really, or maintain an index
     getCheapestFG(){
         let cheap = this.openSet[0];
         for (let p = 1; p < this.openSet.length; p++) {
@@ -81,6 +76,7 @@ class Astar extends PathSolver {
         this.picked(cheap);
         return cheap;
     }
+
 
     showStateHTML(){
         let html = "<table><tr>" + this.headingsHTML("G-cost") + "</tr>";

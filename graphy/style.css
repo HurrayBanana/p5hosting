@@ -97,6 +97,26 @@ label{
   height:60px;
   width:75px;
 }
+select{
+  width: 70px;
+  /* A reset of styles, including removing the default dropdown arrow*/
+  appearance: none;
+  /* Additional resets for further consistency*/
+  background-color: transparent;
+  border: none;
+  padding: 1em 0 0 0;
+  margin: 0;
+  /*width: 100%;*/
+  font-family: inherit;
+  font-size: inherit;
+  cursor: inherit;
+  line-height: inherit;
+  outline: none;
+}
+option{
+  width: 70px;
+  padding: -1em 0 0 0;
+}
 .buttonfalse{
   background-color: rgb(182, 224, 233);
   height:40px;
@@ -150,14 +170,7 @@ body::-webkit-scrollbar{
   height:80%;  */
   position: relative;
 }
-/*
-#canvas {
-  display: block;
-  float:left;
-  width:600px;
-  height:600px;
-}
-*/
+
 #upload{
   display: none;
 }
@@ -182,16 +195,7 @@ body::-webkit-scrollbar{
   border: 2px solid #73ADff;
   border-style:none none dashed dashed ;
 }
-/*
-#console {
-  clear:right;
- 
-  float:left;
-  height: auto;
-  overflow-y:scroll;
-  overflow-x:hidden;
-}
-*/
+
 @media screen and (max-width: 850px) {
   #console {
     clear: both;
@@ -200,9 +204,6 @@ body::-webkit-scrollbar{
     overflow-y:visible;
   }
 }
-/*#console::-webkit-scrollbar {
-  width: 40px; /* Mostly for vertical scrollbars */
-  /*height: 10px; /* Mostly for horizontal scrollbars */
 
 #createfrom{
   color:#3030dd;

@@ -1,3 +1,47 @@
+class HeuristicMethod{
+
+  static euler = {
+    distance:function(a, b){return a.distanceBetween(b);},
+    show:function(s,x,y){s.push(); x -= 5; y += 5;
+      s.strokeWeight(3);s.stroke(0);
+      s.point(x,y),s.point(x+10,y+10);
+      s.strokeWeight(1);s.line(x,y,x+10,y+10);
+      s.pop();},
+    name:function(){return "euler";}
+  };
+  static manhattan = {
+    distance:function(a, b){return Math.abs(a.x - b.x) + Math.abs(a.y - b.y);},
+    show:function(s,x,y){s.push();x -= 5; y += 5;
+      s.strokeWeight(3);s.stroke(0);
+      s.point(x,y),s.point(x+10,y+10);s.strokeWeight(1);
+      s.line(x,y,x,y+10);s.line(x,y+10,x+10,y+10);
+      s.pop();},
+    name:function(){return "man- hattan";}
+    };
+    static available = [HeuristicMethod.euler, HeuristicMethod.manhattan];
+    static positionFromName(name){
+      let p = 0;
+      while (p < HeuristicMethod.available.length){
+        if (HeuristicMethod.available[p].name() == name){
+          return p;
+        }
+        p++;
+      }
+      return null;
+    }    
+    static methodFromName(name){
+      let method = null;
+      let p = 0;
+      while (p < HeuristicMethod.available.length && method == null){
+        if (HeuristicMethod.available[p].name() == name){
+          method = HeuristicMethod.available[p];
+        }
+        p++;
+      }
+      return method;
+    }
+}
+
 class Heuristic extends Clickable{
     static cNORM = [20,20,20, 200];
     static cOVER = [140,140,20, 200];
@@ -8,15 +52,9 @@ class Heuristic extends Clickable{
       if (!this.parent.g.isDynamicCost){
         return this.#value;
       } else {
-        return Math.floor(this.parent.distanceBetween(this.parent.g.goalNode)/this.parent.g.dynamicDivisor);
+        return Math.floor(this.parent.g.Hmethod.distance(this.parent, this.parent.g.goalNode)/this.parent.g.dynamicDivisor);
       }
     }
-/*
-    if (!this.parent.g.isDynamicCost){
-      return this.#cost;
-    } else {
-      return Math.floor(this.parent.distanceBetween(this.node)/this.parent.g.dynamicDivisor);
-    }*/
 
     set value(h){
       this.#value = h;
@@ -77,7 +115,9 @@ class Heuristic extends Clickable{
       s.textAlign(s.CENTER, s.CENTER);
       s.stroke(255); 
       s.rect(this.left, this.top, this.w, this.h);
-  
+      if (this.parent.g.isDynamicCost){
+        this.parent.g.Hmethod.show(s,this.left + this.w/2, this.bot);
+      }
       //value
       s.stroke(0); s.fill(255); 
       s.text(this.value, this.x, 1+this.y + this.parent.rad + this.h/2);
@@ -86,8 +126,8 @@ class Heuristic extends Clickable{
 
     update(){
         super.update();
-        this.x = this.parent.x;// - this.parent.rad;
-        this.y = this.parent.y;// + this.parent.rad;
+        this.x = this.parent.x;
+        this.y = this.parent.y;
     }    
 }
   

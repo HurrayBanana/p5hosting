@@ -3,30 +3,22 @@ class Dijkstra extends PathSolver {
     constructor(g){
         super(g);
     }
-
     
-    /*
-    init(){
-        super.init();
-    }*/
     start(){
         super.start();
-            //let g = this.gnodes;
-            for (let p = 0; p < this.gnodes.length; p++){
-                let dn = this.gnodes[p];//quick ref
-                dn.resetSolver();
-                if (this.graph.isStart(dn)){
-                    dn.setcosts(0,null);//updatecosts(0, null);
-                } else {
-                    dn.setcosts(Number.MAX_SAFE_INTEGER);//, null);//updatecosts(Number.MAX_SAFE_INTEGER, null);
-                }
-                this.addToSet(this.openSet, dn);
+        for (let p = 0; p < this.gnodes.length; p++){
+            let dn = this.gnodes[p];//quick ref
+            dn.resetSolver();
+            if (this.graph.isStart(dn)){
+                dn.setcosts(0,null);
+            } else {
+                dn.setcosts(Number.MAX_SAFE_INTEGER);
             }
-        //}
+            this.addToSet(this.openSet, dn);
+        }
     }
     //dijkstra implementation
     iterate(count){
-//        MsgBus.send(msgT.hi_liteclear);
         while (this.openSet.length > 0 && count > 0){
             MsgBus.send(msgT.hi_liteclear);
             count--;

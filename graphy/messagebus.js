@@ -20,7 +20,10 @@ class msgT{
     static helpChanged = "helpChanged";
     static startPickInc = "startPickInc";
     static startPickDec = "startPickDec";
-
+    static heuristic = "heuristic";
+    static printdoc = "printdoc";
+    static picker = "picker";
+    
     static arrowschanged = "arrowschanged";
     static consolechanged = "consolechanged";
     static duplicateschanged = "duplicateschanged";
@@ -30,6 +33,7 @@ class msgT{
     static solvestylechanged = "solvemodechanged";
     static solvehistorychanged = "solvehistorychanged";
     static setmodechanged = "setmodechanged";
+    static pickerChanged = "pickerChanged";
     //static solverchanged = "solverchanged";
     //highlighting
     static hi_liteclear = "highlightclear";

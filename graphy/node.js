@@ -50,10 +50,10 @@ class pickerNode extends Draggable{
     s.push();
     if (this.#hoopDrag != null) {
       s.fill(this.#hoopDrag);
-      this.hoop(s,"DROP ME");
+      this.hoop(s,"DROP   ME");
     } else if (this.#hoopOver != null){
       s.fill(this.#hoopOver);
-      this.hoop(s,"DRAG ME");
+      this.hoop(s,"DRAG   ME");
     }
     s.pop();
   }
