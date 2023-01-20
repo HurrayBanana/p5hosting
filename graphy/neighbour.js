@@ -5,8 +5,8 @@ class neighbour extends Clickable{
     static cLINKOVER = [100,200,255, 200];
     static cLINE_STROKE = [0,0,0];
     static cLINE_THICK = 1;
-    static cLINE_THICK_ROUTE = 5;
-    static cLINE_STROKE_ROUTE = [255,255,40, 200];
+    static cLINE_THICK_ROUTE = 4;
+    static cLINE_STROKE_ROUTE = [30,50,200];//[255,255,40, 200];
     rad=25;
     parent;
     #cost = 10;

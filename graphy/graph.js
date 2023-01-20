@@ -178,6 +178,9 @@ class Graph {
     broadcastArrowsState(){
         MsgBus.send(msgT.arrowschanged,{state:this.#arrows, txtT:"on", txtF:"off"});
     }
+    broadcastactingstate(s){
+        //s.push();s.noStroke();s.textSize(10);s.text(node.countlifetime, 10, s.height-10);s.pop();
+    }
     broadcastDuplicatesState(){
         MsgBus.send(msgT.duplicateschanged,{state:this.#duplicates, txtT:"on", txtF:"off"});
     }
@@ -415,97 +418,12 @@ class Graph {
             this.g[p].released(s);
         }
     }
-    /*
-    //outputs graph as a string array ready for file output
-    asArrayString() {
-        let arr = [];
-
-        arr.push("name," + this.name);
-        arr.push("arrow," + this.#arrows);
-        arr.push("dupe," + this.#duplicates);
-        arr.push("dynamic," + this.#dynamic);
-        arr.push("costnode," + this.#shownodecost);
-        arr.push("divisor," + this.dynamicDivisor);
-        arr.push("sets," + this.#setmodesimple);
-        for (let p = 0; p < this.size; p++) {
-            arr.push(this.g[p].asString);
-        }
-        for (let p = 0; p < this.size; p++) {
-            for (let q = 0; q < this.g[p].neighbour.length; q++) {
-                arr.push(this.g[p].neighbour[q].asString);
-            }
-        }
-        return arr;
-    }
-    static getSglValFromData(data, pos){
-        let parts = data.split(",");
-        if (parts.length <= pos){
-            co.log("fatal error reading:" + data);
-        } else {
-            return parts[pos];
-        }
-    }
-    static getSglBoolFromData(data, pos){
-        let parts = data.split(",");
-        if (parts.length <= pos){
-            co.log("fatal error reading:" + data);
-        } else {
-            return parts[pos].toLowerCase() == "true";
-        }
-    }
-    static getSglStringFromData(data, pos){
-        let parts = data.split(",");
-        if (parts.length <= pos){
-            co.log("fatal error reading:" + data);
-        } else {
-            return parts[pos];
-        }
-    }
-    */
     //takes a file array string containing a loaded graph
     static #graphFromArrString(filename, fa) {
         let newgraph = new Graph(filename.split('.')[0]);
         co.log("filename loaded:"+filename);
         co.log("----------------");
         GCoding.importGraph(newgraph, fa);
-        /*
-        for (let p = 0; p < fa.length; p++) {
-            co.log("processing ["+ fa[p]+ "]")
-            switch (fa[p].slice(0, 4)) {
-                case "name":
-                    newgraph.name = Graph.getSglStringFromData(fa[p],1);
-                    break;
-                case "divi":
-                    MsgBus.send(msgT.divisorChange, Graph.getSglValFromData(fa[p], 1));
-                    break;
-                case "cost":
-                    newgraph.#shownodecost = Graph.getSglBoolFromData(fa[p], 1);
-                    break;
-                case "sets":
-                    newgraph.#setmodesimple = Graph.getSglBoolFromData(fa[p], 1);
-                    break;
-                case "dupe":
-                    newgraph.#duplicates = Graph.getSglBoolFromData(fa[p], 1);
-                    break;
-                case "arro":
-                    newgraph.#arrows = Graph.getSglBoolFromData(fa[p],1);
-                    break;
-                case "dyna":
-                    newgraph.#dynamic = Graph.getSglBoolFromData(fa[p],1);
-                    break;
-                case "node":
-                    newgraph.AddNodeString(fa[p]);
-                    break;
-                case "neig":
-                    newgraph.AddNeighbourString(fa[p]);
-                    break;
-                default:
-                    co.log("unknown graph data:[" + fa[p] + "]");
-                    break;
-            }
-
-        }
-        */
         newgraph.brodcastAllStates();
         co.log("Graph name once loaded:" + newgraph.name)
         if (Graph.#passthrough != null) {

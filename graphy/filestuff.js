@@ -26,6 +26,18 @@ class filestuff{
         w.close();
         w.clear();
     }
+    static qsFromGraph(s, g){
+        co.log("graph encoded");
+        let arr=GCoding.encodeGraph(g);
+        let qs="?hb=";
+        for (let p = 0; p < arr.length; p++){
+            let b = btoa(arr[p]);
+            co.log(b + " {" + atob(b) + "}");
+            qs += (p==0?"":"!") + b;
+        }
+        co.log("full qs len:" + qs.length);
+        //co.log(qs);
+    }
     static #wordset = [
         "class","cost","deferred","draw","true",
         "protect","false","constructor","this","dont","draw","false",

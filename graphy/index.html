@@ -25,7 +25,7 @@
           <button id="bduplicates" onclick="MsgBus.send(msgT.duplicates,this);">on</button>
         </div>
         <div class="buttonholder">
-          <label for="bshownodecost" >node costs</label>
+          <label for="bshownodecost" >node cost</label>
           <button id="bshownodecost" onclick="MsgBus.send(msgT.shownodecost,this);">on</button>
         </div>
         <div class="buttonholder">
@@ -38,7 +38,7 @@
         </div>
         <div class="buttonholder">
           <label for="cheuristicmode" >Heuristic</label>
-          <button id="cheuristicmode" value="0" onclick="cycleAndSet(this,HeuristicMethod.available);MsgBus.send(msgT.heuristic,this.value);"></select>
+          <button id="cheuristicmode" value="0" onclick="cycleAndSet(this,HeuristicMethod.available);MsgBus.send(msgT.heuristic,this.value);">eulerk</button>
         </div>
         <div class="buttonholder">
           <label id="rdivisortop" for="rdivisor" >divisor</label>

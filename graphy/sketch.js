@@ -16,6 +16,7 @@ let printcheck;
 /* END OF GLOBALS */
 const s = ( s ) => {
   let cBACK = [220,220,255];
+  let cPRNT = [255,255,255];
   let sW = 750;
   let sH = 750;  
   let nameInput;
@@ -24,6 +25,21 @@ const s = ( s ) => {
   let astar = null;
   let outputdata = false;
   s.preload = () => {
+    //const paramsString = 'q=URLUtils.searchParams&topic=api';
+    //const searchParams = new URLSearchParams(paramsString);
+
+    //// Iterating the search parameters
+    //for (const p of searchParams) {
+    //  console.log(p);
+    //console.log(searchParams.has('topic'));               // true
+    //console.log(searchParams.get('topic') === "api")
+    //}
+
+  }
+  s.checkQS=()=>{
+    let params = (new URL(document.location)).searchParams;
+    let name = params.get("hbq");
+    co.log("QS contained[" + name +"]");
   }
   s.loaded=()=>{
 
@@ -50,6 +66,7 @@ const s = ( s ) => {
     htc = document.getElementById("console");
     s.broadcastAllStates();
     MsgBus.send(msgT.divisorChange,10);//bodge need a sensible solution
+    s.checkQS();
   };
   s.setHTMLcanvas=()=>{
     let p = document.getElementById("sketcharea");
@@ -110,6 +127,9 @@ const s = ( s ) => {
   }
   s.toggleSolveStyle=()=>{
     auto = !auto;
+    MsgBus.send(msgT.hi_liteclear);
+    MsgBus.send(msgT.reset,this);
+
     if (auto && help){
       MsgBus.send(msgT.help,this);
     }
@@ -133,6 +153,7 @@ const s = ( s ) => {
   s.reset=()=>{
     dij = null;
     astar = null;
+    co.log("-> solver reset");
   }
   s.broadcastAllStates=()=>{
     s.broadcastSolveMethod();
@@ -204,7 +225,7 @@ const s = ( s ) => {
         MsgBus.send(msgT.solve);
       }
       if (inpM.kPressed(kD) && !insketcharea(s, s.mouseX, s.mouseY)){
-
+        filestuff.qsFromGraph(s,g);
       }
       if (inpM.kPressed(kSlashQmark)){
         MsgBus.send(msgT.help);
@@ -311,16 +332,27 @@ const s = ( s ) => {
   }    
   s.draw = () => {
     s.logic();
-    s.background(cBACK);
+    s.background(printdoc ? cPRNT:cBACK);
     
+    if (printdoc){
+      graph.printing();
+    }
     graph.draw(s);
+    if (printdoc){
+      graph.finishedprinting();
+      
+    }
     if (!printdoc && showpick){
       pick.show(s);
     }
+    //dave = s.text;
+    //dave("brian",0,200);
+
     s.after();
   };
   s.after=()=>{
     inpM.update();
+    graph.broadcastactingstate(s);
     //check for printing after render happens
     //so we can turn off node picker first 
     if (printdoc){
