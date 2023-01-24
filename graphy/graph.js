@@ -136,6 +136,7 @@ class Graph {
         MsgBus.drop(msgT.divisorChange, this.setdivisor, this);
         MsgBus.drop(msgT.setmode, this.toggleSetMode, this);
         MsgBus.drop(msgT.solvemethodchanged, this.logMethod, this);
+        MsgBus.drop(msgT.heuristic, this.setHeuristicMode, this);
     }
     setHeuristicMode(index){
         this.Hmethod = HeuristicMethod.available[index];
@@ -188,6 +189,15 @@ class Graph {
         this.#duplicates = !this.#duplicates;
         this.broadcastDuplicatesState();
     }
+    temp;
+    printing(){
+        this.temp = {dupe:this.duplicates, arrow:this.arrows};
+        this.duplicates = false;
+    }
+
+    finishedprinting(){
+        this.duplicates = this.temp.dupe;
+    }    
     centre(s, margin, keepaspect) {
         if (this.size > 0){
             let dx = 0; let dy = 0;
