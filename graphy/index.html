@@ -14,8 +14,8 @@
   </head>
   <body onload="setDynamicHTML();registertoggles();">
     <div class="grid">
-      <div id="graphsettings">
-        <div>Graph setttings</div>
+      <div id="graphsettings" class="settingscontainer">
+        <div>Graph settings</div>
         <div class="buttonholder">
           <label for="barrows" >arrows</label>
           <button id="barrows" name="barrows" onclick="MsgBus.send(msgT.arrows,this);">on</button>
@@ -29,7 +29,7 @@
           <button id="bshownodecost" onclick="MsgBus.send(msgT.shownodecost,this);">on</button>
         </div>
         <div class="buttonholder">
-          <label for="bsetmode" >set mode</label>
+          <label for="bsetmode" >set names</label>
           <button id="bsetmode" onclick="MsgBus.send(msgT.setmode,this);">XO</button>
         </div>
         <div class="buttonholder">
@@ -48,22 +48,22 @@
         </div>
       </div>
 
-      <div id="controls">
+      <div id="controls" class="settingscontainer">
         <div>Solving settings</div>
         <div class="buttonholder">
           <label for="breset" >solution</label>
           <button id="breset" onclick="MsgBus.send(msgT.reset,this);">reset</button>
         </div>
         <div class="buttonholder">
-          <label for="bsolve" >perform</label>
-          <button id="bsolve" onclick="MsgBus.send(msgT.solve,this);">next step</button>
+          <label for="bsolve" >step</label>
+          <button id="bsolve" onclick="MsgBus.send(msgT.solve,this);">next</button>
         </div>
         <div class="buttonholder">
           <label for="bsolvemethod" >method</label>
           <button id="bsolvemethod" onclick="MsgBus.send(msgT.solvemethod,this);">dave</button>
         </div>
         <div class="buttonholder">
-          <label for="bsolvestyle" >style</label>
+          <label for="bsolvestyle" >solve mode</label>
           <button id="bsolvestyle" onclick="MsgBus.send(msgT.solvestyle,this);">auto</button>
         </div>
         <div class="buttonholder">
@@ -71,29 +71,34 @@
           <button id="bsolvehistory" onclick="MsgBus.send(msgT.solvehistory,this);">on</button>
         </div>
       </div>
-
-      <div id="misc">
-        <div>miscellaneous</div>
+      <div id="graphcontrols" class="settingscontainer">
+        <div>graph</div>
         <div class="buttonholder">
-          <label for="bconsole" >console</label>
-          <button id="bconsole" onclick="MsgBus.send(msgT.console,this);">on</button>
-        </div>
-        <div class="buttonholder">
-          <label for="bconsoleclear" >console</label>
-          <button id="bconsoleclear" onclick="MsgBus.send(msgT.clearcon,this);">clear</button>
-        </div>
-        <div class="buttonholder">
-          <label for="bgraphclear" >graph</label>
+          <label for="bgraphclear" >&nbsp;</label>
           <button id="bgraphclear" onclick="MsgBus.send(msgT.cleargraph,this);">clear</button>
         </div>
         <div class="buttonholder">
-          <label for="bload" >graph</label>
-          <button id="bload" onclick="MsgBus.send(msgT.load,this);">load</button>
+          <label for="bload" >&nbsp;</label>
+          <button id="bload" onclick="MsgBus.send(msgT.load,this);">import</button>
         </div>
         <div class="buttonholder">
-          <label for="bexport" >graph</label>
+          <label for="bexport" >&nbsp;</label>
           <button id="bexport" onclick="MsgBus.send(msgT.export,this);">export</button>
         </div>
+      </div>
+      <div id="consolecontrols" class="settingscontainer">
+        <div>console</div>
+        <div class="buttonholder">
+          <label for="bconsole" >&nbsp;</label>
+          <button id="bconsole" onclick="MsgBus.send(msgT.console,this);">on</button>
+        </div>
+        <div class="buttonholder">
+          <label for="bconsoleclear" >&nbsp;</label>
+          <button id="bconsoleclear" onclick="MsgBus.send(msgT.clearcon,this);">clear</button>
+        </div>
+      </div>      
+      <div id="misc" class="settingscontainer">
+        <div>miscellaneous</div>
         <div class="buttonholder">
           <label for="bhelp" >help</label>
           <button id="bhelp" onclick="MsgBus.send(msgT.help,this);">show</button>
@@ -103,8 +108,8 @@
           <button id="bpicker" onclick="MsgBus.send(msgT.picker,this);">show</button>
         </div>
         <div class="buttonholder">
-          <label for="bprint" >print</label>
-          <button id="bprint" onclick="MsgBus.send(msgT.printdoc,this);">show</button>
+          <label for="bprint" >&nbsp;</label>
+          <button id="bprint" onclick="MsgBus.send(msgT.printdoc,this);">print</button>
         </div>
       </div>
     </div>
@@ -115,10 +120,6 @@
       </div>
       <div id="console"></div>
     </div><!--grid-->
-  
-    
-    
-
     <div id="overoptions">
       <p><span class='key'>S</span> start node&nbsp;
         <span class='key'>G</span> end node&nbsp;

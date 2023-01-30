@@ -11,6 +11,10 @@ class filestuff{
         this.setHandler(loader);
         filestuff.picker.click();
     }    
+    static clearFileLoad(){
+      filestuff.picker = document.getElementById('upload');
+      filestuff.picker.value = "";
+    }
     //need name giving code
     static arrStringFromGraph(s, g)
     {

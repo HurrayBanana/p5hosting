@@ -25,11 +25,15 @@ class Graph {
     static cDRAG = [255, 220, 220, 220];
     static cACTV = [255, 255, 100, 220];
 
+    //file associated workers
+    static lastload = "";
+    static lastDataset;
+    static #passthrough;
+
     //need to set these dynamically
     //Hmethod = HeuristicMethod.euler;
     Hmethod = HeuristicMethod.euler;
 
-    static #passthrough;
     g = [];
     get size() { return this.g.length; }
 
@@ -52,7 +56,7 @@ class Graph {
     isGoal(n) {return this.goalNode === n; }
     notGoal(n) { return this.goalNode !== n; }
     setGoal(n) {
-        if (this.notGoal(n)) {
+        if (this.notGoal(n)) { 
             this.goalNode = n;
             return true;
         }
@@ -60,7 +64,7 @@ class Graph {
     }
 
     get canSolve() {return this.startNode != null && this.goalNode != null;}
-
+    get stateman() {return atob("KGMpIEh1cnJheSBCYW5hbmEgMjAyMi0yMw==");}
     #arrows = true;
     get showArrows(){return this.#arrows;}
     set showArrows(val){this.#arrows = val;}
@@ -174,13 +178,13 @@ class Graph {
         this.broadcastSetModeState();
     }
     broadcastSetModeState(){
-        MsgBus.send(msgT.setmodechanged,{state:this.#setmodesimple, txtT:"compact xo", txtF:"verbose"});
+        MsgBus.send(msgT.setmodechanged,{state:this.#setmodesimple, txtT:"compact x o", txtF:"verbose"});
     }
     broadcastArrowsState(){
         MsgBus.send(msgT.arrowschanged,{state:this.#arrows, txtT:"on", txtF:"off"});
     }
     broadcastactingstate(s){
-        //s.push();s.noStroke();s.textSize(10);s.text(node.countlifetime, 10, s.height-10);s.pop();
+        s.push();s.noStroke();s.fill(0);s.textSize(10);s.text(this.stateman, 10, s.height-10);s.pop();
     }
     broadcastDuplicatesState(){
         MsgBus.send(msgT.duplicateschanged,{state:this.#duplicates, txtT:"on", txtF:"off"});
@@ -448,13 +452,21 @@ class Graph {
     //graph load handler
     static handleRequest() {
         let fname = this.files[0].name;
-        co.log("loaded:" + this.files[0].size + " bytes from:" + this.files[0].name);
-        //co.log("----------------");
-        let r = new FileReader();
-        r.onload = function () {
-            let textArray = r.result.split(/\r?\n/);
-            Graph.#graphFromArrString(fname,textArray);
-        };
-        r.readAsText(this.files[0]);
+        if (fname == Graph.lastload){
+            Graph.#graphFromArrString(fname,Graph.lastDataset);
+        } else {
+            co.log("loaded:" + this.files[0].size + " bytes from:" + this.files[0].name);
+            //co.log("----------------");
+            let r = new FileReader();
+            r.onload = function () {
+                let textArray = r.result.split(/\r?\n/);
+                Graph.lastDataset = textArray;
+                Graph.lastload = fname;
+                Graph.#graphFromArrString(fname,textArray);
+                filestuff.clearFileLoad();
+
+            };
+            r.readAsText(this.files[0]);
+        }
     }
 }

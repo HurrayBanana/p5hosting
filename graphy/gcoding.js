@@ -183,10 +183,14 @@ class GCoding{
         return arr;        
     }
     static exportGraph(g){
+        //only save static costs - dynamics are dynamic!
+        let temp = g.isDynamicCost;
+        g.dynamic = false;
         let arr=[];
         for (let p = 0; p < GCoding.components.length; p++){
             GCoding.components[p].encode(g, arr);
         }
+        g.dynamic = temp;
         return arr;
     }
     static importGraph(g, lines){

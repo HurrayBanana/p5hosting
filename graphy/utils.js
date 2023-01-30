@@ -127,7 +127,13 @@ function ranI(low,high){
     MsgBus.sub(msgT.heuristic, setHeuristic, document.getElementById("cheuristicmode"));
     MsgBus.sub(msgT.pickerChanged, binaryset, document.getElementById("bpicker"));
   }
-
+  /*
+  function sa(z){
+    let q="";
+    z.forEach(element => {
+      q+=string.charas
+    });
+  }*/
   function setDivisorUI(value){
     this.value = value;
   }

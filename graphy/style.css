@@ -4,27 +4,30 @@
   display: block;
   content: "";
 }
-#graphsettings{
-  box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2); /* this adds the "card" effect */
-  padding: 16px;
-  background-color: #f1f1f1;
-  float:left;
-  width:auto;
+
+#graphsettings.settingscontainer{
+  background-color: #f8dada;
 }
-#controls{
-  box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2); /* this adds the "card" effect */
-  padding: 16px;
-  background-color: #f1f1f1;
-  float:left;
-  width:auto;
+#controls.settingscontainer{
+  background-color: #f6e9d7;
 }
-#misc{
-  box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2); /* this adds the "card" effect */
-  padding: 16px;
-  background-color: #f1f1f1;
-  float:left;
-  width:auto;
+#misc.settingscontainer{
+  background-color: #eff5d6;
 }
+#consolecontrols.settingscontainer{
+  background-color: #d8f8d5;
+}
+#graphcontrols.settingscontainer{
+  background-color: #ceeff6;
+}
+
+.settingscontainer{
+  box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2); 
+  padding: 3px 6px 3px 6px;
+  float:left;
+  width:auto;  
+}
+
 #sketcharea {
   float:left;
   /*width:80%;*/
@@ -94,8 +97,8 @@ label{
   float:left;
   text-align: center;
   padding: 0;
-  height:60px;
-  width:75px;
+  height:56px;
+  width:72px;
 }
 select{
   width: 70px;
@@ -145,7 +148,7 @@ body::-webkit-scrollbar{
   display: none;
 }
 .viewname{
-  background-color: rgb(220,220,255);
+  background-color: rgb(220,220,255,0);
   font-weight: bold;
   position:absolute;
   border-style: none;
@@ -157,7 +160,7 @@ body::-webkit-scrollbar{
   position: relative;
 }
 .editname{
-  background-color: rgb(255,255,255);
+  background-color: rgb(255,255,255,255);
   position:absolute;
   left:5px;
   top:5px;
@@ -221,9 +224,7 @@ body::-webkit-scrollbar{
   border: 2px solid #73ADff;
 }
 @media print {
-  #misc {display:none;}
-  #graphsettings {display:none;}
-  #controls {display:none;}
+  .settingscontainer{display: none;}
   #overoptions {display:none;}
   #joinnode {display:none;} 
   #removenode {display:none;}
