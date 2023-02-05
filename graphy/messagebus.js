@@ -22,6 +22,7 @@ class msgT{
     static startPickDec = "startPickDec";
     static heuristic = "heuristic";
     static printdoc = "printdoc";
+    static printdocgraph = "printdocgraph";
     static picker = "picker";
     
     static arrowschanged = "arrowschanged";
@@ -43,6 +44,9 @@ class msgT{
     static hi_liteneighbour = "neighbour";//blue
     //other stuff
     static droppedNewNode = "droppedNewNode";
+    //hove helpers
+    static over_helper = "over_helper";
+    static nb_over_notlinked = "nb_over_notlinked";
 }
 class MsgBus{
     static #subs = {};

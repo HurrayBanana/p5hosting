@@ -20,7 +20,12 @@
 #graphcontrols.settingscontainer{
   background-color: #ceeff6;
 }
-
+#context.settingscontainer{
+  background-color: #cecff6;
+}
+.containertitle{
+  margin-top: -5px;
+}
 .settingscontainer{
   box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2); 
   padding: 3px 6px 3px 6px;
@@ -90,6 +95,19 @@ label{
   float:inline-end;
 }
 */
+.actionkey{
+  /*background-color:rgb(66, 161, 109)*/
+  font-weight: bold;
+  font-size: larger;
+}
+.contextline{
+  margin: 1px;
+  text-align: left;
+}
+.contextspan{
+  margin: 1px 5px 1px 5px;
+  text-align: left;
+}
 .buttonholder{
   border-style:dashed;
   border-width: 1px;
@@ -99,6 +117,16 @@ label{
   padding: 0;
   height:56px;
   width:72px;
+}
+.contextholder{
+  border-style:dashed;
+  border-width: 1px;
+  padding: 3px;
+  float:left;
+  text-align: center;
+  padding: 0;
+  height:56px;
+ /* width:72px;*/
 }
 select{
   width: 70px;

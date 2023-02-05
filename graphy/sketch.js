@@ -5,6 +5,7 @@
 let graph;
 //let picklist;
 let co;
+contextcounter = 0;
 textentryactive = false;
 solveDijkstra = true;
 auto = false;
@@ -184,8 +185,12 @@ const s = ( s ) => {
   }
   s.logic = () => {
     //these need sorting properly
-    hidecontainer("overoptions");
-    hidecontainer("joinnode");
+    contextcounter++;
+    if (contextcounter == 15){
+      MsgBus.send(msgT.over_helper, "<p class='contextline'>context stuff will appear here</p>");
+    }
+    //hidecontainer("overoptions");
+    //hidecontainer("joinnode");
     //hidecontainer("removenode");
     
     s.generalUI(graph);

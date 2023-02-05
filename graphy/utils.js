@@ -127,6 +127,15 @@ function ranI(low,high){
     MsgBus.sub(msgT.heuristic, setHeuristic, document.getElementById("cheuristicmode"));
     MsgBus.sub(msgT.pickerChanged, binaryset, document.getElementById("bpicker"));
   }
+  function regsiterOverHelpers(){
+    MsgBus.sub(msgT.over_helper, showcontext, document.getElementById("showcontext"));
+  }
+
+  function showcontext(data){
+    this.innerHTML = data;
+    contextcounter = 0;
+  }
+
   /*
   function sa(z){
     let q="";

@@ -416,7 +416,7 @@ class Graph {
     }
     //toggles active node or sets a new one
     modifyActiveNode(n, p) {
-        if (this.active === n.name) {
+        if (this.active === n) {
             this.active = null;
         } else {
             this.active = n;

@@ -7,6 +7,7 @@ class neighbour extends Clickable{
     static cLINE_THICK = 1;
     static cLINE_THICK_ROUTE = 4;
     static cLINE_STROKE_ROUTE = [30,50,200];//[255,255,40, 200];
+    static CONTEXT_CONTROLS = "<p class='contextline'><span class='actionkey'>+</span> to increment cost</p><p class='contextline'><span class='actionkey'>-</span> to decrement cost</p>"
     rad=25;
     parent;
     #cost = 10;
@@ -68,8 +69,10 @@ class neighbour extends Clickable{
       if (!this.parent.g.isDynamicCost){
         if (this.linked) {
           s.fill(neighbour.cLINKOVER);
+          MsgBus.send(msgT.over_helper, this.getContextControls(false));
         } else {
           s.fill(neighbour.cOVER);
+          MsgBus.send(msgT.over_helper, this.getContextControls(true));
         }
         this.hoverkeys();
       } else {
@@ -77,6 +80,15 @@ class neighbour extends Clickable{
       }
     }
     
+    getContextControls(showcost){
+      if (showcost){
+        return "<p class='contextline'><span class='actionkey'>L</span> to link with cost [" + this.cost + "] (undirected link costs)</p>" + neighbour.CONTEXT_CONTROLS;
+      } else {
+        return "<p class='contextline'><span class='actionkey'>L</span> to unlink (directed link costs)</p>" + neighbour.CONTEXT_CONTROLS;
+
+      }
+    }
+
     hoverkeys(){
       if (inpM.kPressed(kPlus)){ 
         this.cost++;

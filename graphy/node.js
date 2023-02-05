@@ -20,6 +20,7 @@ class pickerNode extends Draggable{
   showdrag(s) {
     this.#hoopDrag = pickerNode.cDRAG;
     s.fill(pickerNode.cDRAG);
+    MsgBus.send(msgT.over_helper, "<p class='contextline'>release to drop here</p>");
   }
   shownormal(s) {
     s.fill(pickerNode.cNORM);
@@ -27,6 +28,7 @@ class pickerNode extends Draggable{
   showover(s) {
     this.#hoopOver = pickerNode.cOVER;
     s.fill(pickerNode.cOVER);
+    MsgBus.send(msgT.over_helper, "<p class='contextline'>drag to add to graph</p>");
   }
   hoop(s, ctxt){
     s.fill(pickerNode.cCIRC);
@@ -153,6 +155,31 @@ class node extends Draggable {
     this.g.Over(this);
     s.fill(Graph.cOVER);
     this.hoverkeys();
+    this.buildHelper();
+  }
+  setpara(content){
+    return "<p class='contextline'>" + content + "</p>";
+  }
+  setspan(pre, action, content, post){
+    return "<span class='contextspan'>" + pre + "<span class='actionkey'>" + action + "</span>" + content + post +"</span>";
+  }
+  buildHelper(){
+    let help = "";
+    
+    let para = this.setspan("[", "Click", this.g.activeNode(this) ? " unselect" : " select","]");
+    para += this.setspan("[","X" ," delete node","]")
+    para += this.g.startNode !== this ? this.setspan("[","S"," set start node","]") : "";
+    para += this.g.goalNode !== this ? this.setspan("[","G"," set goal node","]") : "";
+    help += this.setpara(para);
+    para = this.neighbour.length > 0 ? this.setspan("[","A"," remove all neighbours from " + this.name,"]"):"";
+    para += this.neighbourOfAny ? this.setspan("[","T"," remove all neighbours to " + this.name,"]"):"";
+    help += this.setpara(para);
+
+    para = (this.g.active !== null && this.neighbourExists(this, this.g.active)) ? this.setspan("[","F"," remove neighbour towards " + this.g.active.name,"]"):"";
+    para += (this.g.active !== null && this.neighbourExists(this.g.active, this)) ? this.setspan("[","P"," remove neighbour from " + this.g.active.name,"]"):"";
+    help += this.setpara(para);
+
+    MsgBus.send(msgT.over_helper, help);
   }
 
   show(s) {
@@ -263,6 +290,16 @@ class node extends Draggable {
         this.neighbour[p].clearRoute();
       }
       
+  }
+  //returns true if any node has a a neighbour poiint to it
+  get neighbourOfAny() {
+    for (let p = 0; p < this.g.size; p++)
+    {
+      if (this.g.g[p].neighbourExists(this.g.g[p], this)){
+        return true;
+      }
+    }
+    return false;
   }
   //determines if neighbour is here already 
   neighbourExists(nodeS, nodeE) {

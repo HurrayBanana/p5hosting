@@ -12,10 +12,10 @@
     <meta charset="utf-8" />
 
   </head>
-  <body onload="setDynamicHTML();registertoggles();">
+  <body onload="setDynamicHTML();registertoggles();regsiterOverHelpers();">
     <div class="grid">
       <div id="graphsettings" class="settingscontainer">
-        <div>Graph settings</div>
+        <div class="containertitle">Graph settings</div>
         <div class="buttonholder">
           <label for="barrows" >arrows</label>
           <button id="barrows" name="barrows" onclick="MsgBus.send(msgT.arrows,this);">on</button>
@@ -49,7 +49,7 @@
       </div>
 
       <div id="controls" class="settingscontainer">
-        <div>Solving settings</div>
+        <div class="containertitle">Solving settings</div>
         <div class="buttonholder">
           <label for="breset" >solution</label>
           <button id="breset" onclick="MsgBus.send(msgT.reset,this);">reset</button>
@@ -72,7 +72,7 @@
         </div>
       </div>
       <div id="graphcontrols" class="settingscontainer">
-        <div>graph</div>
+        <div class="containertitle">graph</div>
         <div class="buttonholder">
           <label for="bgraphclear" >&nbsp;</label>
           <button id="bgraphclear" onclick="MsgBus.send(msgT.cleargraph,this);">clear</button>
@@ -87,7 +87,7 @@
         </div>
       </div>
       <div id="consolecontrols" class="settingscontainer">
-        <div>console</div>
+        <div class="containertitle">console</div>
         <div class="buttonholder">
           <label for="bconsole" >&nbsp;</label>
           <button id="bconsole" onclick="MsgBus.send(msgT.console,this);">on</button>
@@ -98,7 +98,7 @@
         </div>
       </div>      
       <div id="misc" class="settingscontainer">
-        <div>miscellaneous</div>
+        <div class="containertitle">miscellaneous</div>
         <div class="buttonholder">
           <label for="bhelp" >help</label>
           <button id="bhelp" onclick="MsgBus.send(msgT.help,this);">show</button>
@@ -111,6 +111,16 @@
           <label for="bprint" >&nbsp;</label>
           <button id="bprint" onclick="MsgBus.send(msgT.printdoc,this);">print</button>
         </div>
+        <div class="buttonholder">
+          <label for="bprintgraph" >&nbsp;</label>
+          <button id="bprintgraph" onclick="MsgBus.send(msgT.printdocgraph,this);">print graph</button>
+        </div>
+      </div>
+      <div id="context" class="settingscontainer">
+        <div class="containertitle">context feedback</div>
+        <div id="showcontext" class="contextholder">
+          <p class="contextline">context stuff will appear here</p>
+        </div>
       </div>
     </div>
     <div class="grid">
@@ -120,6 +130,7 @@
       </div>
       <div id="console"></div>
     </div><!--grid-->
+    
     <div id="overoptions">
       <p><span class='key'>S</span> start node&nbsp;
         <span class='key'>G</span> end node&nbsp;
@@ -140,6 +151,7 @@
         <span id="activetome"><span class='key'>P</span> active node to me&nbsp;</span>
       </p>
     </div>
+    
 
     <!-- solvers -->
     <script src="pathsolver.js"></script>
