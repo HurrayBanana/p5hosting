@@ -69,10 +69,10 @@ class neighbour extends Clickable{
       if (!this.parent.g.isDynamicCost){
         if (this.linked) {
           s.fill(neighbour.cLINKOVER);
-          MsgBus.send(msgT.over_helper, this.getContextControls(false));
+          MsgBus.send(msgT.over_helper, {m:this.getContextControls(false),t:0});
         } else {
           s.fill(neighbour.cOVER);
-          MsgBus.send(msgT.over_helper, this.getContextControls(true));
+          MsgBus.send(msgT.over_helper, {m:this.getContextControls(true),t:0});
         }
         this.hoverkeys();
       } else {

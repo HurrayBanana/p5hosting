@@ -79,7 +79,7 @@ class Picker{
                     this.#start = p;
                 }*/
                 let ch = this.dblName(p);
-                let n = new pickerNode(this.#off, 15 + this.#list.length * 30,ch);
+                let n = new pickerNode(this.#off, 30 + this.#list.length * 30,ch);
                 this.#list.push(n);
             }
             p++;

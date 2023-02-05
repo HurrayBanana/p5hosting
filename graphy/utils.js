@@ -51,12 +51,7 @@ function ranI(low,high){
     let e = document.getElementById('removenode');
     e.innerHTML = ihtml;
   }
-  function showPick(name){
-    let e = document.getElementById('createfrom');
-    e.innerHTML = name;
-    e = document.getElementById('destroyfrom');
-    //e.innerHTML = name;
-  }
+
   function hidecontainer(id){
     let el = document.getElementById(id);
     el.style.display = "none";  
@@ -132,8 +127,8 @@ function ranI(low,high){
   }
 
   function showcontext(data){
-    this.innerHTML = data;
-    contextcounter = 0;
+    this.innerHTML = data.m;
+    contextcounter = data.t;
   }
 
   /*

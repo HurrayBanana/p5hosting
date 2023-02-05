@@ -11,13 +11,21 @@ class Clickable{
     get y() {return this.#y;}
     set x(value) {this.#x = value;}
     set y(value) {this.#y = value;}
-    
+    #hover=false;
     //need to implement all these in inherited class override completely
     onpress(x,y) {}
     onrelease(s) {}
     showover(s){}
     shownormal(s){}
-    isover(s) {}
+    isover(s) {/*
+      let dave = this.#hover;
+      this.#hover = this.isover(s);
+      if (dave && !this.#hover){
+        onblur(s);
+      }
+      return this.#hover;*/
+    }
+    onblur(s){MsgBus.send(msgT.over_helper, "<p class='contextline'>context stuff will appear here</p>");}
     update(s){}
  
     show(s) {

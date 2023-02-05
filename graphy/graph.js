@@ -422,7 +422,7 @@ class Graph {
             this.active = n;
             this.g.splice(p, 1); // remove from graph
             this.g.push(n); // add add on end so drawn last
-            showPick(n.name);
+            //showPick(n.name);
             co.log("active:" + n.name);
         }
 

@@ -5,6 +5,7 @@
 let graph;
 //let picklist;
 let co;
+ stockContext = "<p class='contextline'>context stuff will appear here</p>";
 contextcounter = 0;
 textentryactive = false;
 solveDijkstra = true;
@@ -185,10 +186,12 @@ const s = ( s ) => {
   }
   s.logic = () => {
     //these need sorting properly
+    
     contextcounter++;
     if (contextcounter == 15){
-      MsgBus.send(msgT.over_helper, "<p class='contextline'>context stuff will appear here</p>");
+      MsgBus.send(msgT.over_helper, {m:stockContext,t:15});
     }
+    
     //hidecontainer("overoptions");
     //hidecontainer("joinnode");
     //hidecontainer("removenode");

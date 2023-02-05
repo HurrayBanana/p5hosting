@@ -92,7 +92,7 @@ class Heuristic extends Clickable{
       if (!this.parent.g.isDynamicCost){
         s.fill(Heuristic.cOVER);
         this.hoverkeys();
-        MsgBus.send(msgT.over_helper, "<p class='contextline'>+ to increment heuristic cost</p><p class='contextline'>- to decrement heuristic cost</p>");
+        MsgBus.send(msgT.over_helper, {m:"<p class='contextline'>+ to increment heuristic cost</p><p class='contextline'>- to decrement heuristic cost</p>",t:0});
 
       } else {
         this.shownormal(s);

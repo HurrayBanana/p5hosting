@@ -20,7 +20,7 @@ class pickerNode extends Draggable{
   showdrag(s) {
     this.#hoopDrag = pickerNode.cDRAG;
     s.fill(pickerNode.cDRAG);
-    MsgBus.send(msgT.over_helper, "<p class='contextline'>release to drop here</p>");
+    MsgBus.send(msgT.over_helper, {m:"<p class='contextline'>release to drop here</p>",t:0});
   }
   shownormal(s) {
     s.fill(pickerNode.cNORM);
@@ -28,7 +28,7 @@ class pickerNode extends Draggable{
   showover(s) {
     this.#hoopOver = pickerNode.cOVER;
     s.fill(pickerNode.cOVER);
-    MsgBus.send(msgT.over_helper, "<p class='contextline'>drag to add to graph</p>");
+    MsgBus.send(msgT.over_helper, {m:"<p class='contextline'>drag to add to graph</p>",t:0});
   }
   hoop(s, ctxt){
     s.fill(pickerNode.cCIRC);
@@ -171,15 +171,19 @@ class node extends Draggable {
     para += this.g.startNode !== this ? this.setspan("[","S"," set start node","]") : "";
     para += this.g.goalNode !== this ? this.setspan("[","G"," set goal node","]") : "";
     help += this.setpara(para);
-    para = this.neighbour.length > 0 ? this.setspan("[","A"," remove all neighbours from " + this.name,"]"):"";
-    para += this.neighbourOfAny ? this.setspan("[","T"," remove all neighbours to " + this.name,"]"):"";
+
+    para = this.neighbour.length > 0 ? this.setspan("[","A"," remove all from " + this.name,"]"):"";
+    para += this.neighbourOfAny ? this.setspan("[","T"," remove all to " + this.name,"]"):"";
+    para += (this.g.active !== null && this.neighbourExists(this, this.g.active)) ? this.setspan("[","F"," remove to " + this.g.active.name,"]"):"";
+    para += (this.g.active !== null && this.neighbourExists(this.g.active, this)) ? this.setspan("[","P"," remove from " + this.g.active.name,"]"):"";
     help += this.setpara(para);
 
-    para = (this.g.active !== null && this.neighbourExists(this, this.g.active)) ? this.setspan("[","F"," remove neighbour towards " + this.g.active.name,"]"):"";
-    para += (this.g.active !== null && this.neighbourExists(this.g.active, this)) ? this.setspan("[","P"," remove neighbour from " + this.g.active.name,"]"):"";
+    para = (this.g.active !== null && (!this.neighbourExists(this.g.active, this) && this.g.active !== this)) ? this.setspan("[","D"," directed neighbour from " + this.g.active.name,"]"):"";
+    para += (this.g.active !== null && (!this.neighbourExists(this.g.active, this) || !this.neighbourExists(this, this.g.active)))
+               ? this.setspan("[","U"," undirected neighbour to " + this.g.active.name,"]"):"";
     help += this.setpara(para);
 
-    MsgBus.send(msgT.over_helper, help);
+    MsgBus.send(msgT.over_helper, {m:help,t:0});
   }
 
   show(s) {
@@ -244,10 +248,11 @@ class node extends Draggable {
     if (inpM.kPressed(kU) && this.g.nodeActive) {
       this.generateUndirectedNeighbour(this.g.active, this);
     }
-
+    /*
     showcontainer("overoptions");
     if (this.g.notActiveNode(this)) { showcontainer("joinnode"); }
       neighbourRemovalVisibility(this, this.g.active);
+    */
   }
    
   generateUndirectedNeighbour(z){

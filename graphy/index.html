@@ -10,9 +10,8 @@
     <!--<script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.5.0/addons/p5.sound.min.js"></script>-->
     <link rel="stylesheet" type="text/css" href="style.css">
     <meta charset="utf-8" />
-
   </head>
-  <body onload="setDynamicHTML();registertoggles();regsiterOverHelpers();">
+  <body onload="setDynamicHTML();registertoggles();regsiterOverHelpers();" onmouseover="MsgBus.send(msgT.over_helper, {m:stockContext,t:15});">
     <div class="grid">
       <div id="graphsettings" class="settingscontainer">
         <div class="containertitle">Graph settings</div>
@@ -105,7 +104,7 @@
         </div>
         <div class="buttonholder">
           <label for="bpicker" >picker</label>
-          <button id="bpicker" onclick="MsgBus.send(msgT.picker,this);">show</button>
+          <button id="bpicker" onclick="MsgBus.send(msgT.picker,this);">hide</button>
         </div>
         <div class="buttonholder">
           <label for="bprint" >&nbsp;</label>
@@ -113,7 +112,9 @@
         </div>
         <div class="buttonholder">
           <label for="bprintgraph" >&nbsp;</label>
-          <button id="bprintgraph" onclick="MsgBus.send(msgT.printdocgraph,this);">print graph</button>
+          <button id="bprintgraph" 
+           onmouseenter="MsgBus.send(msgT.over_helper,{m:'only print the graph',t:15});" 
+           onclick="MsgBus.send(msgT.printdocgraph,this);">print graph</button>
         </div>
       </div>
       <div id="context" class="settingscontainer">
@@ -130,29 +131,6 @@
       </div>
       <div id="console"></div>
     </div><!--grid-->
-    
-    <div id="overoptions">
-      <p><span class='key'>S</span> start node&nbsp;
-        <span class='key'>G</span> end node&nbsp;
-        <span class='key'>X</span> remove node&nbsp;
-        <!--<span class='key'>P</span> select node</p>-->
-    </div>
-    <div id="joinnode">
-      <p>create neighbour from <span id="createfrom"></span>&nbsp;
-        <span class='key'>D</span> directed neighbour&nbsp;
-        <span class='key'>U</span> undirected neighbour
-      </p>
-    </div>
-    <div id="removenode">
-      <p>remove from <span id="destroyfrom"></span>&nbsp;
-        <span id="allfromme"><span class='key'>A</span> all connections from me&nbsp;</span>
-        <span id="alltome"><span class='key'>T</span> all connections to me&nbsp;</span>
-        <span id="metoactive"><span class='key'>F</span> from me to active node&nbsp;</span>
-        <span id="activetome"><span class='key'>P</span> active node to me&nbsp;</span>
-      </p>
-    </div>
-    
-
     <!-- solvers -->
     <script src="pathsolver.js"></script>
     <script src="astar.js"></script>
