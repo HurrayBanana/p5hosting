@@ -1,10 +1,181 @@
 <!DOCTYPE html>
 <html lang="en">
   <head>
-    <title>p5Apps</title>
+    <title>graphy</title>
+    <!--
+    nice discussion of css float https://css-tricks.com/almanac/properties/f/float/
+    -->
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.5.0/p5.js"></script>
+    <!--<script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.5.0/addons/p5.sound.min.js"></script>-->
+    <link rel="stylesheet" type="text/css" href="style.css">
     <meta charset="utf-8" />
+
   </head>
-  <body>
-    <a href="https://hurraybanana.github.io/p5hosting/graphy/index.html">Graphy</a>
+  <body onload="setDynamicHTML();registertoggles();regsiterOverHelpers();">
+    <div class="grid">
+      <div id="graphsettings" class="settingscontainer">
+        <div class="containertitle">Graph settings</div>
+        <div class="buttonholder">
+          <label for="barrows" >arrows</label>
+          <button id="barrows" name="barrows" onclick="MsgBus.send(msgT.arrows,this);">on</button>
+        </div>
+        <div class="buttonholder">
+          <label for="bduplicates" >duplicates</label>
+          <button id="bduplicates" onclick="MsgBus.send(msgT.duplicates,this);">on</button>
+        </div>
+        <div class="buttonholder">
+          <label for="bshownodecost" >node cost</label>
+          <button id="bshownodecost" onclick="MsgBus.send(msgT.shownodecost,this);">on</button>
+        </div>
+        <div class="buttonholder">
+          <label for="bsetmode" >set names</label>
+          <button id="bsetmode" onclick="MsgBus.send(msgT.setmode,this);">XO</button>
+        </div>
+        <div class="buttonholder">
+          <label for="bcostmode" >cost mode</label>
+          <button id="bcostmode" onclick="MsgBus.send(msgT.costmode,this);">static</button>
+        </div>
+        <div class="buttonholder">
+          <label for="cheuristicmode" >Heuristic</label>
+          <button id="cheuristicmode" value="0" onclick="cycleAndSet(this,HeuristicMethod.available);MsgBus.send(msgT.heuristic,this.value);">eulerk</button>
+        </div>
+        <div class="buttonholder">
+          <label id="rdivisortop" for="rdivisor" >divisor</label>
+          <input id="rdivisor" type="range" min="1" max="20" value="10"
+          oninput="MsgBus.send(msgT.divisorChange, this.value);">
+          <label id="rdivisorlabel" >divisor</label>
+        </div>
+      </div>
+
+      <div id="controls" class="settingscontainer">
+        <div class="containertitle">Solving settings</div>
+        <div class="buttonholder">
+          <label for="breset" >solution</label>
+          <button id="breset" onclick="MsgBus.send(msgT.reset,this);">reset</button>
+        </div>
+        <div class="buttonholder">
+          <label for="bsolve" >step</label>
+          <button id="bsolve" onclick="MsgBus.send(msgT.solve,this);">next</button>
+        </div>
+        <div class="buttonholder">
+          <label for="bsolvemethod" >method</label>
+          <button id="bsolvemethod" onclick="MsgBus.send(msgT.solvemethod,this);">dave</button>
+        </div>
+        <div class="buttonholder">
+          <label for="bsolvestyle" >solve mode</label>
+          <button id="bsolvestyle" onclick="MsgBus.send(msgT.solvestyle,this);">auto</button>
+        </div>
+        <div class="buttonholder">
+          <label for="bsolvehistory" >history</label>
+          <button id="bsolvehistory" onclick="MsgBus.send(msgT.solvehistory,this);">on</button>
+        </div>
+      </div>
+      <div id="graphcontrols" class="settingscontainer">
+        <div class="containertitle">graph</div>
+        <div class="buttonholder">
+          <label for="bgraphclear" >&nbsp;</label>
+          <button id="bgraphclear" onclick="MsgBus.send(msgT.cleargraph,this);">clear</button>
+        </div>
+        <div class="buttonholder">
+          <label for="bload" >&nbsp;</label>
+          <button id="bload" onclick="MsgBus.send(msgT.load,this);">import</button>
+        </div>
+        <div class="buttonholder">
+          <label for="bexport" >&nbsp;</label>
+          <button id="bexport" onclick="MsgBus.send(msgT.export,this);">export</button>
+        </div>
+      </div>
+      <div id="consolecontrols" class="settingscontainer">
+        <div class="containertitle">console</div>
+        <div class="buttonholder">
+          <label for="bconsole" >&nbsp;</label>
+          <button id="bconsole" onclick="MsgBus.send(msgT.console,this);">on</button>
+        </div>
+        <div class="buttonholder">
+          <label for="bconsoleclear" >&nbsp;</label>
+          <button id="bconsoleclear" onclick="MsgBus.send(msgT.clearcon,this);">clear</button>
+        </div>
+      </div>      
+      <div id="misc" class="settingscontainer">
+        <div class="containertitle">miscellaneous</div>
+        <div class="buttonholder">
+          <label for="bhelp" >help</label>
+          <button id="bhelp" onclick="MsgBus.send(msgT.help,this);">show</button>
+        </div>
+        <div class="buttonholder">
+          <label for="bpicker" >picker</label>
+          <button id="bpicker" onclick="MsgBus.send(msgT.picker,this);">show</button>
+        </div>
+        <div class="buttonholder">
+          <label for="bprint" >&nbsp;</label>
+          <button id="bprint" onclick="MsgBus.send(msgT.printdoc,this);">print</button>
+        </div>
+        <div class="buttonholder">
+          <label for="bprintgraph" >&nbsp;</label>
+          <button id="bprintgraph" onclick="MsgBus.send(msgT.printdocgraph,this);">print graph</button>
+        </div>
+      </div>
+      <div id="context" class="settingscontainer">
+        <div class="containertitle">context feedback</div>
+        <div id="showcontext" class="contextholder">
+          <p class="contextline">context stuff will appear here</p>
+        </div>
+      </div>
+    </div>
+    <div class="grid">
+      <div id="sketcharea">
+        <label for="filepicker"><input title="load" type="file" id="upload" ></label>
+        <input title="filename" id="filename" class="viewname" onfocus="filenameSelect(this);" onblur="filenameDone(this);"></input>
+      </div>
+      <div id="console"></div>
+    </div><!--grid-->
+    
+    <div id="overoptions">
+      <p><span class='key'>S</span> start node&nbsp;
+        <span class='key'>G</span> end node&nbsp;
+        <span class='key'>X</span> remove node&nbsp;
+        <!--<span class='key'>P</span> select node</p>-->
+    </div>
+    <div id="joinnode">
+      <p>create neighbour from <span id="createfrom"></span>&nbsp;
+        <span class='key'>D</span> directed neighbour&nbsp;
+        <span class='key'>U</span> undirected neighbour
+      </p>
+    </div>
+    <div id="removenode">
+      <p>remove from <span id="destroyfrom"></span>&nbsp;
+        <span id="allfromme"><span class='key'>A</span> all connections from me&nbsp;</span>
+        <span id="alltome"><span class='key'>T</span> all connections to me&nbsp;</span>
+        <span id="metoactive"><span class='key'>F</span> from me to active node&nbsp;</span>
+        <span id="activetome"><span class='key'>P</span> active node to me&nbsp;</span>
+      </p>
+    </div>
+    
+
+    <!-- solvers -->
+    <script src="pathsolver.js"></script>
+    <script src="astar.js"></script>
+    <script src="dijkstra.js"></script>
+
+    <!-- dynamic elements -->
+    <script src="picker.js"></script>
+    <script src="clickable.js"></script>
+    <script src="draggable.js"></script>
+    <script src="node.js"></script>
+    <script src="solvernode.js"></script>
+    <script src="heuristic.js"></script>
+    <script src="neighbour.js"></script>
+    <script src="graph.js"></script>
+    <!-- utils -->
+    <script src="messagebus.js"></script>
+    <script src="vector2.js"></script>
+    <script src="gcoding.js"></script>
+    <script src="filestuff.js"></script>
+    <script src="input.js"></script>
+    <script src="console.js"></script>
+    <script src="utils.js"></script>
+    <!-- main sketch -->
+    <script src="sketch.js" defer></script>
   </body>
 </html>

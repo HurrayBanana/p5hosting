@@ -1,0 +1,57 @@
+<p>This is wip and will contain bugs</p>
+<h3 id="general">General</h3>
+<ul>
+<li>Click graph name (top left of graph area) to change it (have to export the grapj</li>
+<li>Print the page allows you to see the graph and all steps of solution (if Solve history was chosen - clear the console before starting the solve)</li>
+</ul>
+<h3 id="mouse">Mouse</h3>
+<ul>
+<li>click on graph - drop next node</li>
+<li>click on node - selects that node - goes yellow</li>
+<li>hold left button over node - drag and drop node to new place</li>
+</ul>
+<h3 id="keys">Keys</h3>
+<p>=====</p>
+<h4 id="mouse-over-console-area">Mouse Over console area</h4>
+<ul>
+<li>H - hide/show console output</li>
+<li>L - load a graph from local storage</li>
+<li>E - export the current graph (goes to current browser download location)</li>
+<li>C - clear console window</li>
+<li>P - next iteration in current graph solve</li>
+</ul>
+<h4 id="mouse-over-sketch">Mouse Over sketch</h4>
+<ul>
+<li>C - centre and scale sketch to canvas (keepsaspect ratio of graph)</li>
+<li>A - toggle Arrows (same as button)</li>
+<li>H - toggle duplicate neighbour costs (same as button)</li>
+</ul>
+<h4 id="mouse-over-a-node">mouse over a node</h4>
+<ul>
+<li>T - remove all neighbours of node</li>
+<li>F - remove selected node as a neighbour of this node</li>
+<li>P - remove this node as a neigbour of selected node</li>
+<li>S - set this node as the Start node</li>
+<li>G - set this node as the Goal node</li>
+<li>D - create a directed neighbour from the selected node to this node</li>
+<li>U - create an undirected neighbour (2 way) between this node and the selected node</li>
+<li>X - delete node</li>
+</ul>
+<h4 id="mouse-over-neighbour-cost">mouse over neighbour cost</h4>
+<ul>
+<li><p>L - toggles linking of connected nodes in one of the following ways</p>
+</li>
+<li><p>If two separate directed connections are made they are set to duplicate each others costs</p>
+</li>
+<li>If a single directed neighbour exists another is created in the opposite direction and linked</li>
+<li><p>If a pair of linked neighbours exists they are unlinked and can be costed independantly</p>
+</li>
+<li><p>+ increase the cost for this neighbour travel</p>
+</li>
+<li>- decrease the cost for this neighbour travel</li>
+</ul>
+<h4 id="mouse-over-heuristic-cost-below-node-">mouse over heuristic cost (below node)</h4>
+<ul>
+<li>+ increase the cost heuristic for this node to goal node</li>
+<li>- decrease the cost heuristic for this node to the goal node</li>
+</ul>
