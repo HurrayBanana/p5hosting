@@ -130,7 +130,9 @@ function ranI(low,high){
     this.innerHTML = data.m;
     contextcounter = data.t;
   }
-
+  function setpara(content){
+    return "<p class='contextline'>" + content + "</p>";
+  }
   /*
   function sa(z){
     let q="";

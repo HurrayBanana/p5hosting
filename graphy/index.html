@@ -17,33 +17,47 @@
         <div class="containertitle">Graph settings</div>
         <div class="buttonholder">
           <label for="barrows" >arrows</label>
-          <button id="barrows" name="barrows" onclick="MsgBus.send(msgT.arrows,this);">on</button>
+          <button id="barrows" name="barrows" 
+          onmouseenter="MsgBus.send(msgT.over_helper,{m:setpara('if set to on then arrows will show the direction of travel available between nodes')+setpara('if off then no arrow is shown, which is best for undirected graphs'),t:15});" 
+          onclick="MsgBus.send(msgT.arrows,this);">on</button>
         </div>
         <div class="buttonholder">
           <label for="bduplicates" >duplicates</label>
-          <button id="bduplicates" onclick="MsgBus.send(msgT.duplicates,this);">on</button>
+          <button id="bduplicates" 
+          onmouseenter="MsgBus.send(msgT.over_helper,{m:setpara('if a pair of nodes are neighbours (2 directed routes) of each other and have the same cost on will show just the cost once in red')+setpara('if 2 nodes have an undirected route between them this will appear once in the middle of the route (in blue)'),t:15});" 
+          onclick="MsgBus.send(msgT.duplicates,this);">on</button>
         </div>
         <div class="buttonholder">
           <label for="bshownodecost" >node cost</label>
-          <button id="bshownodecost" onclick="MsgBus.send(msgT.shownodecost,this);">on</button>
+          <button id="bshownodecost" 
+          onmouseenter="MsgBus.send(msgT.over_helper,{m:setpara('if on when solving a box will appear showing the current bext cost to a node from the start')+setpara('this is particular useful if you are doing a step by step solution'),t:15});" 
+          onclick="MsgBus.send(msgT.shownodecost,this);">on</button>
         </div>
         <div class="buttonholder">
           <label for="bsetmode" >set names</label>
-          <button id="bsetmode" onclick="MsgBus.send(msgT.setmode,this);">XO</button>
+          <button id="bsetmode" 
+          onmouseenter="MsgBus.send(msgT.over_helper,{m:setpara('XO mode shows O to indicate node is in open set and X to shows its in the closed set')+setpara('VERBOSE uses the words open and closed to specify which set a node is in'),t:15});" 
+          onclick="MsgBus.send(msgT.setmode,this);">XO</button>
         </div>
         <div class="buttonholder">
           <label for="bcostmode" >cost mode</label>
-          <button id="bcostmode" onclick="MsgBus.send(msgT.costmode,this);">static</button>
+          <button id="bcostmode" 
+          onmouseenter="MsgBus.send(msgT.over_helper,{m:setpara('static lets you specify all the costs of your graph (keeping it abstracted from pixel distances)')+setpara('dynamic will use pixel distances based on the the divisor value')+setpara('in dynamic mode heuristics are automatically calculated based on goal node, in static mode you will need to set manually'),t:15});" 
+          onclick="MsgBus.send(msgT.costmode,this);">static</button>
         </div>
         <div class="buttonholder">
           <label for="cheuristicmode" >Heuristic</label>
-          <button id="cheuristicmode" value="0" onclick="cycleAndSet(this,HeuristicMethod.available);MsgBus.send(msgT.heuristic,this.value);">eulerk</button>
+          <button id="cheuristicmode" value="0" 
+          onmouseenter="MsgBus.send(msgT.over_helper,{m:setpara('when costmode is set to dynamic and A* solver is used this will be used to determine distances between nodes for the heuristic')+setpara('choose from euler (crows distance) or manhattan (horiz/vert grid based)'),t:15});" 
+          onclick="cycleAndSet(this,HeuristicMethod.available);MsgBus.send(msgT.heuristic,this.value);">eulerk</button>
         </div>
         <div class="buttonholder">
           <label id="rdivisortop" for="rdivisor" >divisor</label>
           <input id="rdivisor" type="range" min="1" max="20" value="10"
+          onmouseenter="MsgBus.send(msgT.over_helper,{m:setpara('when costmode is set to dynamic, this will divide the pixel distances between nodes')+setpara('this will reduce large numbers to more managable for calculations'),t:15});" 
           oninput="MsgBus.send(msgT.divisorChange, this.value);">
-          <label id="rdivisorlabel" >divisor</label>
+          <label id="rdivisorlabel" onmouseenter="MsgBus.send(msgT.over_helper,{m:setpara('when costmode is set to dynamic, this will divide the pixel distances between nodes')+setpara('this will reduce large numbers to more managable for calculations'),t:15});" 
+          >divisor</label>
         </div>
       </div>
 
@@ -51,69 +65,95 @@
         <div class="containertitle">Solving settings</div>
         <div class="buttonholder">
           <label for="breset" >solution</label>
-          <button id="breset" onclick="MsgBus.send(msgT.reset,this);">reset</button>
+          <button id="breset" 
+          onmouseenter="MsgBus.send(msgT.over_helper,{m:setpara('forces the solver to reset to the beginning of a solution')+setpara('use when in step mode and you want to start again (after a solution or in the middle of one)'),t:15});" 
+          onclick="MsgBus.send(msgT.reset,this);">reset</button>
         </div>
         <div class="buttonholder">
           <label for="bsolve" >step</label>
-          <button id="bsolve" onclick="MsgBus.send(msgT.solve,this);">next</button>
+          <button id="bsolve" 
+          onmouseenter="MsgBus.send(msgT.over_helper,{m:setpara('attempts the next step in solving the graph (nodes will be highlighted)')+setpara('this is useful to follow the algorithm along')+setpara('NOTE:only performs an action if solve mode is set to step'),t:15});" 
+          onclick="MsgBus.send(msgT.solve,this);">next</button>
         </div>
         <div class="buttonholder">
           <label for="bsolvemethod" >method</label>
-          <button id="bsolvemethod" onclick="MsgBus.send(msgT.solvemethod,this);">dave</button>
+          <button id="bsolvemethod" 
+          onmouseenter="MsgBus.send(msgT.over_helper,{m:setpara('pick either Dijkstra or A* solvers')+setpara('for A* you have a heuristic value to set as well'),t:15});" 
+          onclick="MsgBus.send(msgT.solvemethod,this);">dave</button>
         </div>
         <div class="buttonholder">
           <label for="bsolvestyle" >solve mode</label>
-          <button id="bsolvestyle" onclick="MsgBus.send(msgT.solvestyle,this);">auto</button>
+          <button id="bsolvestyle" 
+          onmouseenter="MsgBus.send(msgT.over_helper,{m:setpara('if set to step then press step->next to perform next step in solution')+setpara('if set to auto then graph solution will be fully attempted'),t:15});" 
+          onclick="MsgBus.send(msgT.solvestyle,this);">auto</button>
         </div>
         <div class="buttonholder">
           <label for="bsolvehistory" >history</label>
-          <button id="bsolvehistory" onclick="MsgBus.send(msgT.solvehistory,this);">on</button>
+          <button id="bsolvehistory" 
+          onmouseenter="MsgBus.send(msgT.over_helper,{m:setpara('if history is on then all steps of solution are shown')+setpara('if off then only the last step is shown'),t:15});" 
+          onclick="MsgBus.send(msgT.solvehistory,this);">on</button>
         </div>
       </div>
       <div id="graphcontrols" class="settingscontainer">
         <div class="containertitle">graph</div>
         <div class="buttonholder">
           <label for="bgraphclear" >&nbsp;</label>
-          <button id="bgraphclear" onclick="MsgBus.send(msgT.cleargraph,this);">clear</button>
+          <button id="bgraphclear" 
+          onmouseenter="MsgBus.send(msgT.over_helper,{m:setpara('clears the current graph ready to build a new one'),t:15});" 
+          onclick="MsgBus.send(msgT.cleargraph,this);">clear</button>
         </div>
         <div class="buttonholder">
           <label for="bload" >&nbsp;</label>
-          <button id="bload" onclick="MsgBus.send(msgT.load,this);">import</button>
+          <button id="bload" 
+          onmouseenter="MsgBus.send(msgT.over_helper,{m:setpara('loads a graph CSV format file'),t:15});" 
+          onclick="MsgBus.send(msgT.load,this);">import</button>
         </div>
         <div class="buttonholder">
           <label for="bexport" >&nbsp;</label>
-          <button id="bexport" onclick="MsgBus.send(msgT.export,this);">export</button>
+          <button id="bexport" 
+          onmouseenter="MsgBus.send(msgT.over_helper,{m:setpara('writes the currently display graph to a graph CSV file'),t:15});" 
+          onclick="MsgBus.send(msgT.export,this);">export</button>
         </div>
       </div>
       <div id="consolecontrols" class="settingscontainer">
         <div class="containertitle">console</div>
         <div class="buttonholder">
           <label for="bconsole" >&nbsp;</label>
-          <button id="bconsole" onclick="MsgBus.send(msgT.console,this);">on</button>
+          <button id="bconsole" 
+          onmouseenter="MsgBus.send(msgT.over_helper,{m:setpara('stops console display output, does not affect solution data showing'),t:15});" 
+          onclick="MsgBus.send(msgT.console,this);">on</button>
         </div>
         <div class="buttonholder">
           <label for="bconsoleclear" >&nbsp;</label>
-          <button id="bconsoleclear" onclick="MsgBus.send(msgT.clearcon,this);">clear</button>
+          <button id="bconsoleclear" 
+          onmouseenter="MsgBus.send(msgT.over_helper,{m:setpara('clears all entries in the console window'),t:15});" 
+          onclick="MsgBus.send(msgT.clearcon,this);">clear</button>
         </div>
       </div>      
       <div id="misc" class="settingscontainer">
         <div class="containertitle">miscellaneous</div>
         <div class="buttonholder">
           <label for="bhelp" >help</label>
-          <button id="bhelp" onclick="MsgBus.send(msgT.help,this);">show</button>
+          <button id="bhelp" 
+          onmouseenter="MsgBus.send(msgT.over_helper,{m:setpara('shows help information in the console area'),t:15});" 
+          onclick="MsgBus.send(msgT.help,this);">show</button>
         </div>
         <div class="buttonholder">
           <label for="bpicker" >picker</label>
-          <button id="bpicker" onclick="MsgBus.send(msgT.picker,this);">hide</button>
+          <button id="bpicker" 
+          onmouseenter="MsgBus.send(msgT.over_helper,{m:setpara('toggle node picker display'),t:15});" 
+          onclick="MsgBus.send(msgT.picker,this);">hide</button>
         </div>
         <div class="buttonholder">
           <label for="bprint" >&nbsp;</label>
-          <button id="bprint" onclick="MsgBus.send(msgT.printdoc,this);">print</button>
+          <button id="bprint"
+          onmouseenter="MsgBus.send(msgT.over_helper,{m:setpara('print graph and any console/solution data'),t:15});" 
+          onclick="MsgBus.send(msgT.printdoc,this);">print</button>
         </div>
         <div class="buttonholder">
           <label for="bprintgraph" >&nbsp;</label>
           <button id="bprintgraph" 
-           onmouseenter="MsgBus.send(msgT.over_helper,{m:'only print the graph',t:15});" 
+           onmouseenter="MsgBus.send(msgT.over_helper,{m:setpara('only print the graph (coming soon)'),t:15});" 
            onclick="MsgBus.send(msgT.printdocgraph,this);">print graph</button>
         </div>
       </div>

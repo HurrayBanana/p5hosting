@@ -185,16 +185,11 @@ const s = ( s ) => {
     g.centre(s, 105, true);
   }
   s.logic = () => {
-    //these need sorting properly
     
     contextcounter++;
     if (contextcounter == 15){
       MsgBus.send(msgT.over_helper, {m:stockContext,t:15});
     }
-    
-    //hidecontainer("overoptions");
-    //hidecontainer("joinnode");
-    //hidecontainer("removenode");
     
     s.generalUI(graph);
 
