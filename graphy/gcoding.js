@@ -132,14 +132,20 @@ class GCoding{
     }
     static node = {
         encode:function(g, arr){
+            let temp = g.isDynamicCost;
+            g.dynamic = false;
             for (let p = 0; p < g.size; p++) {
                 arr.push(g.g[p].asString);
             }
+            g.dynamic = temp;
         },
         encodeMin:function(g, arr){
+            let temp = g.isDynamicCost;
+            g.dynamic = false;
             for (let p = 0; p < g.size; p++) {
                 arr.push(g.g[p].asString.replace("node","n").replace("false","f").replace("true","t"));
             }
+            g.dynamic = temp;
         },
         decode:function(g, data){
             g.AddNodeString(data);
@@ -149,18 +155,24 @@ class GCoding{
     }
     static neighbour = {
         encode:function(g, arr){
+            let temp = g.isDynamicCost;
+            g.dynamic = false;
             for (let p = 0; p < g.size; p++) {
                 for (let q = 0; q < g.g[p].neighbour.length; q++) {
                     arr.push(g.g[p].neighbour[q].asString);
                 }
             }
+            g.dynamic = temp;
         },
         encodeMin:function(g, arr){
+            let temp = g.isDynamicCost;
+            g.dynamic = false;
             for (let p = 0; p < g.size; p++) {
                 for (let q = 0; q < g.g[p].neighbour.length; q++) {
                     arr.push(g.g[p].neighbour[q].asString.replace("neig","-").replace("false","f").replace("true","t"));
                 }
             }
+            g.dynamic = temp;
         },
         decode:function(g, data){
             g.AddNeighbourString(data);
@@ -184,13 +196,14 @@ class GCoding{
     }
     static exportGraph(g){
         //only save static costs - dynamics are dynamic!
-        let temp = g.isDynamicCost;
-        g.dynamic = false;
+        //this should only be done in neighbours saving
+        //let temp = g.isDynamicCost;
+        //g.dynamic = false;
         let arr=[];
         for (let p = 0; p < GCoding.components.length; p++){
             GCoding.components[p].encode(g, arr);
         }
-        g.dynamic = temp;
+        //g.dynamic = temp;
         return arr;
     }
     static importGraph(g, lines){

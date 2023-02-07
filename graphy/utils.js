@@ -133,6 +133,10 @@ function ranI(low,high){
   function setpara(content){
     return "<p class='contextline'>" + content + "</p>";
   }
+  function setspan(pre, action, content, post){
+    return "<span class='contextspan'>" + pre + "<span class='actionkey'>" + action + "</span>" + content + post +"</span>";
+  }
+
   /*
   function sa(z){
     let q="";

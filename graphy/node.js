@@ -20,7 +20,8 @@ class pickerNode extends Draggable{
   showdrag(s) {
     this.#hoopDrag = pickerNode.cDRAG;
     s.fill(pickerNode.cDRAG);
-    MsgBus.send(msgT.over_helper, {m:"<p class='contextline'>release to drop here</p>",t:0});
+    MsgBus.send(msgT.over_helper, {m:setpara("release to drop here"),t:0});
+    //MsgBus.send(msgT.over_helper, {m:"<p class='contextline'>release to drop here</p>",t:0});
   }
   shownormal(s) {
     s.fill(pickerNode.cNORM);
@@ -28,7 +29,8 @@ class pickerNode extends Draggable{
   showover(s) {
     this.#hoopOver = pickerNode.cOVER;
     s.fill(pickerNode.cOVER);
-    MsgBus.send(msgT.over_helper, {m:"<p class='contextline'>drag to add to graph</p>",t:0});
+    MsgBus.send(msgT.over_helper, {m:setpara("drag to add to graph"),t:0});
+    //MsgBus.send(msgT.over_helper, {m:"<p class='contextline'>drag to add to graph</p>",t:0});
   }
   hoop(s, ctxt){
     s.fill(pickerNode.cCIRC);
@@ -157,31 +159,33 @@ class node extends Draggable {
     this.hoverkeys();
     this.buildHelper();
   }
+  /*
   setpara(content){
     return "<p class='contextline'>" + content + "</p>";
   }
   setspan(pre, action, content, post){
     return "<span class='contextspan'>" + pre + "<span class='actionkey'>" + action + "</span>" + content + post +"</span>";
   }
+  */
   buildHelper(){
     let help = "";
     
-    let para = this.setspan("[", "Click", this.g.activeNode(this) ? " unselect" : " select","]");
-    para += this.setspan("[","X" ," delete node","]")
-    para += this.g.startNode !== this ? this.setspan("[","S"," set start node","]") : "";
-    para += this.g.goalNode !== this ? this.setspan("[","G"," set goal node","]") : "";
-    help += this.setpara(para);
+    let para = setspan("[", "Click", this.g.activeNode(this) ? " unselect" : " select","]");
+    para += setspan("[","X" ," delete node","]")
+    para += this.g.startNode !== this ? setspan("[","S"," set start node","]") : "";
+    para += this.g.goalNode !== this ? setspan("[","G"," set goal node","]") : "";
+    help += setpara(para);
 
-    para = this.neighbour.length > 0 ? this.setspan("[","A"," remove all from " + this.name,"]"):"";
-    para += this.neighbourOfAny ? this.setspan("[","T"," remove all to " + this.name,"]"):"";
-    para += (this.g.active !== null && this.neighbourExists(this, this.g.active)) ? this.setspan("[","F"," remove to " + this.g.active.name,"]"):"";
-    para += (this.g.active !== null && this.neighbourExists(this.g.active, this)) ? this.setspan("[","P"," remove from " + this.g.active.name,"]"):"";
-    help += this.setpara(para);
+    para = this.neighbour.length > 0 ? setspan("[","A"," remove all from " + this.name,"]"):"";
+    para += this.neighbourOfAny ? setspan("[","T"," remove all to " + this.name,"]"):"";
+    para += (this.g.active !== null && this.neighbourExists(this, this.g.active)) ? setspan("[","F"," remove to " + this.g.active.name,"]"):"";
+    para += (this.g.active !== null && this.neighbourExists(this.g.active, this)) ? setspan("[","P"," remove from " + this.g.active.name,"]"):"";
+    help += setpara(para);
 
-    para = (this.g.active !== null && this.g.notActiveNode(this) && (!this.neighbourExists(this.g.active, this) && this.g.active !== this)) ? this.setspan("[","D"," directed neighbour (red) from " + this.g.active.name,"]"):"";
+    para = (this.g.active !== null && this.g.notActiveNode(this) && (!this.neighbourExists(this.g.active, this) && this.g.active !== this)) ? setspan("[","D"," directed neighbour (red) from " + this.g.active.name,"]"):"";
     para += (this.g.active !== null && this.g.notActiveNode(this) && (!this.neighbourExists(this.g.active, this) || !this.neighbourExists(this, this.g.active)))
-               ? this.setspan("[","U"," undirected (blue) neighbour to " + this.g.active.name,"]"):"";
-    help += this.setpara(para);
+               ? setspan("[","U"," undirected (blue) neighbour to " + this.g.active.name,"]"):"";
+    help += setpara(para);
 
     MsgBus.send(msgT.over_helper, {m:help,t:0});
   }

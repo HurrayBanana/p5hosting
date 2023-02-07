@@ -152,15 +152,16 @@ class Graph {
         this.#dynamic = !this.#dynamic;
         this.broadcastCostState();
     }
+    broadcastCostState(){
+        MsgBus.send(msgT.costmodechanged,{state:this.#dynamic, txtT:"dynamic", txtF:"static"});
+    }
+
     toggleNodeCost(){
         this.#shownodecost = !this.#shownodecost;
         this.broadcastNodeCost();
     }
     broadcastNodeCost(){
         MsgBus.send(msgT.shownodecostchanged,{state:this.#shownodecost, txtT:"on", txtF:"off"});
-    }
-    broadcastCostState(){
-        MsgBus.send(msgT.costmodechanged,{state:this.#dynamic, txtT:"dynamic", txtF:"static"});
     }
     broadcastSolveHistory(){
         MsgBus.send(msgT.solvehistorychanged,{state:this.#solveHistory, txtT:"on", txtF:"off"});

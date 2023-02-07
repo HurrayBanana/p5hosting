@@ -65,21 +65,30 @@ class neighbour extends Clickable{
         s.fill(neighbour.cNORM);
       }
     }
+
+    // same stupid bug to gix in heuristic for dynamic
     showover(s) {
-      if (!this.parent.g.isDynamicCost){
-        if (this.linked) {
-          s.fill(neighbour.cLINKOVER);
-          MsgBus.send(msgT.over_helper, {m:this.getContextControls(false),t:0});
-        } else {
-          s.fill(neighbour.cOVER);
-          MsgBus.send(msgT.over_helper, {m:this.getContextControls(true),t:0});
-        }
-        this.hoverkeys();
+      let helper = "";
+      if (this.linked) {
+        s.fill(neighbour.cLINKOVER);
+        //MsgBus.send(msgT.over_helper, {m:this.getContextControls(false),t:0});
+        helper = setpara(setspan("","L"," to unlink nodes (2 separate directed links with individual costs)",""));
       } else {
-        this.shownormal(s);
+        s.fill(neighbour.cOVER);
+        //MsgBus.send(msgT.over_helper, {m:this.getContextControls(true),t:0});
+        helper = setpara(setspan("","L"," to link nodes with cost [" + this.cost + "] (undirected link with single cost)",""));
       }
+      this.hoverkeys();
+
+      if (!this.parent.g.isDynamicCost){
+        helper += neighbour.CONTEXT_CONTROLS;
+      }
+      /* else {
+        this.shownormal(s);
+      }*/
+      MsgBus.send(msgT.over_helper, {m:helper,t:0});
     }
-    
+    /*
     getContextControls(showcost){
       if (showcost){
         return "<p class='contextline'><span class='actionkey'>L</span> to link nodes with cost [" + this.cost + "] (undirected link with single cost)</p>" + neighbour.CONTEXT_CONTROLS;
@@ -88,13 +97,16 @@ class neighbour extends Clickable{
 
       }
     }
+    */
 
     hoverkeys(){
-      if (inpM.kPressed(kPlus)){ 
-        this.cost++;
-      }
-      if (inpM.kPressed(kMinus)) {
-        this.cost--;
+      if (!this.parent.g.isDynamicCost){
+        if (inpM.kPressed(kPlus)){ 
+          this.cost++;
+        }
+        if (inpM.kPressed(kMinus)) {
+          this.cost--;
+        }
       }
       //link or unlink
       if (inpM.kPressed(kL)){ 

@@ -1,7 +1,5 @@
-playing with input functionality, ready to try adding neighbours
+-- no issue here Sort heuristic dynamic change bug as per neighbour
+fixed, wasn't getting saved because of an incorrect temp change - Look at broadcast of cost mode as it is not setting when loaded
+also save solver method with graph so we can automatically go to that mode on load
 
-directed graph system built
-
-now need to add interactivity in creation of graph, then write solvers. this will need some callback timer sub systems to do animations
-
-investigate layouts when printing (showing overflow of console)
+reject anything that is not a .graph file to avoid infinite hangs
