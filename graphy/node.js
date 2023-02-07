@@ -178,9 +178,9 @@ class node extends Draggable {
     para += (this.g.active !== null && this.neighbourExists(this.g.active, this)) ? this.setspan("[","P"," remove from " + this.g.active.name,"]"):"";
     help += this.setpara(para);
 
-    para = (this.g.active !== null && (!this.neighbourExists(this.g.active, this) && this.g.active !== this)) ? this.setspan("[","D"," directed neighbour from " + this.g.active.name,"]"):"";
-    para += (this.g.active !== null && (!this.neighbourExists(this.g.active, this) || !this.neighbourExists(this, this.g.active)))
-               ? this.setspan("[","U"," undirected neighbour to " + this.g.active.name,"]"):"";
+    para = (this.g.active !== null && this.g.notActiveNode(this) && (!this.neighbourExists(this.g.active, this) && this.g.active !== this)) ? this.setspan("[","D"," directed neighbour (red) from " + this.g.active.name,"]"):"";
+    para += (this.g.active !== null && this.g.notActiveNode(this) && (!this.neighbourExists(this.g.active, this) || !this.neighbourExists(this, this.g.active)))
+               ? this.setspan("[","U"," undirected (blue) neighbour to " + this.g.active.name,"]"):"";
     help += this.setpara(para);
 
     MsgBus.send(msgT.over_helper, {m:help,t:0});
@@ -239,13 +239,13 @@ class node extends Draggable {
       this.remove = true;
       co.log("trying to remove:" + this.name);
     }
-    if (inpM.kPressed(kD) && this.g.nodeActive) {
+    if (inpM.kPressed(kD) && this.g.nodeActive && this.g.notActiveNode(this)) {
       let cost = ranI(10, 30);
       if (this.g.active.addNeighbour(this, cost))
         co.log("new neighbour " + this.g.active.name + "->" + this.name + "[" + cost + "]");
     }
     //need to make this pick up current cost if a neighbour exists in one of the directions
-    if (inpM.kPressed(kU) && this.g.nodeActive) {
+    if (inpM.kPressed(kU) && this.g.nodeActive && this.g.notActiveNode(this)) {
       this.generateUndirectedNeighbour(this.g.active, this);
     }
     /*

@@ -195,7 +195,7 @@ class Graph {
     }
     temp;
     printing(){
-        this.temp = {dupe:this.duplicates, arrow:this.arrows};
+        this.temp = {dupe:this.duplicates, arrow:this.arrows, hist:this.solveHistory};
         this.duplicates = false;
     }
 

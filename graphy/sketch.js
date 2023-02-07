@@ -12,6 +12,7 @@ solveDijkstra = true;
 auto = false;
 help = false;
 printdoc = false;
+printcon = true;
 let pick;
 showpick = true;
 let printcheck;
@@ -104,8 +105,9 @@ const s = ( s ) => {
     showpick = !showpick;
     MsgBus.send(msgT.pickerChanged, {state:showpick, txtT:"hide", txtF:"show"});
   }
-  s.printnow=()=>{
+  s.printnow=(data)=>{
     printdoc = true;
+    printcon = data;
   }
 
   s.clearGraph=()=>{
@@ -332,7 +334,7 @@ const s = ( s ) => {
     setTextboxValue("filename",g.name);
     pick.graph = graph;
 
-  }    
+  }  
   s.draw = () => {
     s.logic();
     s.background(printdoc ? cPRNT:cBACK);

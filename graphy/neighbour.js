@@ -82,9 +82,9 @@ class neighbour extends Clickable{
     
     getContextControls(showcost){
       if (showcost){
-        return "<p class='contextline'><span class='actionkey'>L</span> to link with cost [" + this.cost + "] (undirected link costs)</p>" + neighbour.CONTEXT_CONTROLS;
+        return "<p class='contextline'><span class='actionkey'>L</span> to link nodes with cost [" + this.cost + "] (undirected link with single cost)</p>" + neighbour.CONTEXT_CONTROLS;
       } else {
-        return "<p class='contextline'><span class='actionkey'>L</span> to unlink (directed link costs)</p>" + neighbour.CONTEXT_CONTROLS;
+        return "<p class='contextline'><span class='actionkey'>L</span> to unlink nodes (2 separate directed links with individual costs)</p>" + neighbour.CONTEXT_CONTROLS;
 
       }
     }
