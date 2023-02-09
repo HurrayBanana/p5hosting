@@ -114,6 +114,12 @@
           onmouseenter="MsgBus.send(msgT.over_helper,{m:setpara('writes the currently display graph to a graph CSV file'),t:15});" 
           onclick="MsgBus.send(msgT.export,this);">export</button>
         </div>
+        <div class="buttonholder">
+          <label for="bsavegraph" >&nbsp;</label>
+          <button id="bsavegraph" 
+           onmouseenter="MsgBus.send(msgT.over_helper,{m:setpara('saves graph as png')+setpara('this can then be used to insert into a document'),t:15});" 
+           onclick="MsgBus.send(msgT.savegraph,this);">save image</button>
+        </div>
       </div>
       <div id="consolecontrols" class="settingscontainer">
         <div class="containertitle">console</div>
@@ -149,12 +155,6 @@
           <button id="bprint"
           onmouseenter="MsgBus.send(msgT.over_helper,{m:setpara('print graph and any console/solution data'),t:15});" 
           onclick="MsgBus.send(msgT.printdoc,true,this);">print</button>
-        </div>
-        <div class="buttonholder">
-          <label for="bprintgraph" >&nbsp;</label>
-          <button id="bprintgraph" 
-           onmouseenter="MsgBus.send(msgT.over_helper,{m:setpara('only print the graph (coming soon)')+setpara('for now set solver to step and clear console to just print the graph'),t:15});" 
-           onclick="MsgBus.send(msgT.printdoc,false,this);">print graph</button>
         </div>
       </div>
       <div id="context" class="settingscontainer">

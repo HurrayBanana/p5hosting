@@ -12,10 +12,11 @@ solveDijkstra = true;
 auto = false;
 help = false;
 printdoc = false;
-printcon = true;
+imggraph = false;
 let pick;
 showpick = true;
 let printcheck;
+
 /* END OF GLOBALS */
 const s = ( s ) => {
   let cBACK = [220,220,255];
@@ -99,8 +100,13 @@ const s = ( s ) => {
     MsgBus.sub(msgT.droppedNewNode, s.newNodeDropped, s);
     MsgBus.sub(msgT.printdoc, s.printnow, s);
     MsgBus.sub(msgT.picker, s.togglePick,s);
+    MsgBus.sub(msgT.savegraph,s.saveGraph,s);
   }
 
+  s.saveGraph=()=>{
+    imggraph = true;
+    printdoc = true;
+  }
   s.togglePick=()=>{
     showpick = !showpick;
     MsgBus.send(msgT.pickerChanged, {state:showpick, txtT:"hide", txtF:"show"});
@@ -362,7 +368,12 @@ const s = ( s ) => {
     //so we can turn off node picker first 
     if (printdoc){
       printdoc = false;
-      window.print();
+      if (imggraph){
+        s.saveCanvas(graph.name,'png');
+        imggraph = false;
+      } else {
+        window.print();
+      }
     }
   }
   s.drawkeys=()=>{

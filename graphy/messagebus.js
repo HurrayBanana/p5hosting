@@ -23,6 +23,7 @@ class msgT{
     static heuristic = "heuristic";
     static printdoc = "printdoc";
     static printdocgraph = "printdocgraph";
+    static savegraph = "savegraph";
     static picker = "picker";
     
     static arrowschanged = "arrowschanged";
