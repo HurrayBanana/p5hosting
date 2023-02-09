@@ -52,7 +52,7 @@ class Heuristic extends Clickable{
       if (!this.parent.g.isDynamicCost){
         return this.#value;
       } else {
-        return Math.floor(this.parent.g.Hmethod.distance(this.parent, this.parent.g.goalNode)/this.parent.g.dynamicDivisor);
+        return this.parent.g.goalNode !== null ? Math.floor(this.parent.g.Hmethod.distance(this.parent, this.parent.g.goalNode)/this.parent.g.dynamicDivisor): 0;
       }
     }
 
