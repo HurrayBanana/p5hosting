@@ -22,6 +22,7 @@
 }
 #context.settingscontainer{
   background-color: #cecff6;
+ /* width:500px;*/
 }
 .containertitle{
   margin-top: -5px;
@@ -127,6 +128,9 @@ label{
   padding: 0;
   height:56px;
  /* width:72px;*/
+}
+#showcontext.contextholder{
+  width: 500px;
 }
 select{
   width: 70px;
