@@ -138,10 +138,11 @@ function ranI(low,high){
 
   }
   function setcontextposition(data){
-    let lt, tp;
+    let lt
+    let tp = window.scrollY;;
   //sketch or HTML elements
     if (data.bt === undefined){
-      tp = document.getElementById("sketcharea").getBoundingClientRect().top;
+      tp += document.getElementById("sketcharea").getBoundingClientRect().top;
       if (data.mx < window.innerWidth/2) {
         lt = data.mx;
         lt = (lt < 10 ? 10 : (lt + 590 > window.innerWidth ? window.innerWidth - 620 : lt));
@@ -152,7 +153,7 @@ function ranI(low,high){
       tp += data.my + 30;
       //this.style.top = 30 + data.my + 'px';
     } else {
-        tp = data.bt.getBoundingClientRect().bottom + 10;
+        tp += data.bt.getBoundingClientRect().bottom + 10;
         //this.style.top = (tp + 10) + 'px';
         if (data.bt.getBoundingClientRect().right < window.innerWidth/2) {
           lt = data.bt.getBoundingClientRect().left;
