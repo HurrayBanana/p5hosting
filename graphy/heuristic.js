@@ -92,7 +92,7 @@ class Heuristic extends Clickable{
       if (!this.parent.g.isDynamicCost){
         s.fill(Heuristic.cOVER);
         this.hoverkeys();
-        MsgBus.send(msgT.over_helper, {m:setpara(setspan("","+"," to increment heuristic cost","")) + setpara(setspan("","-"," to decrement heuristic cost","")),t:0});
+        MsgBus.send(msgT.over_helper, {m:setpara(setspan("","+"," to increment heuristic cost","")) + setpara(setspan("","-"," to decrement heuristic cost","")),t:0,mx:s.mouseX,my:s.mouseY});
 
       } else {
         this.shownormal(s);

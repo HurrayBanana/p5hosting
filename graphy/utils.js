@@ -60,6 +60,12 @@ function ranI(low,high){
     let el = document.getElementById(id);
     el.style.display = "block";  
   }
+  function hideelement(el){
+    el.style.display = "none";  
+  }
+  function showelement(el){
+    el.style.display = "block";  
+  }  
   function filenameSelect(id){
     textentryactive = true;
     id.className = "editname";
@@ -124,11 +130,43 @@ function ranI(low,high){
   }
   function regsiterOverHelpers(){
     MsgBus.sub(msgT.over_helper, showcontext, document.getElementById("showcontext"));
+    MsgBus.sub(msgT.over_helper, setcontextposition, document.getElementById("context"));
   }
-
   function showcontext(data){
     this.innerHTML = data.m;
     contextcounter = data.t;
+
+  }
+  function setcontextposition(data){
+    let lt, tp;
+  //sketch or HTML elements
+    if (data.bt === undefined){
+      tp = document.getElementById("sketcharea").getBoundingClientRect().top;
+      if (data.mx < window.innerWidth/2) {
+        lt = data.mx;
+        lt = (lt < 10 ? 10 : (lt + 590 > window.innerWidth ? window.innerWidth - 620 : lt));
+      } else {
+        lt = data.mx - 600;
+        lt = (lt < 10 ? 10 : (lt + 590 > window.innerWidth ? window.innerWidth - 620 : lt));
+      }
+      tp += data.my + 30;
+      //this.style.top = 30 + data.my + 'px';
+    } else {
+        tp = data.bt.getBoundingClientRect().bottom + 10;
+        //this.style.top = (tp + 10) + 'px';
+        if (data.bt.getBoundingClientRect().right < window.innerWidth/2) {
+          lt = data.bt.getBoundingClientRect().left;
+          lt = (lt < 10 ? 10 : (lt + 590 > window.innerWidth ? window.innerWidth - 620 : lt));
+        } else {
+          lt = data.bt.getBoundingClientRect().right - 600;
+          lt = (lt < 10 ? 10 : (lt + 590 > window.innerWidth ? window.innerWidth - 620 : lt));
+        }
+    }
+    this.style.top = tp + 'px';
+    this.style.left = lt + 'px';
+    //this.style.width = 'auto';
+    this.style.width = '600px';
+    this.style.display = "block";
   }
   function setpara(content){
     return "<p class='contextline'>" + content + "</p>";

@@ -86,7 +86,7 @@ class neighbour extends Clickable{
       /* else {
         this.shownormal(s);
       }*/
-      MsgBus.send(msgT.over_helper, {m:helper,t:0});
+      MsgBus.send(msgT.over_helper, {m:helper,t:0,mx:s.mouseX,my:s.mouseY});
     }
     /*
     getContextControls(showcost){

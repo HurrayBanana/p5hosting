@@ -20,10 +20,7 @@
 #graphcontrols.settingscontainer{
   background-color: #ceeff6;
 }
-#context.settingscontainer{
-  background-color: #cecff6;
- /* width:500px;*/
-}
+
 .containertitle{
   margin-top: -5px;
 }
@@ -33,7 +30,21 @@
   float:left;
   width:auto;  
 }
+#context.settingscontainer{
+  background-color: rgba(255, 255, 255, 0.90);/*#cecff6;*/
+  position:absolute;
+  left:40px;
+  top:100px;
+  float:none;
+  display: none;
+  height: auto;
+  border-radius:4px;
 
+  /*width:500px;*/
+  z-index: 100;
+  /*float:none
+  display: none;*/
+}
 #sketcharea {
   float:left;
   /*width:80%;*/
@@ -123,14 +134,13 @@ label{
   border-style:dashed;
   border-width: 1px;
   padding: 3px;
-  float:left;
+  border-radius:3px;
+  /*float:left;*/
   text-align: center;
   padding: 0;
-  height:56px;
+  height:inherit;/*56px;*/
+  width: inherit;
  /* width:72px;*/
-}
-#showcontext.contextholder{
-  width: 500px;
 }
 select{
   width: 70px;

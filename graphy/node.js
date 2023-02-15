@@ -20,7 +20,7 @@ class pickerNode extends Draggable{
   showdrag(s) {
     this.#hoopDrag = pickerNode.cDRAG;
     s.fill(pickerNode.cDRAG);
-    MsgBus.send(msgT.over_helper, {m:setpara("release to drop here"),t:0});
+    MsgBus.send(msgT.over_helper, {m:setpara("release to drop here"),t:0,mx:s.mouseX,my:s.mouseY});
     //MsgBus.send(msgT.over_helper, {m:"<p class='contextline'>release to drop here</p>",t:0});
   }
   shownormal(s) {
@@ -29,7 +29,7 @@ class pickerNode extends Draggable{
   showover(s) {
     this.#hoopOver = pickerNode.cOVER;
     s.fill(pickerNode.cOVER);
-    MsgBus.send(msgT.over_helper, {m:setpara("drag to add to graph"),t:0});
+    MsgBus.send(msgT.over_helper, {m:setpara("drag to add to graph"),t:0,mx:s.mouseX,my:s.mouseY});
     //MsgBus.send(msgT.over_helper, {m:"<p class='contextline'>drag to add to graph</p>",t:0});
   }
   hoop(s, ctxt){
@@ -157,7 +157,7 @@ class node extends Draggable {
     this.g.Over(this);
     s.fill(Graph.cOVER);
     this.hoverkeys();
-    this.buildHelper();
+    this.buildHelper(s);
   }
   /*
   setpara(content){
@@ -167,13 +167,14 @@ class node extends Draggable {
     return "<span class='contextspan'>" + pre + "<span class='actionkey'>" + action + "</span>" + content + post +"</span>";
   }
   */
-  buildHelper(){
+  buildHelper(s){
     let help = "";
     
     let para = setspan("[", "Click", this.g.activeNode(this) ? " unselect" : " select","]");
-    para += setspan("[","X" ," delete node","]")
-    para += this.g.startNode !== this ? setspan("[","S"," set start node","]") : "";
-    para += this.g.goalNode !== this ? setspan("[","G"," set goal node","]") : "";
+    para += setspan("[","X" ," delete","]")
+    para += this.g.startNode !== this ? setspan("[","S"," set as start","]") : "";
+    para += this.g.goalNode !== this ? setspan("[","G"," set as goal","]") : "";
+    para += setspan("[","drag"," to move","]");
     help += setpara(para);
 
     para = this.neighbour.length > 0 ? setspan("[","A"," remove all from " + this.name,"]"):"";
@@ -187,7 +188,7 @@ class node extends Draggable {
                ? setspan("[","U"," undirected (blue) neighbour to " + this.g.active.name,"]"):"";
     help += setpara(para);
 
-    MsgBus.send(msgT.over_helper, {m:help,t:0});
+    MsgBus.send(msgT.over_helper, {m:help,t:0,mx:s.mouseX,my:s.mouseY});
   }
 
   show(s) {
