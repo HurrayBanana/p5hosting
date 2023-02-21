@@ -267,9 +267,8 @@ body::-webkit-scrollbar{
 }
 @media print {
   .settingscontainer{display: none;}
-  #overoptions {display:none;}
-  #joinnode {display:none;} 
-  #removenode {display:none;}
+  /*#context {display:none;}
+  #showcontext {display:none;}*/
   #console {
     clear: both;
     height:auto;

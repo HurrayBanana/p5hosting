@@ -65,6 +65,7 @@ class pickerNode extends Draggable{
     if (this.dragging){
       super.released();
       MsgBus.send(msgT.droppedNewNode,{name:this.name,x:this.x,y:this.y});
+      MsgBus.send(msgT.stoppedDraggingNode);
     } 
   }
   ang = 0;
@@ -89,7 +90,12 @@ class pickerNode extends Draggable{
 }
 
 class node extends Draggable {
-
+  released(){
+    if (this.dragging){
+      super.released();
+      MsgBus.send(msgT.stoppedDraggingNode);
+    } 
+  }
   removeNeighbourNode(n) {
     for (let q = 0; q < this.neighbour.length; q++) {
       if (this.neighbour[q].node == n) {

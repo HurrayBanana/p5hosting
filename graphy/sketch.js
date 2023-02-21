@@ -161,6 +161,7 @@ const s = ( s ) => {
     s.broadcastSolveMethod();
   }
   s.reset=()=>{
+    graph.clearRoute();
     dij = null;
     astar = null;
     co.log("-> solver reset");
@@ -348,6 +349,7 @@ const s = ( s ) => {
     
     if (printdoc){
       graph.printing();
+      hidecontainer("context");
     }
     graph.draw(s);
     if (printdoc){

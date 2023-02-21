@@ -25,6 +25,7 @@ class msgT{
     static printdocgraph = "printdocgraph";
     static savegraph = "savegraph";
     static picker = "picker";
+    static stoppedDraggingNode = "stoppedDraggingNode";
     
     static arrowschanged = "arrowschanged";
     static consolechanged = "consolechanged";

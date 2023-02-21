@@ -130,6 +130,7 @@ class Graph {
         MsgBus.sub(msgT.setmode, this.toggleSetMode, this);
         MsgBus.sub(msgT.solvemethodchanged, this.logMethod, this);
         MsgBus.sub(msgT.heuristic, this.setHeuristicMode, this);
+        MsgBus.sub(msgT.stoppedDraggingNode, this.sortNodes, this);
     }
     cleanup(){
         MsgBus.drop(msgT.arrows, this.toggleArrows, this);
@@ -141,6 +142,10 @@ class Graph {
         MsgBus.drop(msgT.setmode, this.toggleSetMode, this);
         MsgBus.drop(msgT.solvemethodchanged, this.logMethod, this);
         MsgBus.drop(msgT.heuristic, this.setHeuristicMode, this);
+        MsgBus.drop(msgT.stoppedDraggingNode, this.sortNodes, this);
+    }
+    sortNodes(){
+        this.g.sort(function(a,b){return a.name < b.name ? -1 : 1;})
     }
     setHeuristicMode(index){
         this.Hmethod = HeuristicMethod.available[index];
@@ -432,6 +437,7 @@ class Graph {
         for (let p = 0; p < this.size; p++) {
             this.g[p].released(s);
         }
+        //this.sortNodes();
     }
     //takes a file array string containing a loaded graph
     static #graphFromArrString(filename, fa) {
