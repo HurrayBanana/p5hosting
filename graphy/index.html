@@ -166,7 +166,7 @@
     </div>
     <div class="grid">
       <div id="sketcharea"  onmouseover="hidecontainer('context');">
-        <label for="filepicker"><input title="load" type="file" id="upload" ></label>
+        <label for="filepicker"><input title="load" type="file" id="upload" accept=".graph" ></label>
         <input title="" id="filename" class="viewname" 
         onmouseenter="MsgBus.send(msgT.over_helper,{m:setpara('Filename for graph, click to change'),t:15,mx:event.x,my:event.y,bt:this});"
         onfocus="filenameSelect(this);" onblur="filenameDone(this);"></input>

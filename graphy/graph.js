@@ -459,21 +459,23 @@ class Graph {
     //graph load handler
     static handleRequest() {
         let fname = this.files[0].name;
-        if (fname == Graph.lastload){
-            Graph.#graphFromArrString(fname,Graph.lastDataset);
-        } else {
-            co.log("loaded:" + this.files[0].size + " bytes from:" + this.files[0].name);
-            //co.log("----------------");
-            let r = new FileReader();
-            r.onload = function () {
-                let textArray = r.result.split(/\r?\n/);
-                Graph.lastDataset = textArray;
-                Graph.lastload = fname;
-                Graph.#graphFromArrString(fname,textArray);
-                filestuff.clearFileLoad();
+        if (fname.split(".")[1].toLowerCase() == "graph"){
+            if (fname == Graph.lastload){
+                Graph.#graphFromArrString(fname,Graph.lastDataset);
+            } else {
+                co.log("loaded:" + this.files[0].size + " bytes from:" + this.files[0].name);
+                //co.log("----------------");
+                let r = new FileReader();
+                r.onload = function () {
+                    let textArray = r.result.split(/\r?\n/);
+                    Graph.lastDataset = textArray;
+                    Graph.lastload = fname;
+                    Graph.#graphFromArrString(fname,textArray);
+                    filestuff.clearFileLoad();
 
-            };
-            r.readAsText(this.files[0]);
+                };
+                r.readAsText(this.files[0]);
+            }
         }
     }
 }
