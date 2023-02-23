@@ -445,6 +445,7 @@ class Graph {
         co.log("filename loaded:"+filename);
         co.log("----------------");
         GCoding.importGraph(newgraph, fa);
+        newgraph.sortNodes();
         newgraph.brodcastAllStates();
         co.log("Graph name once loaded:" + newgraph.name)
         if (Graph.#passthrough != null) {
