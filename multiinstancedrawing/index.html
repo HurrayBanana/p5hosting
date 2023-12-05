@@ -1,0 +1,29 @@
+<!-- copyright by Hurray Banana March 2023 -->
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.0/p5.js"></script>
+    <!--<script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.0/addons/p5.sound.min.js"></script>-->
+    <link rel="stylesheet" type="text/css" href="style.css">
+    <meta charset="utf-8" />
+
+  </head>
+  <body>
+    <h1>Simple demo of 3 sketch instances</h1>
+    <p>Each canvas is a separate sketch. 
+      The sketches are defined in their own js file for clarity. 
+      None of the sketches have knowledge about each other. 
+      Communication is performed via a simple messagebus system.</p>
+    <div id="actionsketch"></div><!-- action sketch container, styled in css file-->
+    <div id="uisketch"></div><!-- ui sketch container, styled in css file-->
+    <div id="coloursketch"></div><!-- ui sketch container, styled in css file-->
+      
+    <!--must load dependencies first-->
+    <script defer src="helpers.js"></script>
+    <script defer src="messagebus.js"></script>
+    <script defer src="vector2.js"></script>
+    <script defer src="sketchaction.js"></script>
+    <script defer src="sketchui.js"></script>
+    <script defer src="sketchcolour.js"></script>
+  </body>
+</html>
