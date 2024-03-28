@@ -1,5 +1,5 @@
 /******************************
- * clickable.js
+ * clickable.js by Hurray Banana 2023-2024
  ******************************/ 
 class Clickable{
     dragging;

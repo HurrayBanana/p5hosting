@@ -1,5 +1,5 @@
 /******************************
- * gravitywell.js
+ * gravitywell.js by Hurray Banana 2023-2024
  ******************************/ 
 /** @classdesc Defines a gravity well that can act upon a sprite if associated*/
 class GravityWell{

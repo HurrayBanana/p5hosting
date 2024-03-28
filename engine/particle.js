@@ -1,5 +1,5 @@
   /******************************
-   * particle.js
+   * particle.js by Hurray Banana 2023-2024
    ******************************/ 
   /**
    * @classdesc Holds information about an idividual particle

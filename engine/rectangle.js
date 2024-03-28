@@ -1,9 +1,5 @@
 /******************************
- * 
- * 
- * rectangle.js
- * 
- * 
+ * rectangle.js by Hurray Banana 2023-2024
  ******************************/ 
 //one lone coder rect and dynamic rect collision implementations need wori#king for javascript
 //might wack in a custom one for the tilemap stuff as well

@@ -1,4 +1,7 @@
 
+ /******************************
+   * messagebus.js by Hurray Banana 2023-2024
+   ******************************/ 
 /** 
  * @classdesc list of static message types to send or subscribe to 
  * 

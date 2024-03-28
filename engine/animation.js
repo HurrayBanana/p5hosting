@@ -1,5 +1,5 @@
 /******************************
- * animation.js
+ * animation.js created by Hurray Banana 2023-2024
  ******************************/ 
 /**
  * @classdesc controls what happens when an animation reaches its last frame

@@ -1,6 +1,6 @@
 //NEED  SOMETHING TO HAVE HISTORY ENABLED BUT ONLY IF SETUP CORRECTLY
 /******************************
- * history.js
+ * history.js by Hurray Banana 2023-2024
  ******************************/ 
 
 /** holds the definitions for a snapshot of a sprite

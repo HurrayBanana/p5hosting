@@ -1,5 +1,5 @@
 /******************************
- * spritemanager.js
+ * spritemanager.js by Hurray Banana 2023-2024
  ******************************/ 
 /**manages and processes sprites - you should not have to use this directly apart from setting debug output*/
 class Spritemanager{

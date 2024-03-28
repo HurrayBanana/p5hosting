@@ -1,3 +1,6 @@
+ /******************************
+   * mathhelper.js by Hurray Banana 2023-2024
+   ******************************/ 
 /** @classdesc will contain general maths routines ?? */
 class MathHelper{
     

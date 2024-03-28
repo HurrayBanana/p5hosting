@@ -1,12 +1,8 @@
 /******************************
- * 
- * 
- * vector3.js
- * to be implemented then used for pos and velocity
- * 
+ * vector3.js by Hurray Banana 2023-2024
  ******************************/ 
 
-/**3d position and methods */
+/** @classdesc 3d position and methods */
 class vector3{
     #x=0;
     #y=0;

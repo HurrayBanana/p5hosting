@@ -1,5 +1,5 @@
 /******************************
- * tilemap.js
+ * tilemap.js by Hurray Banana 2023-2024
  ******************************/ 
 class TilemapManager{
     #tilemaps;

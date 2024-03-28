@@ -1,4 +1,7 @@
 "use strict";
+/******************************
+ * view.js by Hurray Banana 2023-2024
+ ******************************/
 /**
  * @classdesc describes a rectangle viewport to control display areas, defaults to same size of canvas
  */

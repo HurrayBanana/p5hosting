@@ -1,5 +1,5 @@
 /******************************
- * general helper functions
+ * general helper functions by Hurray Banana 2023-2024
 ******************************/ 
 /**
  * Produces a linear interpolation between 2 values

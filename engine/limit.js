@@ -1,5 +1,5 @@
   /******************************
-   * Limit.js
+   * Limit.js by Hurray Banana 2023-2024
    ******************************/ 
   /** actions to be taken once a Sprite meets or passes the limit box edge that is defined
    * 

@@ -1,3 +1,6 @@
+/******************************
+ * textures.js by Hurray Banana 2023-2024
+ ******************************/ 
 /** @classdesc support to help with textures, loading and manipulating */
 class Tex{
     /** font used to pre-render textures ready for sprites (alphabet stuff)

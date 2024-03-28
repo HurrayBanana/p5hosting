@@ -1,6 +1,6 @@
  
 /******************************
- * engine.js
+ * engine.js by Hurray Banana 2023-2024
 ******************************/ 
 /** current version number of the engine */
 let engineversion = '1.22.2.3';

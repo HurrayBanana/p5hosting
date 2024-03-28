@@ -1,5 +1,7 @@
+/******************************
+ * timer.js by Hurray Banana 2023-2024
+ ******************************/ 
 // NEED TO IMPLEMENT CATMULL-ROM for smooth function
-//NEED TO DECIDE ON MATRIX
        
 
      /**
