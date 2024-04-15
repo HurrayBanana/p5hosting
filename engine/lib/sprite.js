@@ -132,16 +132,6 @@ class Sprite{
     /** forces metric calculations, use this if you have a reference to a sprite,
      * in normal circumstances you never need to call this*/
     setmetrics(){this.#setvisibleSize();}
-    /** removes references before a sprite is destroyed
-     * timer, history, frame, limit etc...
-     * if you added some extra resources yourself then create a cleanup method for your sprite
-     * and call super.cleanup() before you null your own references
-     * @example
-     * cleanup(){
-     *      super.cleanup();
-     *      this.myresource = null;
-     * }
-     */
 
     /** holds the animation system for the sprite 
      * 
@@ -216,8 +206,7 @@ class Sprite{
     lastposition = vector3.zero;
     /** the update period (in seconds) for the sprite to force the update to only occur now and then, just like space invaders movement
      * 
-     * currently not implemented
-     * @type {float}
+     * @type {float} time interval to wait between updates
     */
     updatePeriod = 0;
     /** keeps track of the time elapsed if a sprite is using an updatePeriod.
@@ -289,7 +278,7 @@ class Sprite{
         } else {
             additionalAngle *= Math.PIby180;// Math.PI / 180;
         }
-        this.#angle = vector3.anglefromdirection(direction,additionalAngle);        
+        this.#angle = vector3.anglefromdirectionR(direction,additionalAngle);        
     }
     /** takes rotation angle of sprite and sets the velocity to move in this direction
      * 
@@ -358,7 +347,7 @@ class Sprite{
             else
                 return 0;                
     }
-
+    //rotateTowards(to, minimumAngle)
     /**
      * @type {vector3}
      */
@@ -504,10 +493,10 @@ class Sprite{
      * @type {History}
      */
     history = null;
-    /**internal support for executing callback routines (there are currently 4 differenet ones in Sprite) */
-    #processCallback(handler, data){
-        if (handler != null) handler.callback.call(handler.instance, data);
-    }
+    ///**internal support for executing callback routines (there are currently 4 differenet ones in Sprite) */
+    //#processCallback(handler, data){
+    //    if (handler != null) handler.callback.call(handler.instance, data);
+    //}
     //all callbacks
     /**method called when the sprite is hidden with 
      *  or settting visible to false, or from flashing 
@@ -516,6 +505,7 @@ class Sprite{
     #callbackHide = null;
     /** retrieves the current callback (if this has not been set it will be null)
      * it will be in the form of object properties
+     * @returns {{callback:method|function,instance:object}}
      * @example 
      * // two propeties callback and instance
      * let callstuff = this.callbackHide;
@@ -525,13 +515,14 @@ class Sprite{
     /**
      * sets (or changes) the callback handler called when a sprite is hidden
      * value must be an object with 2 properties
+     * @param {{callback:method|function,instance:object}} value
      * @example // hidesound is a method of your inherited sprite class
      * this.callbackHide = {callback:this.hidesound,instance:this};
      * // or use the Engine.makeCallback() method
      * this.callbackHide = Engine.makeCallback(this.hidesound, this);
      */
     set callbackHide(value){
-      if (value.callback !== undefined && value.instance !== undefined){
+      if (value != undefined && value.callback !== undefined && value.instance !== undefined){
         this.#callbackHide = value;
       }
     }    
@@ -539,6 +530,7 @@ class Sprite{
     #callbackShow = null;
     /** retrieves the current callback (if this has not been set it will be null)
      * it will be in the form of object properties
+     * @returns {{callback:method|function,instance:object}}
      * @example 
      * // two propeties callback and instance
      * let callstuff = this.callbackShow;
@@ -548,13 +540,14 @@ class Sprite{
     /**
      * sets (or changes) the callback handler called when a sprite is shown
      * value must be an object with 2 properties
+     * @param {{callback:method|function,instance:object}} value
      * @example // showsound is a method of your inherited sprite class
      * this.callbackShow = {callback:this.showsound,instance:this};
      * // or use the Engine.makeCallback() method
      * this.callbackShow = Engine.makeCallback(this.showsound, this);
      */
     set callbackShow(value){
-      if (value.callback !== undefined && value.instance !== undefined){
+      if (value != undefined && value.callback !== undefined && value.instance !== undefined){
         this.#callbackShow = value;
       }
     }    
@@ -562,6 +555,7 @@ class Sprite{
     #callbackCollide = null;
     /** retrieves the current callback (if this has not been set it will be null)
      * it will be in the form of object properties
+     * @returns {{callback:method|function,instance:object}}
      * @example 
      * // two propeties callback and instance
      * let callstuff = this.callbackCollide;
@@ -569,6 +563,7 @@ class Sprite{
      */
     get callbackCollide(){return this.#callbackCollide;}
     /** method called if this sprite is involved in a collision but only if this is a collisionPrimary 
+     * @param {{callback:method|function,instance:object}} value
      * 
      * @example 
      * this.callbackCollide = {callback:this.hitsomething,instance:this};
@@ -589,7 +584,7 @@ class Sprite{
      * @param {{callback:method|function,instance:object}} value 
      */
     set callbackCollide(value){
-      if (value.callback !== undefined && value.instance !== undefined){
+      if (value != undefined && value.callback !== undefined && value.instance !== undefined){
         this.#callbackCollide = value;
       }
     }    
@@ -597,6 +592,7 @@ class Sprite{
     #callbackFuneral = null;
     /** retrieves the current callback (if this has not been set it will be null)
      * it will be in the form of object properties
+     * @returns {{callback:method|function,instance:object}}
      * @example 
      * // two propeties callback and instance
      * let callstuff = this.callbackFuneral;
@@ -617,7 +613,7 @@ class Sprite{
      * @param {{callback:method|function,instance:object}} value 
      */
     set callbackFuneral(value){
-      if (value.callback !== undefined && value.instance !== undefined){
+      if (value != undefined && value.callback !== undefined && value.instance !== undefined){
         this.#callbackFuneral = value;
       }
     }    
@@ -872,8 +868,8 @@ class Sprite{
      * @example this.show();
      */
     show(){
-        //if currently not showing do show callback
-        //if (!this.visible) Engine.processCallback(this.#callbackShow);
+        //if currently not showing do show callback - why did I comment out??
+        if (!this.visible) Engine.processCallback(this.#callbackShow);
 
         this.#visible = true;
 
@@ -882,7 +878,8 @@ class Sprite{
      * @example this.hide();
     */
     hide(){
-        //if (this.visible) Engine.processCallback(this.#callbackHide);
+        // why did I comment out??
+        if (this.visible) Engine.processCallback(this.#callbackHide);
 
         this.#visible = false;
     }
@@ -1292,11 +1289,11 @@ class Sprite{
                 }
 
                 if (this.limit != null){
-                    this.limit.update(/*HBRESTOREdelta*/);
+                    this.limit.update();
                 }
                 
                 if (this.history != null){
-                    this.history.update(/*HBRESTOREdelta*/);
+                    this.history.update();
                 } 
                 
                 //add sprite to bins if part of collisions

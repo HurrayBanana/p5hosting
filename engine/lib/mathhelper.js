@@ -16,7 +16,7 @@ class Matrix{
 
     /** creates a new matrix
      * @param {float[][]} matrixarr if an array with 4 rows and columns is supplied a matrix will be
-     * created with those values. If ommitted then an Identity matrix will be create 
+     * created with those values. If ommitted then an Identity matrix will be created 
      * @example
      * //an identity matrix
      * [
@@ -72,7 +72,7 @@ class Matrix{
         return new Matrix();
     }
     /**
-     * @param {angle} angle in degrees to rotate around the z axis (into the screen, effectively a 2d rotation) 
+     * @param {float} angle in degrees to rotate around the z axis (into the screen, effectively a 2d rotation) 
      * @returns {Matrix} Z axis rotation matrix
      */
     static rotateZ(angle){
@@ -85,7 +85,7 @@ class Matrix{
         return m;
     }
     /**
-     * @param {angle} angle in degrees to rotate around the y axis 
+     * @param {float} angle in degrees to rotate around the y axis 
      * @returns {Matrix} y axis rotation matrix
      */
     static rotateY(angle){
@@ -98,7 +98,7 @@ class Matrix{
         return m;
     }
     /**
-     * @param {angle} angle in degrees to rotate around the x 
+     * @param {float} angle in degrees to rotate around the x 
      * @returns {Matrix} x axis rotation matrix
      */
     static rotateX(angle){
@@ -211,6 +211,7 @@ class Matrix{
             v.z = x * this.m20 + y * this.m21 + z * this.m22 + this.m23;
         }
     }
+    /** @returns {string} a string representation of the matrix */
     get toString(){
         return "[" + this.m00 + "," + this.m01 + "," + this.m02 + "," + this.m03 + "]\n"+
         "[" + this.m10 + "," + this.m11 + "," + this.m12 + "," + this.m13 + "]\n"+

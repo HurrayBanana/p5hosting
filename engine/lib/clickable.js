@@ -1,7 +1,8 @@
+// These are not used, subsumed into Sprite for brevity
 /******************************
  * clickable.js by Hurray Banana 2023-2024
  ******************************/ 
-class Clickable{
+class ppClickable{
     dragging;
     hover;
     constructor(){
@@ -22,7 +23,7 @@ class Clickable{
     released(s) {this.onrelease(s);}
 }//class clickable
 
-class Draggable {
+class ppDraggable {
 
     //static field as a simple dragging lock so only one object
     //can be dragged at a time

@@ -6,6 +6,7 @@
  * @classdesc used in some methods to lock directions to ordinal or leave in a free direction
  */
 class DirectionAccuracy {
+
     /** clamp value for rotation or direction to ordinal values NSEW */
     static ordinals = "ordinals";
     /** calculate the direction or rotation as it occurs */
@@ -25,12 +26,12 @@ class vector2{
     #length;
     /**
      * gets the pre-calculated magnitude of the vector
-     * @returns {float)}
+     * @returns {float}
      * */
     get length(){return this.#length;}
     /**
      * gets the pre-calculated magnitude of the vector, alternative name
-     * @returns {float)}
+     * @returns {float}
      * */
     get distance() {return this.#length;}
     //#mag = 0; - TBR
@@ -50,10 +51,10 @@ class vector2{
      * @returns {bool} true if this vector is (1,1)}
      */
     get isone(){return this.#x == 1 && this.#y == 1;}    //creates a new object instance with the values from this
-    /**
-     * @returns {vector2} creates a new vector2 object instance taking the x and y values as copies from this vector2,
-     */
-    get clone(){return new vector2(this.#x, this.#y);}
+    // /**
+    //  * @returns {vector2} creates a new vector2 object instance taking the x and y values as copies from this vector2,
+    //  */
+    // get clone(){return new vector2(this.#x, this.#y);}
     /**
      * sets the x and y components of the vector2
      * @param {float} x x value to set
@@ -230,13 +231,12 @@ class vector2{
                                 Math.sin(angle - Math.PIby2));
     }
     /** Returns a normalised direction vector looking from the starting sprite to the other sprite
-    / @param {vector2} from start position
-    / @param {vector2} to the direction to look towards
-    / @param {DirectionAccuracy} accuracy choose either free direction or lock to ordinals NSEW
-    / @returns {vector2} normalised Vector2 direction vector
+    * @param {vector2} from start position
+    * @param {vector2} to the direction to look towards
+    * @param {DirectionAccuracy} accuracy choose either free direction or lock to ordinals NSEW
+    * @returns {vector2} normalised Vector2 direction vector
     */
-    static lookAt(from, to, accuracy)
-    {
+    static lookAt(from, to, accuracy){
         let d = new vector2();
         d.x = to.x - from.y;
         d.y = to.y - from.y;
@@ -412,12 +412,11 @@ class vector2{
      /**returns a new vector2 that is a copy of the values of this one, not a reference a separate object
      * 
      * be warned clone creates an object so is about 20x slower than setting individual vector coords
-     * 
+     * @example
      * b.x = a.x;
-     * 
      * b.y = a.y;
      * 
-     * or using a.cloneto(b);
+     * //or using a.cloneto(b);
      * @returns {vector2} a new vector2 with the same values as this vector2
      */
     get clone(){

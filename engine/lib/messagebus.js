@@ -29,18 +29,34 @@
  *}
 */
 class msgT{
-    /** data {x:999,y:999}
-     * 
+    /** 
+     * data {x:float,y:float}
      * used for any object wanting to track player positions
+     * @example
+     * data {x:999,y:999};
     */
     static playerData = "playerData";
-    /** data {col:[r,g,b]};*/
+    /** 
+     * data {col:[r,g,b]};
+     * @example
+     * //magenta
+     * data {col:[255,0,255]};
+    */
     static colour = "colour";
-    /** data {score:1234,player:"blinky"} */
+    /** 
+     * data {score:int,player:string} 
+     * @example
+     * //blinky scored 1234 points
+     * data {score:1234,player:"blinky"};
+    */
     static scored = "scored";
-    /** data {sp:this} 
+    /** 
+     * data {sp:object} 
      * use for sending references to a sprite so various info can be examined
      * e.g. frame info, or other states for cloning
+     * @example
+     * //send entire sprite reference
+     * data {sp:this};
     */
     static spriteinfo = "spriteinfo"
 
@@ -58,20 +74,23 @@ class msgT{
  */
 class MsgBus{
     static #subs = {};
+    
     /** subscribe to a specfic type of message broadcast, you can have as many different subscribers to the same message. the sender does not need to know who's listening
      * @param {msgT} messageType the type of message being subscribed to (this ensure only subscribers of that message type recieve the message)
      * @param {method|function} handler the method or function that handles this message, make sure it accepts a data parameter if the message type sends data, or you are interested in the data
      * @param {object} instance the object instance whose method is accepting this message. If this is a global function put null for this value
-     * subscribing from an object instance
-     *   MsgBus.sub(msgT.arrows, this.toggleArrows, this);
+     * @example
+     * //subscribing from an object instance
+     * MsgBus.sub(msgT.arrows, this.toggleArrows, this);
      * 
-     * subscrbing from a sketch in instance mode
-     *   MsgBus.sub(msgT.playerData, s.acceptPlayerData, s);
+     * //subscrbing from a sketch in instance mode
+     * MsgBus.sub(msgT.playerData, s.acceptPlayerData, s);
      * 
      * MsgBus.sub(msgT.colour, acceptcolour, s);
      * 
-     * subscribe to a message in a standard sketch (no instance required), just supply message type and the function to accept the broadcast
-     *   MsgBus.sub(msgT.scored, acceptscore, null);
+     * //subscribe to a message in a standard sketch (no instance required), 
+     * //just supply message type and the function to accept the broadcast
+     * MsgBus.sub(msgT.scored, acceptscore, null);
      */
     static sub(messageType, handler, instance){
         //attempt to get array of this message type from the map
@@ -103,8 +122,9 @@ class MsgBus{
      * this is important if you are destroying an object as the subscription will still receive
      * broadcasts even if you have "removed" the object as the Garbage Collector (GC) will keep objects
      * alive if there are ANY references to them
-     * 
-     * remove the handler for the arrows message that calls this objects toggleArrows method
+     * @example
+     * //remove the handler for the arrows message that calls this
+     * //objects toggleArrows method
      * MsgBus.drop(msgT.arrows, this.toggleArrows, this);
      */
     static drop(messageType, handler, instance){
@@ -123,17 +143,17 @@ class MsgBus{
     /** broadcasts a message to any (or no) subscribers
      * 
      * package the messages data using an object literal if you require more than a single value(or no value) name value pairs separated by commnas and enclosed in braces
-     *  
-     * packaging x and y data message type playerData
+     *  @example
+     *  //packaging x and y data message type playerData
      *  MsgBus.send(msgT.playerData,{x:pos.x,y:pos.y});
      * 
-     * packaging 3 values 
+     *  //packaging 3 values 
      *  MsgBus.send(msgT.droppedNewNode,{name:this.name,x:this.x,y:this.y});
      * 
-     * sending a message with a just a reference to the html object that sent it, suing the onclick event from HTML
-     *   onclick="MsgBus.send(msgT.console,this);"
+     *  //sending a message with a just a reference to the html object that sent it, suing the onclick event from HTML
+     *  onclick="MsgBus.send(msgT.console,this);"
      * 
-     * sending a message with no data that indicates something general happened
+     *  //sending a message with no data that indicates something general happened
      *   MsgBus.send(msgT.quit);
      */
     static send(messageType, data){

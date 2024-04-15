@@ -284,7 +284,7 @@ class Event{
      * this.callback = Engine.makeCallback(this.myactions, this);
      */
     set callback(value){
-      if (value.callback !== undefined && value.instance !== undefined){
+      if (value != undefined && value.callback !== undefined && value.instance !== undefined){
         this.#callback = value;
       }
     }
@@ -330,56 +330,70 @@ class Event{
     /**
      * Delays calling a method or function until after a period of time
      * @param {float} callAfter time to wait before calling method/function
-     * @param {object} instance a reference to the object to accept a callback when time elapses
-     * @param {method|function} callme a refernce to the method/function to call when time elapses
+     * @param {{callback:method|function,instance:object}} callback the code to call when the event occurs use 
+     * Engine.makeCallback() to create your callback
+     * @example
+     * //call the startgame method after 3 seconds
+     * Engine.eventM.eventonce(3, Engine.makeCallback(this.startgame, this));
      */
-    eventonce(callAfter, instance, callme){
+    eventonce(callAfter, callback){//} instance, callme){
         if (this.#allowoverwrite || this.#action != Action.callback){
             this.#action = Action.eventonce;
             this.startafterinterval = callAfter;
             this.actionTime = 0; this.elapsedTime = 0;
             //this.#phase = Phase.startafter;
-            if (instance !== undefined && callme !== undefined){
-                this.#callback = {callback:callme,instance:instance};
-            }
+            this.#callback = callback;
+            // if (instance !== undefined && callme !== undefined){
+            //     this.#callback = {callback:callme,instance:instance};
+            // }
         }
     }
     /**
      * creates a periodic timer which continually calls a given method/function
      * @param {float} interval time to wait before calling method/function
-     * @param {object} instance a reference to the object to accept a callback when time elapses
-     * @param {method|function} callme a refernce to the method/function to call when time elapses
+     * @param {{callback:method|function,instance:object}} callback the code to call when the event occurs use 
+     * Engine.makeCallback() to create your callback
+     * @example
+     * //call the increaseDifficulty method every 20 seconds
+     * Engine.eventM.event(203, Engine.makeCallback(this.increaseDifficulty, this));
      * to stop calling the method/function use the events remove() method
      */
-    event(interval, instance, callme){
+    event(interval, callback){//instance, callme){
         if (this.#allowoverwrite || this.#action != Action.event){
             this.#action = Action.event;
             this.startafterinterval = interval;
             this.actionTime = 0; this.elapsedTime = 0;
             //this.#phase = Phase.startafter;
-            if (instance !== undefined && callme !== undefined){
-                this.#callback = {callback:callme,instance:instance};
-            }
+            
+            this.#callback = callback;
+            // if (instance !== undefined && callme !== undefined){
+            //     this.#callback = {callback:callme,instance:instance};
+            // }
         }
     }
     /**
      * creates a periodic timer which continually calls a given method/function until a specified time is reached
      * @param {float} interval time to wait before calling method/function
      * @param {float} stopAfter period of time to wait before stopping the event
-     * @param {object} instance a reference to the object to accept a callback when time elapses
-     * @param {method|function} callme a refernce to the method/function to call when time elapses
+     * @param {{callback:method|function,instance:object}} callback the code to call when the event occurs use 
+     * Engine.makeCallback() to create your callback
+     * @example
+     * //call the spawnEnemy method every 1second for 20 seconds
+     * Engine.eventM.eventStopafter(1,20, Engine.makeCallback(this.spawnEnemy, this));
+     * to stop calling the method/function use the events remove() method
      * to stop calling the method/function use the events remove() method
      */
-    eventStopafter(interval, stopAfter, instance, callme){
+    eventStopafter(interval, stopAfter, callback){//instance, callme){
         if (this.#allowoverwrite || this.#action != Action.eventStopafter){
             this.#action = Action.eventStopafter;
             this.startafterinterval = interval;
             this.#stopafterinterval = stopAfter;
             this.actionTime = 0; this.elapsedTime = 0;
             //this.#phase = Phase.startafter;
-            if (instance !== undefined && callme !== undefined){
-                this.#callback = {callback:callme,instance:instance};
-            }
+            this.#callback = callback;
+            // if (instance !== undefined && callme !== undefined){
+            //     this.#callback = {callback:callme,instance:instance};
+            // }
         }
     }    
     /** updates timer checking for action responses */
@@ -419,8 +433,7 @@ class Event{
 }
 /** 
  * @classdesc Determines what phase timer sub system is in (used internally) */
-class Phase
-{
+class Phase{
     /** waiting for flashing to start*/
     static startafter = "startafter";
     /** waiting for flashing to stop*/
@@ -540,10 +553,10 @@ class Timer extends Event{
      * @param {float} stopAfter time to stop flashing in seconds
      * @param {float} onduration number of seconds or fraction of
      * @param {float} offduration number of seconds or fraction of
-     * @param {object} instance a reference to the object to accept a callback when flashing over
-     * @param {method|function} callme a refernce to the method/function to call when flashing over
+     * @param {{callback:method|function,instance:object}} callback the code to call when the sprite stops flashing
+     * Engine.makeCallback() to create your callback
      */
-    flashStopafter(stopAfter, onduration, offduration, instance, callme){
+    flashStopafter(stopAfter, onduration, offduration, callback){//instance, callme){
         if (this.allowoverwrite || this.action != Action.flashStopafter){
             this.action = Action.flashStopafter;
             this.stopafterinterval = stopAfter;
@@ -552,9 +565,10 @@ class Timer extends Event{
             this.#hidden = false;
             this.#phase = Phase.stopafter;
             
-            if (instance !== undefined && callme !== undefined){
-                this.callback = {callback:callme,instance:instance};
-            }
+            this.callback = callback;
+            // if (instance !== undefined && callme !== undefined){
+            //     this.#callback = {callback:callme,instance:instance};
+            // }
         }
     }
     /**
@@ -562,10 +576,8 @@ class Timer extends Event{
      * @param {float} killAfter seconds after which sprite should be killed off
      * @param {float} onduration number of seconds or fraction of
      * @param {float} offduration number of seconds or fraction of
-     * @param {object} instance a reference to the object to accept a callback when flashing over
-     * @param {method|function} callme a refernce to the method/function to call when flashing over
      */
-    flashKillafter(killAfter, onduration, offduration, instance, callme){
+    flashKillafter(killAfter, onduration, offduration){//}, callback){//instance, callme){
         if (this.allowoverwrite || this.action != Action.flashKillafter){
             this.action = Action.flashKillafter;
             this.stopafterinterval = killAfter;
@@ -575,9 +587,10 @@ class Timer extends Event{
             this.#phase = Phase.stopafter;
             this.#mysprite.show();
             
-            if (instance !== undefined && callme !== undefined){
-                this.callback = {callback:callme,instance:instance};
-            }
+            this.callback = callback;
+            // if (instance !== undefined && callme !== undefined){
+            //     this.callback = {callback:callme,instance:instance};
+            // }
         }        
     }
     /**
@@ -585,10 +598,10 @@ class Timer extends Event{
      * @param {float} startAfter how long before flashing starts
      * @param {float} onduration number of seconds or fraction of
      * @param {float} offduration number of seconds or fraction of
-     * @param {object} instance a reference to the object to accept a callback when flashing over
-     * @param {method|function} callme a refernce to the method/function to call when flashing over
+     * @param {{callback:method|function,instance:object}} callback the code to call when the sprite starts flashing
+     * Engine.makeCallback() to create your callback
      */
-    flashStartafter(startAfter, onduration, offduration, instance, callme){
+    flashStartafter(startAfter, onduration, offduration, callback){//instance, callme){
         if (this.allowoverwrite || this.action != Action.flashStartafter){
             this.action = Action.flashStartafter;
             this.startafterinterval = startAfter;
@@ -597,9 +610,10 @@ class Timer extends Event{
             this.#hidden = false;
             this.#mysprite.show();
             this.#phase = Phase.startafter;
-            if (instance !== undefined && callme !== undefined){
-                this.callback = {callback:callme,instance:instance};
-            }
+            this.callback = callback;
+            // if (instance !== undefined && callme !== undefined){
+            //     this.callback = {callback:callme,instance:instance};
+            // }
         }
     }
     /**
@@ -608,10 +622,10 @@ class Timer extends Event{
      * @param {float} startAfter how long before flashing starts
      * @param {float} onduration number of seconds or fraction of
      * @param {float} offduration number of seconds or fraction of
-     * @param {object} instance a reference to the object to accept a callback when flashing over
-     * @param {method|function} callme a refernce to the method/function to call when flashing over
+     * @param {{callback:method|function,instance:object}} callback the code to call when the sprite starts flashing
+     * Engine.makeCallback() to create your callback
      */
-    flashStartafterKillafter(startAfter, killAfter, onduration, offduration, instance, callme){
+    flashStartafterKillafter(startAfter, killAfter, onduration, offduration, callback){//instance, callme){
         if (this.allowoverwrite || this.action != Action.flashStartafterKillafter){
             this.action = Action.flashStartafterKillafter;
             this.startafterinterval = startAfter; this.stopafterinterval = killAfter;
@@ -620,9 +634,10 @@ class Timer extends Event{
             this.#hidden = false;
             this.#mysprite.show();
             this.#phase = Phase.startafter;
-            if (instance !== undefined && callme !== undefined){
-                this.callback = {callback:callme,instance:instance};
-            }
+            this.callback = callback;
+            // if (instance !== undefined && callme !== undefined){
+            //     this.callback = {callback:callme,instance:instance};
+            // }
         }
     }
     /**
@@ -631,10 +646,10 @@ class Timer extends Event{
      * @param {float} stopAfter period of time for flashing to continue before it stops
      * @param {float} onduration number of seconds or fraction of
      * @param {float} offduration number of seconds or fraction of
-     * @param {object} instance a reference to the object to accept a callback when flashing over
-     * @param {method|function} callme a refernce to the method/function to call when flashing over
+     * @param {{callback:method|function,instance:object}} callback the code to call when the sprite starts flashing and again when it stops
+     * Engine.makeCallback() to create your callback
      */
-    flashStartafterStopafter(startAfter, stopAfter, onduration, offduration, instance, callme){
+    flashStartafterStopafter(startAfter, stopAfter, onduration, offduration, callback){//instance, callme){
         if (this.allowoverwrite || this.action != Action.flashStartafterStopafter){
             this.action = Action.flashStartafterStopafter;
             this.startafterinterval = startAfter; this.stopafterinterval = stopAfter;
@@ -643,18 +658,19 @@ class Timer extends Event{
             this.#hidden = false;
             this.#mysprite.show();
             this.#phase = Phase.startafter;
-            if (instance !== undefined && callme !== undefined){
-                this.callback = {callback:callme,instance:instance};
-            }
+            this.callback = callback;
+            // if (instance !== undefined && callme !== undefined){
+            //     this.callback = {callback:callme,instance:instance};
+            // }
         }
     }
     /**
      * shows the sprite after a period of time has passed
      * @param {float} showAfter number of seconds to wait before showing
-     * @param {object|null} instance the object instance the calling method is from, if a global function then set this to null
-     * @param {method|function} callme the method of the given object instance, if it's a global function state the function name and null for the instance
+     * @param {{callback:method|function,instance:object}} callback the code to call when the sprite is shown
+     * Engine.makeCallback() to create your callback
      */
-    showafter(showAfter, instance, callme){
+    showafter(showAfter, callback){//instance, callme){
         if (this.allowoverwrite || this.action != Action.showafter){
             this.action = Action.showafter;
             this.startafterinterval = showAfter;
@@ -662,18 +678,19 @@ class Timer extends Event{
             this.#hidden = true;
             this.#mysprite.hide();
             this.#phase = Phase.startafter;
-            if (instance !== undefined && callme !== undefined){
-                this.callback = {callback:callme,instance:instance};
-            }
+            this.callback = callback;
+            // if (instance !== undefined && callme !== undefined){
+            //     this.callback = {callback:callme,instance:instance};
+            // }
         }
     }
     /**
      * Hides the sprite after a period of time has passed
      * @param {float} hideAfter number of seconds to wait before hiding
-     * @param {object|null} instance the object instance the calling method is from, if a global function then set this to null
-     * @param {method|function} callme the method of the given object instance, if it's a global function state the function name and null for the instance
+     * @param {{callback:method|function,instance:object}} callback the code to call when sprite is hidden
+     * Engine.makeCallback() to create your callback
      */
-    hideafter(hideAfter, instance, callme){
+    hideafter(hideAfter, callback){//instance, callme){
         if (this.allowoverwrite || this.action != Action.hideafter){
             this.action = Action.hideafter;
             this.startafterinterval = hideAfter;
@@ -681,19 +698,20 @@ class Timer extends Event{
             this.#hidden = false;
             this.#mysprite.show();
             this.#phase = Phase.startafter;
-            if (instance !== undefined && callme !== undefined){
-                this.callback = {callback:callme,instance:instance};
-            }
+            this.callback = callback;
+            // if (instance !== undefined && callme !== undefined){
+            //     this.callback = {callback:callme,instance:instance};
+            // }
         }
     }    
     /**
      * Shows a sprite after a period of time then kills it after another period of time
      * @param {float} showAfter time to wait until sprite displayed
      * @param {float} killAfter time to kill sprite after displaying
-     * @param {object|null} instance the object instance the calling method is from, if a global function then set this to null
-     * @param {method|function} callme the method of the given object instance, if it's a global function state the function name and null for the instance
+     * @param {{callback:method|function,instance:object}} callback the code to call when the sprite is shown
+     * Engine.makeCallback() to create your callback
      */
-    showafterKillafter(showAfter, killAfter, instance, callme){
+    showafterKillafter(showAfter, killAfter, callback){//instance, callme){
         if (this.allowoverwrite || this.action != Action.showafterKillafter){
             this.action = Action.showafterKillafter;
             this.startafterinterval = showAfter;
@@ -702,9 +720,10 @@ class Timer extends Event{
             this.#hidden = true;
             this.#mysprite.hide();
             this.#phase = Phase.startafter;
-            if (instance !== undefined && callme !== undefined){
-                this.callback = {callback:callme,instance:instance};
-            }
+            this.callback = callback;
+            // if (instance !== undefined && callme !== undefined){
+            //     this.callback = {callback:callme,instance:instance};
+            // }
         }
     }
     /**
@@ -712,10 +731,11 @@ class Timer extends Event{
      * @param {float} showAfter timer period to wait before showing the flashing sprite
      * @param {float} onduration number of seconds or fraction of
      * @param {float} offduration number of seconds or fraction of
-     * @param {object} instance a reference to the object to accept a callback when flashing over
-     * @param {method|function} callme a refernce to the method/function to call when flashing over
+     * @param {{callback:method|function,instance:object}} callback the code to call when the sprite starts flashing
+     * Engine.makeCallback() to create your callback
+     * @example
      */
-    showafterFlash(showAfter, onduration, offduration, instance, callme){
+    showafterFlash(showAfter, onduration, offduration, callback){//instance, callme){
         if (this.allowoverwrite || this.action != Action.showafterFlash){
             this.action = Action.showafterFlash;
             this.startafterinterval = showAfter;
@@ -724,9 +744,10 @@ class Timer extends Event{
             this.#hidden = true;
             this.#mysprite.hide();
             this.#phase = Phase.startafter;
-            if (instance !== undefined && callme !== undefined){
-                this.callback = {callback:callme,instance:instance};
-            }
+            this.callback = callback;
+            // if (instance !== undefined && callme !== undefined){
+            //     this.callback = {callback:callme,instance:instance};
+            // }
         }
     }
 
@@ -734,35 +755,40 @@ class Timer extends Event{
     /**
      * kills a sprite after a period of time
      * @param {float} killtime timer period 
-     * @param {object} instance a reference to the object to accept a callback when sprite is about to be killed
-     * @param {method|function} callme a refernce to the method/function to call when sprite is about to be, this happens before a sprite funeral
+     * set a callbackFuneral or override the Kill() method of your sprite if you want to know when it's killed
      */
-    killafter(killtime, instance, callme){
+    killafter(killtime){//}, callback){//instance, callme){
         this.action = Action.killafter;
         this.actionTime = 0; this.elapsedTime = 0;
         this.stopafterinterval = killtime;
-        if (instance !== undefined && callme !== undefined){
-            this.callback = {callback:callme,instance:instance};
-        }
+        // this.callback = callback;
+        // if (instance !== undefined && callme !== undefined){
+        //     this.callback = {callback:callme,instance:instance};
+        // }
     }
 
     /**
      * applies a force to a sprite for a period of time
      * @param {float} stopAfter timer period to apply the force
      * @param {vector3} force 
-     * @param {object} instance a reference to the object to accept a callback when the impulse has ended
-     * @param {method|function} callme a refernce to the method/function to call when impulse has ended
+     * @param {{callback:method|function,instance:object}} callback the code to call when the event occurs use 
+     * Engine.makeCallback() to create your callback
+     * @example
+     * //call the increaseDifficulty method every 20 seconds
+     * Engine.eventM.event(203, Engine.makeCallback(this.increaseDifficulty, this));
+     * to stop calling the method/function use the events remove() method
      */
-    impulse(stopAfter, force, instance, callme){
+    impulse(stopAfter, force, callback){//instance, callme){
         if (this.allowoverwrite || this.action != Action.impulse){
             this.action = Action.impulse;
             this.stopafterinterval = stopAfter;
             this.actionTime = 0; this.elapsedTime = 0;
             this.#impulse = force;
             this.#phase = Phase.startafter;
-            if (instance !== undefined && callme !== undefined){
-                this.callback = {callback:callme,instance:instance};
-            }
+            this.callback = callback;
+            // if (instance !== undefined && callme !== undefined){
+            //     this.callback = {callback:callme,instance:instance};
+            // }
         }
     }
     /**

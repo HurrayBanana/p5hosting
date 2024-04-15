@@ -1,105 +1,113 @@
   /******************************
    * Limit.js by Hurray Banana 2023-2024
    ******************************/ 
-  /** actions to be taken once a Sprite meets or passes the limit box edge that is defined
+  /** 
+   * @classdesc actions to be taken once a Sprite meets or passes the limit box edge that is defined
    * 
    * The limit box can be any given rectangular or 3d box area or
    * the current position of the ViewPort. Limit boxes are only active once a sprite fully enters them,
    * if you are having trouble with a limit box make sure you make it visible using
-   * @example Limit.Show()
+   * @example this.limit.Show()
    */
   class Limitmode{
-        /// no boundary control
+        /** no boundary control */
         static none = "none";
-        /// make sprite bounce back in opposite direction
-        /// <remarks>Nice for keeping a sprite within the boundaries of screen or rectangle. 
-        /// Such as in breakout/arkanoid type games</remarks>
+        /** make sprite bounce back in opposite direction
+        * Nice for keeping a sprite within the boundaries of screen or rectangle. 
+        * Such as in breakout/arkanoid type games */
         static bounce = "bounce";
-        /// Performs a bounce but only bothers checking the front and back of the limit box
-        /// <remarks>Great when used in conjuction with Z gravity and auto sprite scaling
-        /// to create a throbbing sprite</remarks>
+        /** Performs a bounce but only bothers checking the front and back of the limit box
+        * Great when used in conjuction with Z gravity and auto sprite scaling
+        * to create a throbbing sprite */
         static bounceZonly = "bounceZonly";
-        /// make sprite bounce back in opposite direction but align with collided edge
-        /// <remarks>Only use this if you want the sprite to start its bounce aligned to the
-        /// edge of the limit box, you might get odd effects when doing this</remarks>
+        /** make sprite bounce back in opposite direction but align with collided edge
+        * Only use this if you want the sprite to start its bounce aligned to the
+        * edge of the limit box, you might get odd effects when doing this */
         static bounceAlign = "bounceAlign";
-        /// make sprite appear on other side of limit box
-        /// <remarks>Aligns the sprite with the opposite edge of limit box. Which can cause
-        /// odd effects with groups of sprites following each other, use wrapExact instead.</remarks>
+        /** make sprite appear on other side of limit box
+        * Aligns the sprite with the opposite edge of limit box. Which can cause
+        * odd effects with groups of sprites following each other, use wrapExact instead. */
         static wrap = "wrap";
-        /// makes sprite appear on other side of limit box taking
-        /// account of exact position when leaving the limit box
-        /// use this for scrolling text or groups of sprites for an Asteroid wrapping effect
+        /** makes sprite appear on other side of limit box taking
+        * account of exact position when leaving the limit box
+        * use this for scrolling text or groups of sprites for an Asteroid wrapping effect */
         //static wrapExact = "wrapExact";
-        /// only wrap in X direction, but bounce in Y direction
-        /// <remarks>Use this if you want the sprite to wrap horizontally but fall under gravity</remarks>
+        /** only wrap in X direction, but bounce in Y direction
+        * Use this if you want the sprite to wrap horizontally but fall under gravity */
         static wrapXBounceY = "wrapXBounceY";
-        /// only wrap in Y direction, but bounce in X direction
-        /// <remarks>Use this if you want the sprite to wrap vertically but bounce off the sides</remarks>
+        /** only wrap in Y direction, but bounce in X direction
+        * Use this if you want the sprite to wrap vertically but bounce off the sides */
         static wrapYBounceX = "wrapYBounceX";
-        /// make sprite stop moving in axis of limit box and align with collided edge
-        /// <remarks>If a sprite hits the vertical edges of limit box then its horizontal
-        /// velocity is stopped, it can still move vertically until it hits the top or
-        ///  bottom of the limit box</remarks>
+        /** make sprite stop moving in axis of limit box and align with collided edge
+        * If a sprite hits the vertical edges of limit box then its horizontal
+        * velocity is stopped, it can still move vertically until it hits the top or
+        *  bottom of the limit box */
         static stopAt = "stopAt";
-        /// make the sprite stop moving if any of borders are touched
-        /// <remarks>Useful for title graphics where you want a sprite to stop in a specific
-        /// horizontal or vertical position but dont want to worry about exact size of limit box required</remarks>
+        /** make the sprite stop moving if any of borders are touched
+        * Useful for title graphics where you want a sprite to stop in a specific
+        * horizontal or vertical position but dont want to worry about exact size of limit box required */
         static stopFirstTouch = "stopFirstTouch";
-        /// make sprite stop moving in axis of limit box and kill if no velocity set
-        /// <remarks>Works like stop but if sprite has no velocity it will be killed</remarks>
+        /** make sprite stop moving in axis of limit box and kill if no velocity set
+        * Works like stop but if sprite has no velocity it will be killed */
         static stopThenKill = "stopThenKill";
-        /// kill sprite once outside limit box
-        /// <remarks>Use this to remove sprites once they have gone past the viewport 
-        /// (unless you want them to come back on screen). This will remove them without them
-        /// flashing off while still visible</remarks>
+        /** kill sprite once outside limit box
+        * Use this to remove sprites once they have gone past the viewport 
+        * (unless you want them to come back on screen). This will remove them without them
+        * flashing off while still visible */
         static killPast = "killPast";
-        /// kill sprite as soon as it touches limit box
-        /// <remarks>Greate for implementing electric fences etc...</remarks>
+        /** kill sprite as soon as it touches limit box
+        * Great for implementing electric fences etc... */
         static killTouch = "killTouch";
-        /// kill sprite as soon as it enters the limit box
-        /// <remarks>The sprite has to fit inside the limit box
-        /// Useful for setting defence boundaries around turrets etc..
+        /** kill sprite as soon as it enters the limit box
+        * The sprite has to fit inside the limit box
+        * Useful for setting defence boundaries around turrets etc.. */
         static killInside = "killInside";
-        /// kills sprite if goes past X limit box, but bounces on Y
+        /** kills sprite if goes past X limit box, but bounces on Y */
         static killPastXBounceY = "killPastXBounceY";
-        /// kills a sprite if it goes past the left/right boundaries and 
-        /// stops sprites vertical movement if it touches top/bottom
+        /** kills a sprite if it goes past the left/right boundaries and 
+        * stops sprites vertical movement if it touches top/bottom */
         static killPastXStopY = "killPastXStopY";
-        /// killPastYStopX, kills a sprite if it goes past top/bottom 
-        /// boundaries and stops sprites horizontal movement if it touches left/right
+        /** killPastYStopX, kills a sprite if it goes past top/bottom 
+        * boundaries and stops sprites horizontal movement if it touches left/right */
         static killPastYStopX = "killPastYStopX";
-        /// Notify using callback property
-        /// <remarks>Use this in conjuction with an update routine to determine when sprite
-        /// hits an edge</remarks>
+        /** Notify using callback property
+        * Use this in conjuction with an update routine to determine when sprite
+        * hits an edge */
         static inform = "inform";
-        /// Notify by setting AtBoundary to true and align with collided edge
-        /// <remarks>Use this in conjuction with an UpdateHandler to determine when sprite
-        /// hits an edge, this can be seen in use in the Space Invaders code. As soon as one
-        /// invader hits the limit box all the invaders are then dropped down a line</remarks>
+        /** Notify by setting AtBoundary to true and align with collided edge
+        * Use this in conjuction with an UpdateHandler to determine when sprite
+        * hits an edge, this can be seen in use in the Space Invaders code. As soon as one
+        * invader hits the limit box all the invaders are then dropped down a line */
         static informAlign = "informAlign";
         //bounceOutside
-        /// Turns gravity off once collided and aligns sprite with limit box
-        /// <remarks>Use this when you want a sprite to stop falling after you have
-        /// made it move under gravity</remarks>
+        /** Turns gravity off once collided and aligns sprite with limit box
+        * Use this when you want a sprite to stop falling after you have
+        * made it move under gravity */
         static turnOffGravity = "turnOffGravity";
-        /// Turns off gravity but only if contact with bottom of limit box occurs
+        /** Turns off gravity but only if contact with bottom of limit box occurs */
         static turnOffGravityBottomOnly = "turnOffGravityBottomOnly";
-        /// executes the sprite callback routine specified. You need to handle any other actions
-        /// you want to apply to the sprite yourself, the event will continue to fire if your
-        /// sprite is still at the limit box, so you need to ensure that you set OnLimit = null if you do not want this behaviour
+        /** executes the sprite callback routine specified. You need to handle any other actions
+        * you want to apply to the sprite yourself, the event will continue to fire if your
+        * sprite is still at the limit box, so you need to ensure that you set OnLimit = null if you do not want this behaviour */
         static fireEvent = "fireEvent";//fireEvent // rename to callbac = "";
   }
-  /** class to provide various types of interactions between sprites and bounding rectangles (limit boxes) */
+  /** @classdesc class to provide various types of interactions between sprites and bounding Boxes (depth based rectangles) 
+   * @example
+   * //initiate a limit box using
+   * this.limit = new Limit(this);
+  */
   class Limit {
     //limitactions = new Map();//can I use this instead of a big switch block
-    #delta;
-
+    //#delta;
+    /**@type {Limitmode} holds the active mode of operation for the limit box */
     #mode;
+    /** @type {Box} specifies the region for the limit box */
     #area;
-    /** specifies the Box area (rectangular region with depth) with which to apply limit actions */
+    /** @returns {Box} specifies the Box area (rectangular region with depth) with which to apply limit actions */
     get area(){return this.#area;}
-    /** specifies the Box area (rectangular region with depth) with which to apply limit actions */
+    /** specifies the Box area (rectangular region with depth) with which to apply limit actions 
+     * @param {Box|Rectangle} value the area of the limit box
+    */
     set area(value){
         if (value instanceof Rectangle){
             this.#area = new Box(value.x, value.y, Engine.zHalf, avaluerea.w, value.h, Engine.zRange);
@@ -107,14 +115,23 @@
             this.#area = value;
         }
     }
+    /** @type {Sprite} holds reference to sprite that owns the limit box */
     #ms;
+    /** @type {bool} specifies whether the limit box is active (generally sprites need to enter a box before it comes active) */
     #active;
+    /** @returns {bool} specifies if the specified limit box is actively being processed default is true, until sprite enter the box this will be false */
+    get active(){return this.#active;}
+    /** @type {bool} states whether limit conditions have been met*/
     #atLimit = false;
+    /** @returns {bool} true if sprite has interacted with the specified limit mode */
     get atLimit(){return this.#atLimit;}
+
+    /** @type {{callback:method|function,instance:object}} */
     #callback;
     /** retrieves the current callback which will be triggered if the sprite interacts with the limit box
      * (if this has not been set it will be null)
      * it will be in the form of object properties
+     * @returns {{callback:method|function,instance:object}}
      * @example 
      * // two propeties callback and instance
      * let callstuff = this.callback;
@@ -124,27 +141,31 @@
     /**
      * sets (or changes) the callback handler called when sprite interacts with the limit box
      * value must be an object with 2 properties
+     * @param {{callback:method|function,instance:object}} value 
      * @example // limitreached is a method of your inherited sprite class
      * this.callback = {callback:this.limitreached,instance:this};
+     * // or use the Engine.makeCallback() method
+     * this.callback = Engine.makeCallback(this.limitreached, this);
      */
     set callback(value){
-      if (value.callbk !== undefined && value.inst !== undefined){
+      if (value != undefined && value.callback !== undefined && value.inst !== undefined){
         this.#callback = value;
       }
     }
     /** holds a colour to show the limit box of this sprite
      * If null (default) box not shown
      * if a colour is stored then it will be drawn (use alpha values so you can see the sprite)
+     * @type {color}
      * @example
      * //show transparent red limit box
      * this.limit.show = [255,0,0,100];
      */
     show = null;
 
-    /** specifies if the specified limit box is actively being processed default is true */
-    get active(){return this.#active;}
+
     /** creates a Limit object for this sprite, which is initially inactive
      * use regionaction() to define an interaction mode
+     * @param {Sprite} boss 
      */
     constructor(boss){
       this.#ms = boss;
@@ -161,6 +182,7 @@
      * 
      * @example 
      * // for complete removal use
+     * this.limit.cleanup();
      * this.limit = null;
      */
     off(){this.#active = false;}
@@ -173,6 +195,9 @@
         this.#active = true;
       }
     }
+    /** turns off the limit mode and changes themode to Limitmode.none 
+     * Set a regionaction
+    */
     modeoff(){this.#active = false;this.#mode = Limitmode.none;}
     /** specifies a limitmode and an active limit area 
      * 
@@ -181,8 +206,11 @@
      * If you want to track a moving area/box just use the boxes reference
      * 
      * set a callback (and it's instance) if you want notification of limit activity
+     * @param {Limitmode} mode action to take with limit area
+     * @param {Box|Rectangle} area limit area to interact with
+     * @param {{callback:method|function,instance:object}} callback triggered if the sprite interacts with the limit box
      */
-    regionaction(mode, area, instance, callme){
+    regionaction(mode, area, callback){//} instance, callme){
         if(area instanceof Rectangle){
             this.#area = new Box(area.x, area.y, Engine.zHalf, area.w, area.h, Engine.zRange);
         } else if (area instanceof Box){
@@ -190,40 +218,49 @@
         }
         this.#mode = this.#getMode(mode);
         this.#active = false;
-        if (instance !== undefined && callme !== undefined){
-            this.#callback = {callback:callme,instance:instance};
-        }
+        this.#callback = callback;
+        // if (instance !== undefined && callme !== undefined){
+        //     this.#callback = {callback:callme,instance:instance};
+        // }
+    }
+    /**
+     * Specifies a limitmode that interacts with the standard (zeroed) viewport (i.e. screen area space)
+     * @param {Limitmode} mode action to take with limit area
+     * @param {{callback:method|function,instance:object}} callback triggered if the sprite interacts with the limit box
+     */
+    viewportaction(mode, callback){//instance, callme){
+        this.regionaction(mode, Engine.mainviewArea, callback);//instance, callme);
     }
     /* returns the function for that mode*/
     #getMode(mode){
       switch (mode){
-        case Limitmode.bounce:return this.bounce;
-        case Limitmode.wrap:return this.wrap;
-        case Limitmode.killTouch:return this.killtouch;
-        case Limitmode.killPast:return this.killpast;
+        case Limitmode.bounce:return this.#bounce;
+        case Limitmode.wrap:return this.#wrap;
+        case Limitmode.killTouch:return this.#killtouch;
+        case Limitmode.killPast:return this.#killpast;
         case Limitmode.none:return this.modeoff;
-        case Limitmode.bounceZonly:return this.bounceZonly;
-        case Limitmode.bounceAlign:return this.bounceAlign;
-        case Limitmode.wrapXBounceY:return this.wrapXBounceY;
-        case Limitmode.wrapYBounceX:return this.wrapYBounceX;
-        case Limitmode.stopAt:return this.stopAt;
-        case Limitmode.stopFirstTouch:return this.stopFirstTouch;
-        case Limitmode.stopThenKill:return this.stopThenKill;
-        case Limitmode.killInside:return this.killInside;
-        case Limitmode.killPastXBounceY:return this.killPastXBounceY;
-        case Limitmode.killPastXStopY:return this.killPastXStopY;
-        case Limitmode.killPastYStopX:return this.killPastYStopX;
-        case Limitmode.inform:return this.inform;
-        case Limitmode.informAlign:return this.informAlign;
-        case Limitmode.turnOffGravity:return this.turnOffGravity;
-        case Limitmode.turnOffGravityBottomOnly:return this.turnOffGravityBottomOnly;
-        case Limitmode.fireEvent:return this.fireEvent;
+        case Limitmode.bounceZonly:return this.#bounceZonly;
+        case Limitmode.bounceAlign:return this.#bounceAlign;
+        case Limitmode.wrapXBounceY:return this.#wrapXBounceY;
+        case Limitmode.wrapYBounceX:return this.#wrapYBounceX;
+        case Limitmode.stopAt:return this.#stopAt;
+        case Limitmode.stopFirstTouch:return this.#stopFirstTouch;
+        case Limitmode.stopThenKill:return this.#stopThenKill;
+        case Limitmode.killInside:return this.#killInside;
+        case Limitmode.killPastXBounceY:return this.#killPastXBounceY;
+        case Limitmode.killPastXStopY:return this.#killPastXStopY;
+        case Limitmode.killPastYStopX:return this.#killPastYStopX;
+        case Limitmode.inform:return this.#inform;
+        case Limitmode.informAlign:return this.#informAlign;
+        case Limitmode.turnOffGravity:return this.#turnOffGravity;
+        case Limitmode.turnOffGravityBottomOnly:return this.#turnOffGravityBottomOnly;
+        case Limitmode.fireEvent:return this.#fireEvent;
         default: return this.modeoff;
       }
     }
 
-    update(/*delta*/){
-        //this.#delta = delta;//for those that need it
+    /** applies relevant updates to the limit box */
+    update(){
         this.#atLimit = false;
         if (this.#mode != Limitmode.none){
             if (this.#active){
@@ -244,12 +281,15 @@
                     }
                 }
             }
-            if (this.#atLimit && this.#callback != null){
-              this.#callback.callback.call(this.#callback.instance);
+            if (this.#atLimit) {
+                Engine.processCallback(this.#callback);
             }
+            // if (this.#atLimit && this.#callback != null){
+            //   this.#callback.callback.call(this.#callback.instance);
+            // }
         }
     }
-    killpast(){
+    #killpast(){
         if (this.#ms.left > this.#area.right || this.#ms.right < this.#area.left ||
           this.#ms.top > this.#area.bottom || this.#ms.bottom < this.#area.top ||
           this.#ms.z < this.#area.back || this.#ms.z > this.#area.front){
@@ -257,7 +297,7 @@
               this.#atLimit = true;
         }
     }
-    killtouch(){
+    #killtouch(){
         if (this.#ms.right > this.#area.right || this.#ms.left < this.#area.left ||
             this.#ms.bottom > this.#area.bottom || this.#ms.top < this.#area.top ||
             this.#ms.z < this.#area.back || this.#ms.z > this.#area.front){
@@ -265,7 +305,7 @@
             this.#atLimit = true;
         }
     }
-    bounceZonly(){
+    #bounceZonly(){
       let diff = this.#ms.z - this.#area.back;
       if (diff < 0){
           this.#ms.z -= diff;// *this.#ms.e;
@@ -280,8 +320,8 @@
           }
       }
     }
-    bounceAlign(){} //modify already written bounce
-    wrapXBounceY(){
+    #bounceAlign(){} //modify already written bounce
+    #wrapXBounceY(){
       if (this.#ms.right < this.#area.left)
       {
           this.#ms.left = this.#area.right;
@@ -313,7 +353,7 @@
           }
       }
     }
-    wrapYBounceX(){
+    #wrapYBounceX(){
       if (this.#ms.bottom < this.#area.top)
       {
           this.#ms.top = this.#area.bottom;
@@ -345,7 +385,7 @@
           }
       }
     }
-    stopAt(){
+    #stopAt(){
       if (this.#ms.right > this.#area.right)
       {
           this.#ms.right = this.#area.right;
@@ -397,7 +437,7 @@
           this.#atLimit = true;
       }
     }
-    stopFirstTouch(){
+    #stopFirstTouch(){
       if (this.#ms.right > this.#area.right)
       {
         this.#ms.right = this.#area.right;
@@ -444,7 +484,7 @@
           this.#atLimit = true;
       }
     }
-    stopThenKill(){
+    #stopThenKill(){
       if (this.#ms.right > this.#area.right)
       {
           this.#ms.right = this.#area.right;
@@ -495,8 +535,8 @@
           this.#ms.kill();
 
     }
-    killInside(){}//doesn't need to do anything as this is tested elsewhere
-    killPastXBounceY(){
+    #killInside(){}//doesn't need to do anything as this is tested elsewhere
+    #killPastXBounceY(){
         //check x boundary
       if (this.#ms.left > this.#area.right ||
           this.#ms.right < this.#area.left)
@@ -523,7 +563,7 @@
           }
       }
     }
-    killPastXStopY(){
+    #killPastXStopY(){
         //check x boundary
         if (this.#ms.left > this.#area.right || this.#ms.right < this.#area.left){
             this.#ms.kill();
@@ -544,7 +584,7 @@
             this.#ms.static = true;
         }
     }
-    killPastYStopX(){
+    #killPastYStopX(){
       if (this.#ms.bottom > this.#area.bottom || this.#ms.top < this.#area.top){
           this.#ms.kill();
           this.#atLimit = true;
@@ -565,12 +605,12 @@
           this.#ms.static = true;
       }
     }
-    inform(){
+    #inform(){
       this.#atLimit = this.#ms.right >= this.#area.right || this.#ms.left <= this.#area.left || 
                       this.#ms.bottom >= this.#area.bottom || this.#ms.top <= this.#area.top ||
                       this.#ms.z <= this.#area.back || this.#ms.z >= this.#area.front;
     }
-    informAlign(){
+    #informAlign(){
       if (this.#ms.right >= this.#area.right){
           this.#ms.right = this.#area.right;
           //SpriteHelper.AlignRightAt(boss, this.area.right, 0);
@@ -597,7 +637,7 @@
           this.#atLimit = true;
       }
     }
-    turnOffGravity(){
+    #turnOffGravity(){
       if (this.#ms.right >= this.#area.right){
           this.#ms.right = this.#area.right;
           //SpriteHelper.AlignRightAt(boss, this.area.right, 0);
@@ -636,7 +676,7 @@
           this.#ms.vz = 0;
       }
     }
-    turnOffGravityBottomOnly(){
+    #turnOffGravityBottomOnly(){
       if (this.#ms.bottom >= this.#area.bottom){
           this.#ms.bottom = this.#area.bottom;
           //SpriteHelper.AlignBottomAt(boss, this.area.bottom, 0);
@@ -645,7 +685,7 @@
           this.#ms.vy = 0;
       }
     }
-    fireEvent(){
+    #fireEvent(){
         if (this.#callback != null){
             if (this.#ms.right > this.#area.right || this.#ms.left < this.#area.left ||
               this.#ms.bottom > this.#area.bottom || this.#ms.top < this.#area.top ||
@@ -655,7 +695,7 @@
             }
         }
     }
-    bounce(){
+    #bounce(){
         if (this.#ms.vx < 0){ // left
           if (this.#ms.left <= this.#area.l) { 
             this.#ms.vx *= -this.#ms.e;}
@@ -673,7 +713,7 @@
         }
     }
 
-    wrap(){
+    #wrap(){
         if (this.#ms.vx < 0){ // left
             if (this.#ms.right < this.#area.l) { 
             this.#ms.left = this.#area.r;}

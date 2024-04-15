@@ -1,20 +1,22 @@
+//The location of the well, vector3, if this is reference to a sprite.position then the gravity well will move with the sprite
+//The mass of the gravity from this location in Giga Tonnes (billions of Kilograms), the higher the Mass the harder the pull
 /******************************
  * gravitywell.js by Hurray Banana 2023-2024
  ******************************/ 
 /** @classdesc Defines a gravity well that can act upon a sprite if associated*/
 class GravityWell{
-    /** The position of this gravity well as a vector3 @type {vector3}*/
+    /** @type {vector3} The position of this gravity well as a vector3*/
     location;
-    /** The mass of this gravity well in GigaTonnes (this diminishes over distance in a linear way @type {float}*/
+    /** @type {float} The mass of this gravity well in GigaTonnes (this diminishes over distance in a linear way*/
     #pointmass;
-    /** gravitational constant @type {float}*/
+    /** @type {float} gravitational constant */
     static GM = 6.673E-11;
-    /**pre calculated value of mass and gravity @type {float}*/
+    /** @type {float} pre calculated value of mass and gravity */
     #precalc;
     /** Creates a new GravityWell specifying its location and Mass in Giga Tonnes 
      * 
-     * @param location The location of the well, vector3, if this is reference to a sprite.position then the gravity well will move with the sprite
-     * @param gigaTonnes The mass of the gravity from this location in Giga Tonnes (billions of Kilograms), the higher the Mass the harder the pull
+     * @param {vector3} location 
+     * @param {float} gigaTonnes 
      * 
      * You will need to experiment with the location and Mass of the GravityWells in order to achieve the desired effects
     */
@@ -22,9 +24,9 @@ class GravityWell{
         this.location = location;
         this.pointmass = gigaTonnes;
     }
-    /**gets the pre-calculate gravitaional force @returns {float} */
+    /** @returns {float} gets the pre-calculate gravitaional force*/
     get precalc(){return this.#precalc;}
-    /**  gets the point mass for the well in GigaTonnes @returns {float} */
+    /** @returns {float} gets the point mass for the well in GigaTonnes*/
     get pointmass(){ return this.#pointmass;}
     /**  sets the point mass for the well in GigaTonnes 
      * @param {float} value mass in giga tonnes
