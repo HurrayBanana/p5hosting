@@ -3,6 +3,8 @@ Uses P5js library (currently but will move away from this)
 
 see samples folder for a fully built examples (coming soon)
 
+the documentation is wip, needs alphabetically sorting and the like, with a jump table listing
+
 ### Alphabetic index of classes (doesn't include helpers.js as they are global functions)
 
 [Action](./docs/Action.md)
