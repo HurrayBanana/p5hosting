@@ -1,57 +1,150 @@
-> ### class History
-> @classdesc provides visual snapshot functionality for sprites
+engine created by Hurray Banana &copy;2023-2024
+## class History
+>  provides visual snapshot functionality for sprites
 > 
 > 
 
 ---
 
-> #### #snaps = []
-> holds each snap of the sprites data in time @type {Historysnap[]}
+## Constructor
+> #### constructor(mysprite)
+> to use write **new History(mysprite)**
+> 
+> builds the history recording system for a sprite
+> 
+> 
+> **Parameters**
+> 
+> {**Sprite**} **mysprite** the sprite to record history for
 > 
 > 
 
 ---
 
-> #### #start = 0
-> start position to render history from defaults to 0 (the newest snap position) this is because history is created as a circular queue @type {int}
+## properties
+#### #clampAlpha
+> default value **1**
+> 
+> to use write **this.#clampAlpha**
+> 
+> holds maximum allowed alpha value in history, default 1 @type {float}
 > 
 > 
 
 ---
 
-> #### #length = 0
-> number of  current snaps @type {int}
+#### #elapsed
+> to use write **this.#elapsed**
 > 
-> 
-
----
-
-> #### #end = 0
-> marks current end of history list as this is operas a circular queue @type {int}
-> 
-> 
-
----
-
-> #### #renderfrom = 0
-> specifies the start position to draw from, defaults to 0, but allows us to skip the ones closest to the sprite so we can leave a grap for disconnected trail effects
-> 
-> 
-
----
-
-> #### #elapsed
 > specifies the timer elapsed so for working towards the interval for history snapping
 > 
 > 
 
 ---
 
-> #### sampleFreq
+#### #end
+> default value **0**
+> 
+> to use write **this.#end**
+> 
+> marks current end of history list as this is operas a circular queue @type {int}
+> 
+> 
+
+---
+
+#### #length
+> default value **0**
+> 
+> to use write **this.#length**
+> 
+> number of  current snaps @type {int}
+> 
+> 
+
+---
+
+#### #mysprite
+> to use write **this.#mysprite**
+> 
+> reference to th esprite we are snapping
+> 
+> 
+
+---
+
+#### #renderfrom
+> default value **0**
+> 
+> to use write **this.#renderfrom**
+> 
+> specifies the start position to draw from, defaults to 0, but allows us to skip the ones closest to the sprite so we can leave a grap for disconnected trail effects
+> 
+> 
+
+---
+
+#### #snaps
+> default value **[]**
+> 
+> to use write **this.#snaps**
+> 
+> holds each snap of the sprites data in time @type {Historysnap[]}
+> 
+> 
+
+---
+
+#### #start
+> default value **0**
+> 
+> to use write **this.#start**
+> 
+> start position to render history from defaults to 0 (the newest snap position) this is because history is created as a circular queue @type {int}
+> 
+> 
+
+---
+
+#### fadeAlpha
+> default value **true**
+> 
+> to use write **this.fadeAlpha**
+> 
+> if true then history trail will fade over its distance,
+> 
+> if false no fading will be applied and clampAlpha value will be applied to all snaps
+> 
+> 
+> type {**bool**}
+> 
+> 
+
+---
+
+#### layer
+> default value **Engine.layer(0)**
+> 
+> to use write **this.layer**
+> 
+> sets the layer to draw history on, by default this is layer 0, the sprite first layer rendered
+> 
+> ```js
+> example
+> this.history.layer = Engine.layer(2);
+>     
+> ```
+> 
+
+---
+
+#### sampleFreq
+> to use write **this.sampleFreq**
+> 
 > specifies how to sample history in seconds, don't set this directly use show()
 > 
 > 
-> {**float**} maximum would be 0.0167 (every single frame) 2 would be once every 2 seconds (or every 120 frames)
+> type {**float**} maximum would be 0.0167 (every single frame) 2 would be once every 2 seconds (or every 120 frames)
 > 
 > ```js
 > example
@@ -66,7 +159,11 @@
 
 ---
 
-> #### scale = 0
+#### scale
+> default value **0**
+> 
+> to use write **this.scale**
+> 
 > scale factor to apply to history rendering
 > 
 > this value is the factor by which to increase/decrease the scale of history trails.
@@ -74,7 +171,7 @@
 > default value is 0  no change in size
 > 
 > 
-> {**float**}
+> type {**float**}
 > 
 > ```js
 > example
@@ -85,44 +182,47 @@
 
 ---
 
-> #### fadeAlpha = true
-> if true then history trail will fade over its distance,
+## getters and setters
+#### clampAlpha [getter]
+> to use write **this.clampAlpha**
 > 
-> if false no fading will be applied and clampAlpha value will be applied to all snaps
+> Sets the maximum alpha for the history trail, if fadeAlpha is false then this is the alpha for the entire trail
+> 
+> depending on how often you are snapping this may need to be quite low as history will draw on top of itself
 > 
 > 
-> {**bool**}
-> 
-> 
-
----
-
-> #### #clampAlpha = 1
-> holds maximum allowed alpha value in history, default 1 @type {float}
+> returns {**float**}
 > 
 > 
 
 ---
 
-> #### layer = Engine.layer(0)
-> sets the layer to draw history on, by default this is layer 0, the sprite first layer rendered
+#### clampAlpha [setter]
+> to use write **this.clampAlpha = value**
+> 
+> Sets the maximum alpha for the history trail, if fadeAlpha is false then this is the alpha for the entire trail
+> 
+> 
+> **Parameters**
+> 
+> {**float**} **value** new value between 0 and 1
 > 
 > ```js
 > example
+>       this.history = new History(this); // create the history object
+>       this.history.show(0.05,90); //snap every 50 milliseconds, take 90 samples
+>       this.history.renderfrom = 10; //skip the first ten snaps
+>       this.history.scale = -0.5; // reduce the size by 50%
+>       this.history.clampAlpha = 0.1;//don't allow alha to be higher than 10%
 >     
 > ```
 > 
 
 ---
 
-> #### #mysprite 
-> reference to th esprite we are snapping
+#### length [getter]
+> to use write **this.length**
 > 
-> 
-
----
-
-> #### getter length
 > 
 > returns {**int**} current length of the snap history
 > 
@@ -130,7 +230,9 @@
 
 ---
 
-> #### getter renderfrom
+#### renderfrom [getter]
+> to use write **this.renderfrom**
+> 
 > specifies the start position to draw from, defaults to 0, but allows us to skip the ones closest to the sprite so we can leave a grap for disconnected trail effects
 > 
 > 
@@ -140,7 +242,9 @@
 
 ---
 
-> #### setter renderfrom
+#### renderfrom [setter]
+> to use write **this.renderfrom = value**
+> 
 > specifies the position to start rendering from.
 > 
 > this needs to be within the limit of the history length
@@ -163,52 +267,19 @@
 
 ---
 
-> #### getter clampAlpha
-> Sets the maximum alpha for the history trail, if fadeAlpha is false then this is the alpha for the entire trail
+## Methods
+#### draw()
+> to use write **this.draw()**
 > 
-> depending on how often you are snapping this may need to be quite low as history will draw on top of itself
-> 
-> 
-> returns {**float**}
+> renders the history recorded here
 > 
 > 
 
 ---
 
-> #### setter clampAlpha
-> Sets the maximum alpha for the history trail, if fadeAlpha is false then this is the alpha for the entire trail
+#### show(rate, depth)
+> to use write **this.show(rate, depth)**
 > 
-> 
-> **Parameters**
-> 
-> {**float**} **value** new value between 0 and 1
-> 
-> ```js
-> example
->       this.history = new History(this); // create the history object
->       this.history.show(0.05,90); //snap every 50 milliseconds, take 90 samples
->       this.history.renderfrom = 10; //skip the first ten snaps
->       this.history.scale = -0.5; // reduce the size by 50%
->       this.history.clampAlpha = 0.1;//don't allow alha to be higher than 10%
->     
-> ```
-> 
-
----
-
-> #### constructor(mysprite)
-> builds the history recording system for a sprite
-> 
-> 
-> **Parameters**
-> 
-> {**Sprite**} **mysprite** the sprite to record history for
-> 
-> 
-
----
-
-> #### show(rate, depth)
 > turns on history for this sprite
 > 
 > 
@@ -230,17 +301,13 @@
 
 ---
 
-> #### update()
+#### update()
+> to use write **this.update()**
+> 
 > snaps if timer required current sprite settings
 > 
 > 
 
 ---
 
-> #### draw()
-> renders the history recorded here
-> 
-> 
-
----
-
+engine created by Hurray Banana &copy;2023-2024

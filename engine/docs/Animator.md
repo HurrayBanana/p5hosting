@@ -1,177 +1,15 @@
-> ### class Animator
-> @classdesc manages frames and display of frames for a sprite
+engine created by Hurray Banana &copy;2023-2024
+## class Animator
+>  manages frames and display of frames for a sprite
 > 
 > 
 
 ---
 
-> #### #frame
-> holds all the defined frames for this sprite @type {{tex:texture,port:portion}[]}
-> 
-> 
-
----
-
-> #### boss
-> reference to the sprite that owns these frames @type {Sprite}
-> 
-> 
-
----
-
-> #### state
-> holds the current animation state @type {AnimationState}
-> 
-> 
-
----
-
-> #### allowduplicate = false
-> controls overwriting of the animation state with the same setting (default is false)
-> 
-> if set to true and you set the same animation state every frame then the animation will be stuck on the
-> 
-> first frame of the animation. if false duplicate settings will be rejected allowing the animation to work despite
-> 
-> being continuosly set
-> 
-> 
-> {**bool**}
-> 
-> 
-
----
-
-> #### #changedframe
-> 
-> {**bool**} keeps track of animation changes during updates
-> 
-> 
-
----
-
-> #### first() {this.state.active = this.state.firstthis.#changedframe = true;this.boss.setmetrics();}
-> sets the frame to the first one in the currently defined animation state
-> 
-> 
-
----
-
-> #### last() {this.state.active = this.state.lastthis.#changedframe = true;this.boss.setmetrics();}
-> sets the frame to the last one in the currently defined animation state
-> 
-> 
-
----
-
-> #### defineSliding(texture, portion, slide, steps)
-> Creates animation frames automatically for an sliding sprite ( a graphic split into
-> 
-> several sections along its width or height)
-> 
-> 
-
----
-
-> #### getter animating
-> 
-> returns {**bool**} returns true if an animation state is currently active for this sprite
-> 
-> 
-
----
-
-> #### getter active
-> 
-> returns {**int**} active display frame number (-1 would indicate no frames available for this sprite
-> 
-> 
-
----
-
-> #### setter active
-> 
-> **Parameters**
-> 
-> {***  {int**} **value** sets the active frame for display, allowing the ability to make your own custom animator
-> 
-> 
-
----
-
-> #### getter firstframe
-> 
-> returns {**int**} gets the first frame defined for the sprite will be -1 if no frames defined or 0 if they are
-> 
-> 
-
----
-
-> #### getter lastframe
-> 
-> returns {**int**} gets the last frame defgined for the sprite -1 if no frames defined
-> 
-> 
-
----
-
-> #### getter firstAnmiationFrame
-> 
-> returns {**int**} gets the first frame for the current animation state if no animation range set then -1 is returned
-> 
-> 
-
----
-
-> #### getter lastAnimationFrame
-> 
-> returns {**int**} gets the last frame for the current animation state if no animation range set the -1 is returned
-> 
-> 
-
----
-
-> #### getter currenttex
-> 
-> returns {**texture**} gets a reference to the texture being used by the current active frame
-> 
-> 
-
----
-
-> #### getter currentport
-> 
-> returns {**rectangle**} gets a reference to the rectangluar potion used for the current active frame
-> 
-> 
-
----
-
-> #### getter count
-> 
-> returns {**in**} number of frames defined for the sprite
-> 
-> 
-
----
-
-> #### getter clonecurrent
-> 
-> returns {**{tex:texture,port:rectangle**} gets a duplicate frame for thecurrent frame texture and rectangular portion in the form of an object {tex:texture,port:rectangle};
-> 
-> 
-
----
-
-> #### getter current
-> 
-> returns {**{tex:texture,port:rectangle**} gets a reference to the current frame information in the form of an object {tex:texture,port:rectangle};
-> 
-> 
-
----
-
+## Constructor
 > #### constructor(me)
+> to use write **new Animator(me)**
+> 
 > defines an instance of the animation and frame system
 > 
 > 
@@ -183,14 +21,257 @@
 
 ---
 
-> #### cleanup()
-> releases references from the animator
+## properties
+#### #changedframe
+> to use write **this.#changedframe**
+> 
+> 
+> type {**bool**} keeps track of animation changes during updates
 > 
 > 
 
 ---
 
-> #### #setlastaction(action)
+#### #frame
+> to use write **this.#frame**
+> 
+> holds all the defined frames for this sprite @type {{tex:texture,port:portion}[]}
+> 
+> 
+
+---
+
+#### allowduplicate
+> default value **false**
+> 
+> to use write **this.allowduplicate**
+> 
+> controls overwriting of the animation state with the same setting (default is false)
+> 
+> if set to true and you set the same animation state every frame then the animation will be stuck on the
+> 
+> first frame of the animation. if false duplicate settings will be rejected allowing the animation to work despite
+> 
+> being continuosly set
+> 
+> 
+> type {**bool**}
+> 
+> 
+
+---
+
+#### boss
+> to use write **this.boss**
+> 
+> reference to the sprite that owns these frames @type {Sprite}
+> 
+> 
+
+---
+
+#### defineSliding(texture, portion, slide, steps)
+> to use write **this.defineSliding(texture, portion, slide, steps)**
+> 
+> Creates animation frames automatically for an sliding sprite ( a graphic split into
+> 
+> several sections along its width or height)
+> 
+> 
+
+---
+
+#### first() {this.state.active
+> default value **this.state.firstthis.#changedframe = true;this.boss.setmetrics();}**
+> 
+> to use write **this.first() {this.state.active**
+> 
+> sets the frame to the first one in the currently defined animation state
+> 
+> 
+
+---
+
+#### last() {this.state.active
+> default value **this.state.lastthis.#changedframe = true;this.boss.setmetrics();}**
+> 
+> to use write **this.last() {this.state.active**
+> 
+> sets the frame to the last one in the currently defined animation state
+> 
+> 
+
+---
+
+#### state
+> to use write **this.state**
+> 
+> holds the current animation state @type {AnimationState}
+> 
+> 
+
+---
+
+## getters and setters
+#### active [getter]
+> to use write **this.active**
+> 
+> 
+> returns {**int**} active display frame number (-1 would indicate no frames available for this sprite
+> 
+> 
+
+---
+
+#### active [setter]
+> to use write **this.active = value**
+> 
+> 
+> **Parameters**
+> 
+> {***  {int**} **value** sets the active frame for display, allowing the ability to make your own custom animator
+> 
+> 
+
+---
+
+#### animating [getter]
+> to use write **this.animating**
+> 
+> 
+> returns {**bool**} returns true if an animation state is currently active for this sprite
+> 
+> 
+
+---
+
+#### clonecurrent [getter]
+> to use write **this.clonecurrent**
+> 
+> 
+> returns {**{tex:texture,port:rectangle**} gets a duplicate frame for thecurrent frame texture and rectangular portion in the form of an object {tex:texture,port:rectangle};
+> 
+> 
+
+---
+
+#### count [getter]
+> to use write **this.count**
+> 
+> 
+> returns {**in**} number of frames defined for the sprite
+> 
+> 
+
+---
+
+#### current [getter]
+> to use write **this.current**
+> 
+> 
+> returns {**{tex:texture,port:rectangle**} gets a reference to the current frame information in the form of an object {tex:texture,port:rectangle};
+> 
+> 
+
+---
+
+#### currentport [getter]
+> to use write **this.currentport**
+> 
+> 
+> returns {**rectangle**} gets a reference to the rectangluar potion used for the current active frame
+> 
+> 
+
+---
+
+#### currenttex [getter]
+> to use write **this.currenttex**
+> 
+> 
+> returns {**texture**} gets a reference to the texture being used by the current active frame
+> 
+> 
+
+---
+
+#### firstAnmiationFrame [getter]
+> to use write **this.firstAnmiationFrame**
+> 
+> 
+> returns {**int**} gets the first frame for the current animation state if no animation range set then -1 is returned
+> 
+> 
+
+---
+
+#### firstframe [getter]
+> to use write **this.firstframe**
+> 
+> 
+> returns {**int**} gets the first frame defined for the sprite will be -1 if no frames defined or 0 if they are
+> 
+> 
+
+---
+
+#### lastAnimationFrame [getter]
+> to use write **this.lastAnimationFrame**
+> 
+> 
+> returns {**int**} gets the last frame for the current animation state if no animation range set the -1 is returned
+> 
+> 
+
+---
+
+#### lastframe [getter]
+> to use write **this.lastframe**
+> 
+> 
+> returns {**int**} gets the last frame defgined for the sprite -1 if no frames defined
+> 
+> 
+
+---
+
+## Methods
+#### #kill()
+> to use write **this.#kill()**
+> 
+> if animation has gone past start or end of available animation frames
+> 
+> kill the sprite ha ha!!
+> 
+> @ Very useful for running an animation then making a sprite dissapear
+> 
+> 
+
+---
+
+#### #repeat()
+> to use write **this.#repeat()**
+> 
+> if animation has gone past start or end of available animation frames
+> 
+> go back to first frame and continue
+> 
+> 
+
+---
+
+#### #reverse()
+> to use write **this.#reverse()**
+> 
+> if animation has gone past start or end then reverse direction
+> 
+> 
+
+---
+
+#### #setlastaction(action)
+> to use write **this.#setlastaction(action)**
+> 
 > disabled, sets lastAction but shouldn't meddle directly
 > 
 > 
@@ -202,25 +283,31 @@
 
 ---
 
-> #### animateonupdate(lastAction,  startFrame, endFrame)
-> creates an animation where they frame will change every time the sprite updates.
+#### #stop()
+> to use write **this.#stop()**
 > 
-> This is only useful if you change the updatePeriod of the sprite and will give an animation style similar to space invaders
+> if animation has gone past start or end of available animation frames
 > 
-> 
-> **Parameters**
-> 
-> {**LastAction**} **lastAction** action to perform when animation reaches endFrame
-> 
-> {**int**} **startFrame** first frame of the animation
-> 
-> {**int**} **endFrame** final frame of the animation
+> remain at that position
 > 
 > 
 
 ---
 
-> #### animateondistance(distance, lastAction,  startFrame, endFrame)
+#### #stopthenfirst()
+> to use write **this.#stopthenfirst()**
+> 
+> if animation has gone past start or end of available animation frames
+> 
+> revert to first frame in sequence and stop animation
+> 
+> 
+
+---
+
+#### animateondistance(distance, lastAction,  startFrame, endFrame)
+> to use write **this.animateondistance(distance, lastAction,  startFrame, endFrame)**
+> 
 > creates an animation where they frame will change every time the sprite has moved a particular distance
 > 
 > This is only useful if you change the frame for walking/tank tracks where the graphic shows contact with a surface.
@@ -244,7 +331,31 @@
 
 ---
 
-> #### animateonrate(period,  lastAction,  startFrame, endFrame)
+#### animateonmanual(lastAction, startFrame, endFrame, callback)
+> to use write **this.animateonmanual(lastAction, startFrame, endFrame, callback)**
+> 
+> sets up manual animation, this lets you build any type of animation system you wish (could be based on user input if required)
+> 
+> use next(), previous(), first(), last() and show(int) methods to manipulate the animation
+> 
+> 
+> **Parameters**
+> 
+> {**LastAction**} **lastAction** action to perform when animation reaches endFrame
+> 
+> {**int**} **startFrame** first frame of the animation
+> 
+> {**int**} **endFrame** final frame of the animation
+> 
+> {**{callback:method|function,instance:object}**} **callback** 
+> 
+> 
+
+---
+
+#### animateonrate(period,  lastAction,  startFrame, endFrame)
+> to use write **this.animateonrate(period,  lastAction,  startFrame, endFrame)**
+> 
 > creates an animation where they frame will change every time a time period has elapsed
 > 
 > This is the classic mode of animation, frame rate animation, great for explosion sprites and sliding effects
@@ -266,10 +377,12 @@
 
 ---
 
-> #### animateonmanual(lastAction, startFrame, endFrame, callback)
-> sets up manual animation, this lets you build any type of animation system you wish (could be based on user input if required)
+#### animateonupdate(lastAction,  startFrame, endFrame)
+> to use write **this.animateonupdate(lastAction,  startFrame, endFrame)**
 > 
-> use next(), previous(), first(), last() and show(int) methods to manipulate the animation
+> creates an animation where they frame will change every time the sprite updates.
+> 
+> This is only useful if you change the updatePeriod of the sprite and will give an animation style similar to space invaders
 > 
 > 
 > **Parameters**
@@ -280,84 +393,22 @@
 > 
 > {**int**} **endFrame** final frame of the animation
 > 
-> {**{callback:method|function,instance:object}**} **callback** 
+> 
+
+---
+
+#### cleanup()
+> to use write **this.cleanup()**
+> 
+> releases references from the animator
 > 
 > 
 
 ---
 
-> #### nomethod()
-> empty method thatjust returns, called during update of animation
+#### define(texture, portion)
+> to use write **this.define(texture, portion)**
 > 
-> 
-
----
-
-> #### onrate()
-> don't call drectly, handles th update logic for onrate animations
-> 
-> 
-
----
-
-> #### ondistance()
-> don't call drectly, handles th update logic for ondistance animations
-> 
-> 
-
----
-
-> #### onupdate()
-> don't call drectly, handles th update logic for onupdate animations
-> 
-> 
-
----
-
-> #### onmanual()
-> this will be called during manual animation operations, inherit from this to have your own code called if you use a manual animation
-> 
-> 
-
----
-
-> #### update()
-> perfors the update for particular mdoes
-> 
-> 
-> returns {**bool**} true if animation frame did change
-> 
-> 
-
----
-
-> #### show(thisFrame)
-> shows a specific frame (for manual animations)
-> 
-> 
-> **Parameters**
-> 
-> {**int**} **thisFrame** if the frame is outside the ones defined it will be cropped to that range
-> 
-> 
-
----
-
-> #### next()
-> moves the animation to the next frame in the defined sequence in manual animations
-> 
-> 
-
----
-
-> #### previous()
-> moves the animation to the previous frame in the defined sequence in manual animations
-> 
-> 
-
----
-
-> #### define(texture, portion)
 > defines a frame for this sprite it is added in sequence to the list of frames
 > 
 > 
@@ -371,7 +422,9 @@
 
 ---
 
-> #### defineFramelist(flist)
+#### defineFramelist(flist)
+> to use write **this.defineFramelist(flist)**
+> 
 > defines a number of frames for a sprite using a framelist
 > 
 > 
@@ -399,7 +452,9 @@
 
 ---
 
-> #### defineSpritesheet(texture, tilesize, data)
+#### defineSpritesheet(texture, tilesize, data)
+> to use write **this.defineSpritesheet(texture, tilesize, data)**
+> 
 > performs a rip of a spritesheet
 > 
 > adds to frame list a rectangluar sequence of frames from a texture
@@ -425,7 +480,72 @@
 
 ---
 
-> #### remove(frame, count)
+#### next()
+> to use write **this.next()**
+> 
+> moves the animation to the next frame in the defined sequence in manual animations
+> 
+> 
+
+---
+
+#### nomethod()
+> to use write **this.nomethod()**
+> 
+> empty method thatjust returns, called during update of animation
+> 
+> 
+
+---
+
+#### ondistance()
+> to use write **this.ondistance()**
+> 
+> don't call drectly, handles th update logic for ondistance animations
+> 
+> 
+
+---
+
+#### onmanual()
+> to use write **this.onmanual()**
+> 
+> this will be called during manual animation operations, inherit from this to have your own code called if you use a manual animation
+> 
+> 
+
+---
+
+#### onrate()
+> to use write **this.onrate()**
+> 
+> don't call drectly, handles th update logic for onrate animations
+> 
+> 
+
+---
+
+#### onupdate()
+> to use write **this.onupdate()**
+> 
+> don't call drectly, handles th update logic for onupdate animations
+> 
+> 
+
+---
+
+#### previous()
+> to use write **this.previous()**
+> 
+> moves the animation to the previous frame in the defined sequence in manual animations
+> 
+> 
+
+---
+
+#### remove(frame, count)
+> to use write **this.remove(frame, count)**
+> 
 > removes either a single frame or a number of frames including the first one
 > 
 > if you do this you will need to make sure you reset any animation states with updated values
@@ -441,48 +561,30 @@
 
 ---
 
-> #### #stop()
-> if animation has gone past start or end of available animation frames
+#### show(thisFrame)
+> to use write **this.show(thisFrame)**
 > 
-> remain at that position
+> shows a specific frame (for manual animations)
 > 
 > 
-
----
-
-> #### #stopthenfirst()
-> if animation has gone past start or end of available animation frames
+> **Parameters**
 > 
-> revert to first frame in sequence and stop animation
+> {**int**} **thisFrame** if the frame is outside the ones defined it will be cropped to that range
 > 
 > 
 
 ---
 
-> #### #repeat()
-> if animation has gone past start or end of available animation frames
+#### update()
+> to use write **this.update()**
 > 
-> go back to first frame and continue
+> perfors the update for particular mdoes
 > 
 > 
-
----
-
-> #### #reverse()
-> if animation has gone past start or end then reverse direction
+> returns {**bool**} true if animation frame did change
 > 
 > 
 
 ---
 
-> #### #kill()
-> if animation has gone past start or end of available animation frames
-> 
-> kill the sprite ha ha!!
-> 
-> @ Very useful for running an animation then making a sprite dissapear
-> 
-> 
-
----
-
+engine created by Hurray Banana &copy;2023-2024

@@ -1,4 +1,5 @@
-> ### class TilemapOverlay
+engine created by Hurray Banana &copy;2023-2024
+## class TilemapOverlay
 > overaly methods for tile map debugging
 > 
 > very expensive, best performant way to use these is to render them to a screen buffer,
@@ -9,51 +10,79 @@
 
 ---
 
-> #### static GRAPHIC = "graphic"
+## properties
+####  COLLISION [static]
+> default value **"collision"**
 > 
-> {**string**} outputs the graphic tile number at each tilemap location
+> to use write **TilemapOverlay.COLLISION**
 > 
 > 
-
----
-
-> #### static COLLISION = "collision"
-> 
-> {**string**} outputs the collision tile number (from the collisionmap) at each tile
+> type {**string**} outputs the collision tile number (from the collisionmap) at each tile
 > 
 > 
 
 ---
 
-> #### static COORDS = "coords"
+####  COORDS [static]
+> default value **"coords"**
 > 
-> {**string**} outputs the tile pixel-coordinate for each tile
+> to use write **TilemapOverlay.COORDS**
 > 
 > 
-
----
-
-> #### static ROW_COL = "row_col"
-> 
-> {**string**} outputs the tile coordinate for each tile
+> type {**string**} outputs the tile pixel-coordinate for each tile
 > 
 > 
 
 ---
 
-> #### static GRID = "grid"
+####  GRAPHIC [static]
+> default value **"graphic"**
 > 
-> {**string**} draws outline for tile bounaries
+> to use write **TilemapOverlay.GRAPHIC**
 > 
 > 
-
----
-
-> #### static NONE = null
-> 
-> {**null**} no output
+> type {**string**} outputs the graphic tile number at each tilemap location
 > 
 > 
 
 ---
 
+####  GRID [static]
+> default value **"grid"**
+> 
+> to use write **TilemapOverlay.GRID**
+> 
+> 
+> type {**string**} draws outline for tile bounaries
+> 
+> 
+
+---
+
+####  NONE [static]
+> default value **null**
+> 
+> to use write **TilemapOverlay.NONE**
+> 
+> 
+> type {**null**} no output
+> 
+> 
+
+---
+
+####  ROW_COL [static]
+> default value **"row_col"**
+> 
+> to use write **TilemapOverlay.ROW_COL**
+> 
+> 
+> type {**string**} outputs the tile coordinate for each tile
+> 
+> 
+
+---
+
+## getters and setters
+## Methods
+engine created by Hurray Banana &copy;2023-2024

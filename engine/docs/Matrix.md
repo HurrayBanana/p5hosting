@@ -1,27 +1,15 @@
-> ### class Matrix
-> @classdesc holds a 4x4 matrix to hold combinatoral transformation in a single matrix
+engine created by Hurray Banana &copy;2023-2024
+## class Matrix
+>  holds a 4x4 matrix to hold combinatoral transformation in a single matrix
 > 
 > 
 
 ---
 
-> #### static getter identity
-> 
-> returns {**Matrix**} An identity matrix, start point for building a custom matrix
-> 
-> 
-
----
-
-> #### getter toString
-> 
-> returns {**string**} a string representation of the matrix
-> 
-> 
-
----
-
+## Constructor
 > #### constructor(matrixarr)
+> to use write **new Matrix(matrixarr)**
+> 
 > creates a new matrix
 > 
 > 
@@ -44,45 +32,32 @@
 
 ---
 
-> #### multiply(m)
-> multiply this matrix with matrix m t*m
+## properties
+## getters and setters
+####   identity [getter] [static]
+> to use write **Matrix.identity**
 > 
 > 
-> **Parameters**
-> 
-> {**Matrix**} **m** 
-> 
-> 
-
----
-
-> #### static rotateZ(angle)
-> 
-> returns {**Matrix**} Z axis rotation matrix
-> 
-> 
-> **Parameters**
-> 
-> {**float**} **angle** in degrees to rotate around the z axis (into the screen, effectively a 2d rotation)
+> returns {**Matrix**} An identity matrix, start point for building a custom matrix
 > 
 > 
 
 ---
 
-> #### static rotateY(angle)
+#### toString [getter]
+> to use write **this.toString**
 > 
-> returns {**Matrix**} y axis rotation matrix
 > 
-> 
-> **Parameters**
-> 
-> {**float**} **angle** in degrees to rotate around the y axis
+> returns {**string**} a string representation of the matrix
 > 
 > 
 
 ---
 
-> #### static rotateX(angle)
+## Methods
+####  rotateX(angle) [static]
+> to use write **Matrix.rotateX(angle)**
+> 
 > 
 > returns {**Matrix**} x axis rotation matrix
 > 
@@ -95,43 +70,39 @@
 
 ---
 
-> #### applyrotZ(angle)
-> directly applies a z axis rotation to this matrix
+####  rotateY(angle) [static]
+> to use write **Matrix.rotateY(angle)**
+> 
+> 
+> returns {**Matrix**} y axis rotation matrix
 > 
 > 
 > **Parameters**
 > 
-> {**float**} **angle** in degrees to apply to z axis
+> {**float**} **angle** in degrees to rotate around the y axis
 > 
 > 
 
 ---
 
-> #### applyrotY(angle)
-> directly applies a y axis rotation to this matrix
+####  rotateZ(angle) [static]
+> to use write **Matrix.rotateZ(angle)**
+> 
+> 
+> returns {**Matrix**} Z axis rotation matrix
 > 
 > 
 > **Parameters**
 > 
-> {**float**} **angle** in degrees to apply to y axis
+> {**float**} **angle** in degrees to rotate around the z axis (into the screen, effectively a 2d rotation)
 > 
 > 
 
 ---
 
-> #### applyrotX(angle)
-> directly applies a x axis rotation to this matrix
+####  translate(x,y,z) [static]
+> to use write **Matrix.translate(x,y,z)**
 > 
-> 
-> **Parameters**
-> 
-> {**float**} **angle** in degrees to apply to x axis
-> 
-> 
-
----
-
-> #### static translate(x,y,z)
 > creates a translation matrix
 > 
 > 
@@ -150,7 +121,51 @@
 
 ---
 
-> #### applytranslate(x,y,z)
+#### applyrotX(angle)
+> to use write **this.applyrotX(angle)**
+> 
+> directly applies a x axis rotation to this matrix
+> 
+> 
+> **Parameters**
+> 
+> {**float**} **angle** in degrees to apply to x axis
+> 
+> 
+
+---
+
+#### applyrotY(angle)
+> to use write **this.applyrotY(angle)**
+> 
+> directly applies a y axis rotation to this matrix
+> 
+> 
+> **Parameters**
+> 
+> {**float**} **angle** in degrees to apply to y axis
+> 
+> 
+
+---
+
+#### applyrotZ(angle)
+> to use write **this.applyrotZ(angle)**
+> 
+> directly applies a z axis rotation to this matrix
+> 
+> 
+> **Parameters**
+> 
+> {**float**} **angle** in degrees to apply to z axis
+> 
+> 
+
+---
+
+#### applytranslate(x,y,z)
+> to use write **this.applytranslate(x,y,z)**
+> 
 > directly applies a translation matrix to this matrix
 > 
 > 
@@ -166,14 +181,32 @@
 
 ---
 
-> #### reset()
+#### multiply(m)
+> to use write **this.multiply(m)**
+> 
+> multiply this matrix with matrix m t*m
+> 
+> 
+> **Parameters**
+> 
+> {**Matrix**} **m** 
+> 
+> 
+
+---
+
+#### reset()
+> to use write **this.reset()**
+> 
 > sets this matrix to the indentity matrix
 > 
 > 
 
 ---
 
-> #### transform(v)
+#### transform(v)
+> to use write **this.transform(v)**
+> 
 > applies the matrix to given vector or array of vectors
 > 
 > 
@@ -185,3 +218,4 @@
 
 ---
 
+engine created by Hurray Banana &copy;2023-2024

@@ -1,67 +1,15 @@
-> ### class partic
+engine created by Hurray Banana &copy;2023-2024
+## class partic
 > Holds information about an idividual particle
 > 
 > 
 
 ---
 
-> #### pos
-> position of the particle. You can make this a vector3 type (or any type) as long as it has x and y properties that set the position
+## properties
+#### alive
+> to use write **this.alive**
 > 
-> to draw the particle on screen
-> 
-> 
-> {**vector2**}
-> 
-> 
-
----
-
-> #### vel
-> velocity of the particle, you can use whatever you wish as your update controls the particles but it must update the postion x and y properties
-> 
-> 
-> {**vector2**}
-> 
-> 
-
----
-
-> #### rot
-> the rotation angle of the particle texture, in radians
-> 
-> Do any work here in radians (if you want to sue degrees you'll have to do the maths to convert between)
-> 
-> 
-> {**float**} in radians
-> 
-> 
-
----
-
-> #### size
-> a value to determine the scale in the x and y directions for the particle.
-> 
-> 
-> {**vector2**} or any object with x and y properties e.g {x:2,y:3}
-> 
-> 
-
----
-
-> #### gsize
-> a value to determine the scale in the x and y directions for the particles drawn on a glow layer.
-> 
-> This enables you to draw at different sizes if you are drawing on both the glow and normal layers
-> 
-> 
-> {**vector2**} or any object with x and y properties e.g {x:2,y:3}
-> 
-> 
-
----
-
-> #### alive
 > if false then the particle will no longer be drawn
 > 
 > set an individual particles alive propery to false to stop it being draw (you probably want to stop it being updated in your update method as well)
@@ -69,108 +17,43 @@
 > defaults to true
 > 
 > 
-> {**bool**}
+> type {**bool**}
 > 
 > 
 
 ---
 
-> #### end = false
-> if true then the partcile set will be removed from the Particle Manager
+#### alpha
+> to use write **this.alpha**
 > 
-> set this to true in your update method when you want the particle effect to stop
-> 
-> 
-> {**bool**}
-> 
-> 
-
----
-
-> #### particles
-> Array of particles in this set
-> 
-> 
-> {**particle[]**}
-> 
-> 
-
----
-
-> #### layer = null
-> renderlayer associated with this particle set
-> 
-> 
-> {**Image | Texture**}
-> 
-> 
-
----
-
-> #### glayer = null
-> glow renderlayer associated with this particle set
-> 
-> 
-> {**Image | Texture**}
-> 
-> 
-
----
-
-> #### alpha
 > transparency of the particles (1 opaque -> 0 fully transparent)
 > 
 > 
-> {**float**}
+> type {**float**}
 > 
 > 
 
 ---
 
-> #### basecol = null
+#### basecol
+> default value **null**
+> 
+> to use write **this.basecol**
+> 
 > the colour to tint the texture you have supplied for the particles,
 > 
 > default null, If set then the colour value will be used to tint the texture
 > 
 > 
-> {**colour**}
+> type {**colour**}
 > 
 > 
 
 ---
 
-> #### glowcol = null
-> the colour to tint the texture you have supplied for the particles,
+#### constructor(density)
+> to use write **this.constructor(density)**
 > 
-> default null, If set then the colour value will be used to tint the texture
-> 
-> 
-> {**colour**}
-> 
-> 
-
----
-
-> #### tx
-> the texture to render the partcile, this must be set, it defaults to Tex.singlepixel. The entire texture is rendered so be careful on choice
-> 
-> 
-> {**Image|Texture**}
-> 
-> 
-
----
-
-> #### world = true
-> specifies whether we are rendering in world or main view co-ordinates, default is true, world co-ordinates.
-> 
-> It should be set to the same as whatever co-ordinate system the particle is associated with
-> 
-> 
-
----
-
-> #### constructor(density)
 > creates the partcle set with the following number of elements
 > 
 > Make sure in you constructor after calling super(number of elements) that you set up the initial properties for each particle
@@ -258,7 +141,174 @@
 
 ---
 
-> #### cleanup()
+#### end
+> default value **false**
+> 
+> to use write **this.end**
+> 
+> if true then the partcile set will be removed from the Particle Manager
+> 
+> set this to true in your update method when you want the particle effect to stop
+> 
+> 
+> type {**bool**}
+> 
+> 
+
+---
+
+#### glayer
+> default value **null**
+> 
+> to use write **this.glayer**
+> 
+> glow renderlayer associated with this particle set
+> 
+> 
+> type {**Image | Texture**}
+> 
+> 
+
+---
+
+#### glowcol
+> default value **null**
+> 
+> to use write **this.glowcol**
+> 
+> the colour to tint the texture you have supplied for the particles,
+> 
+> default null, If set then the colour value will be used to tint the texture
+> 
+> 
+> type {**colour**}
+> 
+> 
+
+---
+
+#### gsize
+> to use write **this.gsize**
+> 
+> a value to determine the scale in the x and y directions for the particles drawn on a glow layer.
+> 
+> This enables you to draw at different sizes if you are drawing on both the glow and normal layers
+> 
+> 
+> type {**vector2**} or any object with x and y properties e.g {x:2,y:3}
+> 
+> 
+
+---
+
+#### layer
+> default value **null**
+> 
+> to use write **this.layer**
+> 
+> renderlayer associated with this particle set
+> 
+> 
+> type {**Image | Texture**}
+> 
+> 
+
+---
+
+#### particles
+> to use write **this.particles**
+> 
+> Array of particles in this set
+> 
+> 
+> type {**particle[]**}
+> 
+> 
+
+---
+
+#### pos
+> to use write **this.pos**
+> 
+> position of the particle. You can make this a vector3 type (or any type) as long as it has x and y properties that set the position
+> 
+> to draw the particle on screen
+> 
+> 
+> type {**vector2**}
+> 
+> 
+
+---
+
+#### rot
+> to use write **this.rot**
+> 
+> the rotation angle of the particle texture, in radians
+> 
+> Do any work here in radians (if you want to sue degrees you'll have to do the maths to convert between)
+> 
+> 
+> type {**float**} in radians
+> 
+> 
+
+---
+
+#### size
+> to use write **this.size**
+> 
+> a value to determine the scale in the x and y directions for the particle.
+> 
+> 
+> type {**vector2**} or any object with x and y properties e.g {x:2,y:3}
+> 
+> 
+
+---
+
+#### tx
+> to use write **this.tx**
+> 
+> the texture to render the partcile, this must be set, it defaults to Tex.singlepixel. The entire texture is rendered so be careful on choice
+> 
+> 
+> type {**Image|Texture**}
+> 
+> 
+
+---
+
+#### vel
+> to use write **this.vel**
+> 
+> velocity of the particle, you can use whatever you wish as your update controls the particles but it must update the postion x and y properties
+> 
+> 
+> type {**vector2**}
+> 
+> 
+
+---
+
+#### world
+> default value **true**
+> 
+> to use write **this.world**
+> 
+> specifies whether we are rendering in world or main view co-ordinates, default is true, world co-ordinates.
+> 
+> It should be set to the same as whatever co-ordinate system the particle is associated with
+> 
+> 
+
+---
+
+## getters and setters
+## Methods
+#### cleanup()
+> to use write **this.cleanup()**
+> 
 > removes any references when the particleset is destroyed, if you add any extra resources to your
 > 
 > own partcile sets make sure you override this cleanup method and call super.cleanup() within your method
@@ -267,3 +317,4 @@
 
 ---
 
+engine created by Hurray Banana &copy;2023-2024

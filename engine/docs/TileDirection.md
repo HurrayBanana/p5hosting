@@ -1,84 +1,130 @@
-> ### class TileDirection
-> @classdesc values to use for stating directions in tilemaps for various tilemap navigation and interrogation methods
+engine created by Hurray Banana &copy;2023-2024
+## class TileDirection
+>  values to use for stating directions in tilemaps for various tilemap navigation and interrogation methods
 > 
 > 
 
 ---
 
-> #### static LEFT = 0x1
-> direction left @type {int}
+## properties
+####  ALL_ORDINALS [static]
+> default value **[TileDirection.LEFT, TileDirection.RIGHT, TileDirection.UP, TileDirection.DOWN]**
+> 
+> to use write **TileDirection.ALL_ORDINALS**
+> 
+> 
+> type {**int[]**} array containing each ordinal direction
 > 
 > 
 
 ---
 
-> #### static UP = 0x2
-> direction up  @type {int}
+####  DOWN [static]
+> default value **0x8**
 > 
+> to use write **TileDirection.DOWN**
 > 
-
----
-
-> #### static RIGHT = 0x4
-> direction right  @type {int}
-> 
-> 
-
----
-
-> #### static DOWN = 0x8
 > direction down  @type {int}
 > 
 > 
 
 ---
 
-> #### static NONE = 0b0
+####  HORIZONTALS [static]
+> default value **[TileDirection.LEFT, TileDirection.RIGHT]**
+> 
+> to use write **TileDirection.HORIZONTALS**
+> 
+> 
+> type {**int[]**} array containing each horizontal direction
+> 
+> 
+
+---
+
+####  LEFT [static]
+> default value **0x1**
+> 
+> to use write **TileDirection.LEFT**
+> 
+> direction left @type {int}
+> 
+> 
+
+---
+
+####  NONE [static]
+> default value **0b0**
+> 
+> to use write **TileDirection.NONE**
+> 
 > no direction  @type {int}
 > 
 > 
 
 ---
 
-> #### static ALL_ORDINALS = [TileDirection.LEFT, TileDirection.RIGHT, TileDirection.UP, TileDirection.DOWN]
+####  RIGHT [static]
+> default value **0x4**
 > 
-> {**int[]**} array containing each ordinal direction
+> to use write **TileDirection.RIGHT**
 > 
-> 
-
----
-
-> #### static VERTICALS = [TileDirection.UP, TileDirection.DOWN]
-> 
-> {**int[]**} array containing each vertical direction
+> direction right  @type {int}
 > 
 > 
 
 ---
 
-> #### static HORIZONTALS = [TileDirection.LEFT, TileDirection.RIGHT]
+####  UP [static]
+> default value **0x2**
 > 
-> {**int[]**} array containing each horizontal direction
+> to use write **TileDirection.UP**
 > 
-> 
-
----
-
-> #### static str = ["none","left","up",,"right",,,,"down"]
-> debugging string @type {string}
+> direction up  @type {int}
 > 
 > 
 
 ---
 
-> #### static directionmap = [,0,1,,2,,,,3]
+####  VERTICALS [static]
+> default value **[TileDirection.UP, TileDirection.DOWN]**
+> 
+> to use write **TileDirection.VERTICALS**
+> 
+> 
+> type {**int[]**} array containing each vertical direction
+> 
+> 
+
+---
+
+####  directionmap [static]
+> default value **[,0,1,,2,,,,3]**
+> 
+> to use write **TileDirection.directionmap**
+> 
 > mapping of WNES to indexes 0,1,2,3 used by highlightdirections
 > 
 > 
 
 ---
 
-> #### static asStr(direction)
+####  str [static]
+> default value **["none","left","up",,"right",,,,"down"]**
+> 
+> to use write **TileDirection.str**
+> 
+> debugging string @type {string}
+> 
+> 
+
+---
+
+## getters and setters
+## Methods
+####  asStr(direction) [static]
+> to use write **TileDirection.asStr(direction)**
+> 
 > 
 > returns {**string**} string representation of a given direction
 > 
@@ -91,7 +137,9 @@
 
 ---
 
-> #### static strlist(di)
+####  strlist(di) [static]
+> to use write **TileDirection.strlist(di)**
+> 
 > produces a string of directions based on the the array
 > 
 > 
@@ -106,3 +154,4 @@
 
 ---
 
+engine created by Hurray Banana &copy;2023-2024

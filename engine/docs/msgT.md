@@ -1,4 +1,5 @@
-> ### class msgT
+engine created by Hurray Banana &copy;2023-2024
+## class msgT
 > list of static message types to send or subscribe to
 > 
 > add your own messages here give it a name and set it to a string with the same name.
@@ -13,7 +14,29 @@
 
 ---
 
-> #### static playerData = "playerData"
+## properties
+####  colour [static]
+> default value **"colour"**
+> 
+> to use write **msgT.colour**
+> 
+> data {col:[r,g,b]}
+> 
+> ```js
+> example
+>       //magenta
+>       data {col:[255,0,255]};
+>     
+> ```
+> 
+
+---
+
+####  playerData [static]
+> default value **"playerData"**
+> 
+> to use write **msgT.playerData**
+> 
 > data {x:float,y:float}
 > 
 > used for any object wanting to track player positions
@@ -27,20 +50,11 @@
 
 ---
 
-> #### static colour = "colour"
-> data {col:[r,g,b]}
+####  scored [static]
+> default value **"scored"**
 > 
-> ```js
-> example
->       //magenta
->       data {col:[255,0,255]};
->     
-> ```
+> to use write **msgT.scored**
 > 
-
----
-
-> #### static scored = "scored"
 > data {score:int,player:string}
 > 
 > ```js
@@ -53,7 +67,11 @@
 
 ---
 
-> #### static spriteinfo = "spriteinfo"
+####  spriteinfo [static]
+> default value **"spriteinfo"**
+> 
+> to use write **msgT.spriteinfo**
+> 
 > data {sp:object}
 > 
 > use for sending references to a sprite so various info can be examined
@@ -70,3 +88,6 @@
 
 ---
 
+## getters and setters
+## Methods
+engine created by Hurray Banana &copy;2023-2024

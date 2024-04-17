@@ -1,33 +1,55 @@
-> ### class TilemapManager
-> @classdesc organises and manages active tilemaps
+engine created by Hurray Banana &copy;2023-2024
+## class TilemapManager
+>  organises and manages active tilemaps
 > 
 > 
 
 ---
 
-> #### #tilemaps
-> 
-> {**Tilemap[]**} holds a list of active maps
-> 
-> 
-
----
-
-> #### getter debugdisplay
-> provides some debug information about managed tilemaps
-> 
-> 
-
----
-
+## Constructor
 > #### constructor()
+> to use write **new TilemapManager()**
+> 
 > creates tilemap manager
 > 
 > 
 
 ---
 
-> #### add(tilemap)
+## properties
+#### #tilemaps
+> to use write **this.#tilemaps**
+> 
+> 
+> type {**Tilemap[]**} holds a list of active maps
+> 
+> 
+
+---
+
+## getters and setters
+#### debugdisplay [getter]
+> to use write **this.debugdisplay**
+> 
+> provides some debug information about managed tilemaps
+> 
+> 
+
+---
+
+## Methods
+#### #bringoutthedead()
+> to use write **this.#bringoutthedead()**
+> 
+> removes any tilemaps marked as remove
+> 
+> 
+
+---
+
+#### add(tilemap)
+> to use write **this.add(tilemap)**
+> 
 > adds a tilemap to the manage, this ensures it's updated and drawn
 > 
 > 
@@ -39,24 +61,22 @@
 
 ---
 
-> #### update()
-> updates the managed tilemaps
+#### draw()
+> to use write **this.draw()**
 > 
-> 
-
----
-
-> #### draw()
 > draws the managed tilemaps
 > 
 > 
 
 ---
 
-> #### #bringoutthedead()
-> removes any tilemaps marked as remove
+#### update()
+> to use write **this.update()**
+> 
+> updates the managed tilemaps
 > 
 > 
 
 ---
 
+engine created by Hurray Banana &copy;2023-2024

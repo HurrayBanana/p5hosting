@@ -1,20 +1,43 @@
-> ### class EndOfTrackAction
+engine created by Hurray Banana &copy;2023-2024
+## class EndOfTrackAction
 > States what should happen when a sprite reaches the end of its current track
 > 
 > 
 
 ---
 
-> #### static random = "random"
-> at end of track pick another track from those associated with the Sprite
+## properties
+####   kill [static]
+> default value **"kill"**
 > 
-> Great for random boss movement patterns
+> to use write **EndOfTrackAction.kill**
+> 
+> kill the sprite at the end of the track
+> 
+> Can use for explosion effects in conjuction with a Sprite funeral
 > 
 > 
 
 ---
 
-> #### static detach = "detach"
+####   wrap [static]
+> default value **"wrap"**
+> 
+> to use write **EndOfTrackAction.wrap**
+> 
+> start again on the current track
+> 
+> Useful for fancy menu like sega 3d ones for name entry
+> 
+> 
+
+---
+
+####  detach [static]
+> default value **"detach"**
+> 
+> to use write **EndOfTrackAction.detach**
+> 
 > forces the sprite to leave the track and continue in the direction it was last moving
 > 
 > Nice to use if you turn gravity on for a sprite once its detached if you use
@@ -25,34 +48,11 @@
 
 ---
 
-> #### static  wrap = "wrap"
-> start again on the current track
+####  next [static]
+> default value **"next"**
 > 
-> Useful for fancy menu like sega 3d ones for name entry
+> to use write **EndOfTrackAction.next**
 > 
-> 
-
----
-
-> #### static reverse = "reverse"
-> go backwards along the current track
-> 
-> Nice to use for display or target type tracks
-> 
-> 
-
----
-
-> #### static  kill = "kill"
-> kill the sprite at the end of the track
-> 
-> Can use for explosion effects in conjuction with a Sprite funeral
-> 
-> 
-
----
-
-> #### static next = "next"
 > move on to the start of the next track
 > 
 > Use if you want a sprite to follow a specific sequence of tracks.
@@ -63,7 +63,37 @@
 
 ---
 
-> #### static stop = "stop"
+####  random [static]
+> default value **"random"**
+> 
+> to use write **EndOfTrackAction.random**
+> 
+> at end of track pick another track from those associated with the Sprite
+> 
+> Great for random boss movement patterns
+> 
+> 
+
+---
+
+####  reverse [static]
+> default value **"reverse"**
+> 
+> to use write **EndOfTrackAction.reverse**
+> 
+> go backwards along the current track
+> 
+> Nice to use for display or target type tracks
+> 
+> 
+
+---
+
+####  stop [static]
+> default value **"stop"**
+> 
+> to use write **EndOfTrackAction.stop**
+> 
 > Halt sprite at the end of the track
 > 
 > Use if you want a sprite to travel to the end and the stop and do something
@@ -78,3 +108,6 @@
 
 ---
 
+## getters and setters
+## Methods
+engine created by Hurray Banana &copy;2023-2024

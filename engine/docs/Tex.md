@@ -1,11 +1,95 @@
-> ### class Tex
-> @classdesc support to help with textures, loading and manipulating
+engine created by Hurray Banana &copy;2023-2024
+## class Tex
+>  support to help with textures, loading and manipulating
 > 
 > 
 
 ---
 
-> #### static prerenderFont = "monospace"
+## properties
+#### 
+> to use write **this.**
+> 
+> generic routine to create a texture with the width and height requested
+> 
+> will add it to the texture cache
+> 
+> 
+
+---
+
+####  #slopePorts [static]
+> to use write **Tex.#slopePorts**
+> 
+> holds rectangles portions for the slopes
+> 
+> 
+
+---
+
+####  alphaset [static]
+> default value **"0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz !\"£$%^&*()[]{}-+=,.:?><¬";**
+> 
+> to use write **Tex.alphaset**
+> 
+> set of textures generated for each of the characters
+> 
+> 
+
+---
+
+####  circle16by16 [static]
+> to use write **Tex.circle16by16**
+> 
+> white circle   @type {texture}
+> 
+> 
+
+---
+
+####  circle32by32 [static]
+> to use write **Tex.circle32by32**
+> 
+> white circle   @type {texture}
+> 
+> 
+
+---
+
+####  circle4by4 [static]
+> to use write **Tex.circle4by4**
+> 
+> white circle   @type {texture}
+> 
+> 
+
+---
+
+####  circle8by8 [static]
+> to use write **Tex.circle8by8**
+> 
+> white circle   @type {texture}
+> 
+> 
+
+---
+
+####  loadQ [static]
+> default value **[]**
+> 
+> to use write **Tex.loadQ**
+> 
+> holds the image load requests as these happen asynchronously
+> 
+> 
+
+---
+
+####  prerenderFont [static]
+> default value **"monospace"**
+> 
+> to use write **Tex.prerenderFont**
+> 
 > font used to pre-render textures ready for sprites (alphabet stuff)
 > 
 > change it before calling Engine.init()
@@ -16,21 +100,22 @@
 
 ---
 
-> #### static prerenderFontsize = 24
-> font size to use for pre-render texture characters - default 24 @type {int}
+####  prerenderFontTextureSize [static]
+> default value **32**
 > 
+> to use write **Tex.prerenderFontTextureSize**
 > 
-
----
-
-> #### static prerenderFontTextureSize = 32
 > texture size to use for pre-render texture characters - default 32 @type {int}
 > 
 > 
 
 ---
 
-> #### static prerenderFontTextureSizeExtra = 0
+####  prerenderFontTextureSizeExtra [static]
+> default value **0**
+> 
+> to use write **Tex.prerenderFontTextureSizeExtra**
+> 
 > extra sizing for fonts that don't report ascenders and descenders properly.
 > 
 > Use this when pre-rendered character textures get cropped
@@ -38,90 +123,44 @@
 > defaults to 0, try making it 4, 6 etc... until rendering is ok
 > 
 > 
-> {**int**}
+> type {**int**}
 > 
 > 
 
 ---
 
-> #### static singlepixel
-> single pixel for scaling for rectangles @type {texture}
+####  prerenderFontsize [static]
+> default value **24**
+> 
+> to use write **Tex.prerenderFontsize**
+> 
+> font size to use for pre-render texture characters - default 24 @type {int}
 > 
 > 
 
 ---
 
-> #### static rect50by50
+####  rect50by50 [static]
+> to use write **Tex.rect50by50**
+> 
 > texture with just white pixels 50x50  @type {texture}
 > 
 > 
 
 ---
 
-> #### static triangle
-> 8x8 pixel triangle white outline with black triangle  @type {texture}
+####  singlepixel [static]
+> to use write **Tex.singlepixel**
+> 
+> single pixel for scaling for rectangles @type {texture}
 > 
 > 
 
 ---
 
-> #### static circle4by4
-> white circle   @type {texture}
+####  slopes [static]
+> to use write **Tex.slopes**
 > 
-> 
-
----
-
-> #### static circle8by8
-> white circle   @type {texture}
-> 
-> 
-
----
-
-> #### static circle16by16
-> white circle   @type {texture}
-> 
-> 
-
----
-
-> #### static circle32by32
-> white circle   @type {texture}
-> 
-> 
-
----
-
-> #### static target
-> T target can be used for visualisations  @type {texture}
-> 
-> 
-
----
-
-> #### static txAlpha = []
-> holds alphaset as textures @type {texture[]}
-> 
-> 
-
----
-
-> #### static txAlphaBordered = []
-> holds alphaset as textures with a border @type {texture[]}
-> 
-> 
-
----
-
-> #### static alphaset = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz !\"£$%^&*()[]{}-+=,.:?><¬";
-> set of textures generated for each of the characters
-> 
-> 
-
----
-
-> #### static slopes
 > slope tiles 16x16
 > 
 > contains the following basic slopes
@@ -142,58 +181,91 @@
 
 ---
 
-> #### static #slopePorts
-> holds rectangles portions for the slopes
+####  target [static]
+> to use write **Tex.target**
+> 
+> T target can be used for visualisations  @type {texture}
 > 
 > 
 
 ---
 
-> #### static tsSlopes
-> holds slope textures from testing
+####  texnum [static]
+> default value **0**
 > 
+> to use write **Tex.texnum**
 > 
-
----
-
-> #### static tintcache = new Map()
-> holds all the cached tinted textures used for quick look up rather than keep generating
-> 
-> 
-
----
-
-> #### static texturecache = new Map()
-> holds all the cached textures
-> 
-> 
-
----
-
-> #### static texnum = 0
 > simple counter so cache can keep track and avoid duplicates
 > 
 > 
 
 ---
 
-> #### static loadQ = []
-> holds the image load requests as these happen asynchronously
+####  texturecache [static]
+> default value **new Map()**
+> 
+> to use write **Tex.texturecache**
+> 
+> holds all the cached textures
 > 
 > 
 
 ---
 
-> #### 
-> generic routine to create a texture with the width and height requested
+####  tintcache [static]
+> default value **new Map()**
 > 
-> will add it to the texture cache
+> to use write **Tex.tintcache**
+> 
+> holds all the cached tinted textures used for quick look up rather than keep generating
 > 
 > 
 
 ---
 
-> #### /** generates slope quarters for given square tile size */
+####  triangle [static]
+> to use write **Tex.triangle**
+> 
+> 8x8 pixel triangle white outline with black triangle  @type {texture}
+> 
+> 
+
+---
+
+####  tsSlopes [static]
+> to use write **Tex.tsSlopes**
+> 
+> holds slope textures from testing
+> 
+> 
+
+---
+
+####  txAlpha [static]
+> default value **[]**
+> 
+> to use write **Tex.txAlpha**
+> 
+> holds alphaset as textures @type {texture[]}
+> 
+> 
+
+---
+
+####  txAlphaBordered [static]
+> default value **[]**
+> 
+> to use write **Tex.txAlphaBordered**
+> 
+> holds alphaset as textures with a border @type {texture[]}
+> 
+> 
+
+---
+
+#### /** generates slope quarters for given square tile size */
+> to use write **this./** generates slope quarters for given square tile size */**
+> 
 > slope tiles 16x16
 > 
 > contains the following basic slopes
@@ -212,7 +284,10 @@
 
 ---
 
-> #### static getter loadcomplete
+## getters and setters
+####   loadcomplete [getter] [static]
+> to use write **Tex.loadcomplete**
+> 
 > gets true if loadnumber matches requested number set with beginload
 > 
 > 
@@ -222,114 +297,28 @@
 
 ---
 
-> #### static genAlphaset()
-> generates a stock alphabet as a set of sprite textures
+## Methods
+####  #createSlopes(size) [static]
+> to use write **Tex.#createSlopes(size)**
+> 
+> generates slope quarters for given square tile size
 > 
 > 
 
 ---
 
-> #### static getAlphachar(ch, border)
-> takes the first character in string and returns appropriate texture, will return a ¬ if doesn't exist
+####  #trap(t, x, y, l, r, w) [static]
+> to use write **Tex.#trap(t, x, y, l, r, w)**
 > 
-> 
-> returns {**texture**} requested texture if exists or a not texture
-> 
-> 
-> **Parameters**
-> 
-> {**string**} **ch** character to obtain texture of
-> 
-> {**bool**} **border** if false or undefined will return normal character texture if true will get a bordered version
+> draw a vertical trapezium in a 16x16 area
 > 
 > 
 
 ---
 
-> #### static getAlphaindex(idx, border)
-> returns the indexed texture from the alphaset, if outside range will return a ¬
+####  beginload(number) [static]
+> to use write **Tex.beginload(number)**
 > 
-> 
-> returns {**texture**} texture requested if possible
-> 
-> 
-> **Parameters**
-> 
-> {**string**} **ch** character to obtain texture of
-> 
-> {**bool**} **border** if true will get a bordered version
-> 
-> 
-
----
-
-> #### static getslopetile(left, right)
-> returns a Tile object for the given slope
-> 
-> 
-
----
-
-> #### static colTonum(colour)
-> hashes an RGB colour value for texture name in texture cache
-> 
-> 
-> returns {**     * @returns hashed colou**}
-> 
-> 
-> **Parameters**
-> 
-> {**colour**} **colour** 
-> 
-> 
-
----
-
-> #### static getColouredPixel(tintcolour)
-> get a coloured pixel for making sprites which when scaled can make any sized rectangle
-> 
-> 
-> returns {**texture**}
-> 
-> 
-> **Parameters**
-> 
-> {**colour**} **tintcolour** 
-> 
-> 
-
----
-
-> #### static getTintedCopy(texture, tintcolour, alpha, compositor)
-> takes a texture and produces a tinted version
-> 
-> tintcolour should be a rgb array
-> 
-> 
-> returns {**texture**} the coloured texture requested
-> 
-> 
-> **Parameters**
-> 
-> {**texture**} **texture** texture/image to copy
-> 
-> {**color**} **tintcolour** to apply to the texture
-> 
-> {**float**} **alpha** alpha value to apply to the tint 0 transparent 1 fully opaque
-> 
-> {**string**} **compositor** if supplied overrides the default composite operation "destination-atop" with your own has to be valid operation
-> 
-> ```js
-> example
->      DO NOT USE IN A GAME LOOP THESE SHOULD BE CREATED BEFORE GAME STARTS, as this may take time
->      if texture in that colour has been requested before then the cached version will be selected
->     
-> ```
-> 
-
----
-
-> #### static beginload(number)
 > let the engine know how many images you are loading
 > 
 > 
@@ -341,61 +330,9 @@
 
 ---
 
-> #### static loadToTexture(fileNpath, callback)
-> load and log a particular image/texture
+####  bitarrayTotexture(bits, scalex, scaley) [static]
+> to use write **Tex.bitarrayTotexture(bits, scalex, scaley)**
 > 
-> 
-> **Parameters**
-> 
-> {**string**} **fileNpath** 
-> 
-> {**function**} **texture** this is easier to do as an anonymous function see example provided here
-> 
-> ```js
-> example
->       //assuming txtiles has been declared globally somewhere (eg. in sketch)  
->       //anonymous function accepts parameter img, stores reference in txtiles
->       Tex.loadToTexture("./tiles.png", (img)=>{txtiles=img;});
->      
-> ```
-> 
-
----
-
-> #### static createTextures()
-> creates all the textures ready for use
-> 
-> 
-
----
-
-> #### static makeLetter(t, border)
-> generates the alphabetic character textures
-> 
-> 
-
----
-
-> #### static setupTexture(width, height)
-> generic routine to create a texture with the width and height requested
-> 
-> will add it to the texture cache
-> 
-> 
-> returns {**texture**} texture to be drawn and written to
-> 
-> 
-> **Parameters**
-> 
-> {**int**} **width** number of pixels wide
-> 
-> {**int**} **height** number of pixels high
-> 
-> 
-
----
-
-> #### static bitarrayTotexture(bits, scalex, scaley)
 > generates a transparent texture with pixels set by a binary string array (white pixels equate 1 from the string array)
 > 
 > this can be used to generate tinted textures using getTintedCopy()
@@ -431,7 +368,163 @@
 
 ---
 
-> #### static longestString(arr)
+####  colTonum(colour) [static]
+> to use write **Tex.colTonum(colour)**
+> 
+> hashes an RGB colour value for texture name in texture cache
+> 
+> 
+> returns {**     * @returns hashed colou**}
+> 
+> 
+> **Parameters**
+> 
+> {**colour**} **colour** 
+> 
+> 
+
+---
+
+####  createTextures() [static]
+> to use write **Tex.createTextures()**
+> 
+> creates all the textures ready for use
+> 
+> 
+
+---
+
+####  genAlphaset() [static]
+> to use write **Tex.genAlphaset()**
+> 
+> generates a stock alphabet as a set of sprite textures
+> 
+> 
+
+---
+
+####  getAlphachar(ch, border) [static]
+> to use write **Tex.getAlphachar(ch, border)**
+> 
+> takes the first character in string and returns appropriate texture, will return a ¬ if doesn't exist
+> 
+> 
+> returns {**texture**} requested texture if exists or a not texture
+> 
+> 
+> **Parameters**
+> 
+> {**string**} **ch** character to obtain texture of
+> 
+> {**bool**} **border** if false or undefined will return normal character texture if true will get a bordered version
+> 
+> 
+
+---
+
+####  getAlphaindex(idx, border) [static]
+> to use write **Tex.getAlphaindex(idx, border)**
+> 
+> returns the indexed texture from the alphaset, if outside range will return a ¬
+> 
+> 
+> returns {**texture**} texture requested if possible
+> 
+> 
+> **Parameters**
+> 
+> {**string**} **ch** character to obtain texture of
+> 
+> {**bool**} **border** if true will get a bordered version
+> 
+> 
+
+---
+
+####  getColouredPixel(tintcolour) [static]
+> to use write **Tex.getColouredPixel(tintcolour)**
+> 
+> get a coloured pixel for making sprites which when scaled can make any sized rectangle
+> 
+> 
+> returns {**texture**}
+> 
+> 
+> **Parameters**
+> 
+> {**colour**} **tintcolour** 
+> 
+> 
+
+---
+
+####  getTintedCopy(texture, tintcolour, alpha, compositor) [static]
+> to use write **Tex.getTintedCopy(texture, tintcolour, alpha, compositor)**
+> 
+> takes a texture and produces a tinted version
+> 
+> tintcolour should be a rgb array
+> 
+> 
+> returns {**texture**} the coloured texture requested
+> 
+> 
+> **Parameters**
+> 
+> {**texture**} **texture** texture/image to copy
+> 
+> {**color**} **tintcolour** to apply to the texture
+> 
+> {**float**} **alpha** alpha value to apply to the tint 0 transparent 1 fully opaque
+> 
+> {**string**} **compositor** if supplied overrides the default composite operation "destination-atop" with your own has to be valid operation
+> 
+> ```js
+> example
+> [255,0,0] - rgb array full red, no green, no blue
+>      DO NOT USE IN A GAME LOOP THESE SHOULD BE CREATED BEFORE GAME STARTS, as this may take time
+>      if texture in that colour has been requested before then the cached version will be selected
+>     
+> ```
+> 
+
+---
+
+####  getslopetile(left, right) [static]
+> to use write **Tex.getslopetile(left, right)**
+> 
+> returns a Tile object for the given slope
+> 
+> 
+
+---
+
+####  loadToTexture(fileNpath, callback) [static]
+> to use write **Tex.loadToTexture(fileNpath, callback)**
+> 
+> load and log a particular image/texture
+> 
+> 
+> **Parameters**
+> 
+> {**string**} **fileNpath** 
+> 
+> {**function**} **texture** this is easier to do as an anonymous function see example provided here
+> 
+> ```js
+> example
+>       //assuming txtiles has been declared globally somewhere (eg. in sketch)  
+>       //anonymous function accepts parameter img, stores reference in txtiles
+>       Tex.loadToTexture("./tiles.png", (img)=>{txtiles=img;});
+>      
+> ```
+> 
+
+---
+
+####  longestString(arr) [static]
+> to use write **Tex.longestString(arr)**
+> 
 > used by bitarray system to work out some metrics around bits, packs out shorter bit patterns
 > 
 > 
@@ -446,17 +539,34 @@
 
 ---
 
-> #### static #createSlopes(size)
-> generates slope quarters for given square tile size
+####  makeLetter(t, border) [static]
+> to use write **Tex.makeLetter(t, border)**
+> 
+> generates the alphabetic character textures
 > 
 > 
 
 ---
 
-> #### static #trap(t, x, y, l, r, w)
-> draw a vertical trapezium in a 16x16 area
+####  setupTexture(width, height) [static]
+> to use write **Tex.setupTexture(width, height)**
+> 
+> generic routine to create a texture with the width and height requested
+> 
+> will add it to the texture cache
+> 
+> 
+> returns {**texture**} texture to be drawn and written to
+> 
+> 
+> **Parameters**
+> 
+> {**int**} **width** number of pixels wide
+> 
+> {**int**} **height** number of pixels high
 > 
 > 
 
 ---
 
+engine created by Hurray Banana &copy;2023-2024

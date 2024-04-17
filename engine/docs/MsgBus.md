@@ -1,4 +1,5 @@
-> ### class MsgBus
+engine created by Hurray Banana &copy;2023-2024
+## class MsgBus
 > class allowing the subscription (receiving) and broadcasting of messages
 > 
 > this allows objects to reduce/remove dependencies on each other and allow sprites and other components to receive information
@@ -15,7 +16,102 @@
 
 ---
 
-> #### static sub(messageType, handler, instance)
+## properties
+## getters and setters
+## Methods
+####  debugdisplayFull() [static]
+> to use write **MsgBus.debugdisplayFull()**
+> 
+> returns a debug string array containing an entry for each actively subscribed message types
+> 
+> also includes information on each subscriber.
+> 
+> If no subscribers then null is returned
+> 
+> 
+> returns {**string[]**}
+> 
+> 
+
+---
+
+####  debugdisplayLite() [static]
+> to use write **MsgBus.debugdisplayLite()**
+> 
+> returns a debug string containing all actively subscribed messages
+> 
+> 
+> returns {**string**}
+> 
+> 
+
+---
+
+####  drop(messageType, handler, instance) [static]
+> to use write **MsgBus.drop(messageType, handler, instance)**
+> 
+> drops a specific subscription
+> 
+> this is important if you are destroying an object as the subscription will still receive
+> 
+> broadcasts even if you have "removed" the object as the Garbage Collector (GC) will keep objects
+> 
+> alive if there are ANY references to them
+> 
+> ```js
+> example
+>       //remove the handler for the arrows message that calls this
+>       //objects toggleArrows method
+>       MsgBus.drop(msgT.arrows, this.toggleArrows, this);
+>      
+> ```
+> 
+
+---
+
+####  dropall(messageType) [static]
+> to use write **MsgBus.dropall(messageType)**
+> 
+> removes all message subscriptions for a particular message type
+> 
+> 
+> **Parameters**
+> 
+> {**msgT**} **messageType** type of message to remove subscribers from
+> 
+> 
+
+---
+
+####  send(messageType, data) [static]
+> to use write **MsgBus.send(messageType, data)**
+> 
+> broadcasts a message to any (or no) subscribers
+> 
+> package the messages data using an object literal if you require more than a single value(or no value) name value pairs separated by commnas and enclosed in braces
+> 
+> ```js
+> example
+>        //packaging x and y data message type playerData
+>        MsgBus.send(msgT.playerData,{x:pos.x,y:pos.y});
+>       
+>        //packaging 3 values 
+>        MsgBus.send(msgT.droppedNewNode,{name:this.name,x:this.x,y:this.y});
+>       
+>        //sending a message with a just a reference to the html object that sent it, suing the onclick event from HTML
+>        onclick="MsgBus.send(msgT.console,this);"
+>       
+>        //sending a message with no data that indicates something general happened
+>         MsgBus.send(msgT.quit);
+>      
+> ```
+> 
+
+---
+
+####  sub(messageType, handler, instance) [static]
+> to use write **MsgBus.sub(messageType, handler, instance)**
+> 
 > subscribe to a specfic type of message broadcast, you can have as many different subscribers to the same message. the sender does not need to know who's listening
 > 
 > 
@@ -46,83 +142,4 @@
 
 ---
 
-> #### static dropall(messageType)
-> removes all message subscriptions for a particular message type
-> 
-> 
-> **Parameters**
-> 
-> {**msgT**} **messageType** type of message to remove subscribers from
-> 
-> 
-
----
-
-> #### static drop(messageType, handler, instance)
-> drops a specific subscription
-> 
-> this is important if you are destroying an object as the subscription will still receive
-> 
-> broadcasts even if you have "removed" the object as the Garbage Collector (GC) will keep objects
-> 
-> alive if there are ANY references to them
-> 
-> ```js
-> example
->       //remove the handler for the arrows message that calls this
->       //objects toggleArrows method
->       MsgBus.drop(msgT.arrows, this.toggleArrows, this);
->      
-> ```
-> 
-
----
-
-> #### static send(messageType, data)
-> broadcasts a message to any (or no) subscribers
-> 
-> package the messages data using an object literal if you require more than a single value(or no value) name value pairs separated by commnas and enclosed in braces
-> 
-> ```js
-> example
->        //packaging x and y data message type playerData
->        MsgBus.send(msgT.playerData,{x:pos.x,y:pos.y});
->       
->        //packaging 3 values 
->        MsgBus.send(msgT.droppedNewNode,{name:this.name,x:this.x,y:this.y});
->       
->        //sending a message with a just a reference to the html object that sent it, suing the onclick event from HTML
->        onclick="MsgBus.send(msgT.console,this);"
->       
->        //sending a message with no data that indicates something general happened
->         MsgBus.send(msgT.quit);
->      
-> ```
-> 
-
----
-
-> #### static debugdisplayFull()
-> returns a debug string array containing an entry for each actively subscribed message types
-> 
-> also includes information on each subscriber.
-> 
-> If no subscribers then null is returned
-> 
-> 
-> returns {**string[]**}
-> 
-> 
-
----
-
-> #### static debugdisplayLite()
-> returns a debug string containing all actively subscribed messages
-> 
-> 
-> returns {**string**}
-> 
-> 
-
----
-
+engine created by Hurray Banana &copy;2023-2024

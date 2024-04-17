@@ -1,4 +1,5 @@
-> ### class Tilehigh extends Sprite
+engine created by Hurray Banana &copy;2023-2024
+## class Tilehigh extends Sprite
 > a simple sprite for highlighting tiles in a tilemap
 > 
 > use this if you just want a simple block to highlight a tile rather than some custom graphic effect
@@ -7,31 +8,10 @@
 
 ---
 
-> #### constructor(col)
-> 
-> **Parameters**
-> 
-> {**color**} **col** colour to paint the tilemap square
-> 
-> 
-
----
-
-> #### constructor(loc, tmap, ri)
-> 
-> **Parameters**
-> 
-> {**{x:int,y:int}**} **loc** 
-> 
-> {**Tilemap**} **tmap** 
-> 
-> {**{time:float,tx:texture,port:Rectangle,colour:colour, alpha:float}**} **ri** 
-> 
-> 
-
----
-
+## Constructor
 > #### constructor(x, y, frameinfo, number, layer, scale, indexinfo, click)
+> to use write **new Tilehigh(x, y, frameinfo, number, layer, scale, indexinfo, click)**
+> 
 > 
 > **Parameters**
 > 
@@ -55,3 +35,7 @@
 
 ---
 
+## properties
+## getters and setters
+## Methods
+engine created by Hurray Banana &copy;2023-2024

@@ -1,27 +1,15 @@
-> ### class Rawtile
-> @classdesc base sprite frame definition holds a texture and portion reference
+engine created by Hurray Banana &copy;2023-2024
+## class Rawtile
+>  base sprite frame definition holds a texture and portion reference
 > 
 > 
 
 ---
 
-> #### tex
-> 
-> {**texture**} texture that contains image for the frame/tile
-> 
-> 
-
----
-
-> #### port
-> 
-> {**Rectangle**} portion of texture to render for this frame/tile
-> 
-> 
-
----
-
+## Constructor
 > #### constructor(texture, portion)
+> to use write **new Rawtile(texture, portion)**
+> 
 > 
 > **Parameters**
 > 
@@ -33,3 +21,27 @@
 
 ---
 
+## properties
+#### port
+> to use write **this.port**
+> 
+> 
+> type {**Rectangle**} portion of texture to render for this frame/tile
+> 
+> 
+
+---
+
+#### tex
+> to use write **this.tex**
+> 
+> 
+> type {**texture**} texture that contains image for the frame/tile
+> 
+> 
+
+---
+
+## getters and setters
+## Methods
+engine created by Hurray Banana &copy;2023-2024

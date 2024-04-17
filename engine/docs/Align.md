@@ -1,70 +1,111 @@
-> ### class Align
-> @classdesc how x and y position of the sprite is used in relation to the sprite
+engine created by Hurray Banana &copy;2023-2024
+## class Align
+>  how x and y position of the sprite is used in relation to the sprite
 > 
 > 
 
 ---
 
-> #### static top = "top"
-> X position is centred, Y position is top,
+## properties
+####  bottom [static]
+> default value **"bottom"**
 > 
+> to use write **Align.bottom**
 > 
-
----
-
-> #### static topLeft = "topLeft"
-> X position is left, Y position is top,
-> 
-> 
-
----
-
-> #### static left = "left"
-> X position is left, Y position is centred,
-> 
-> 
-
----
-
-> #### static bottomLeft = "bottomLeft"
-> X position is left, Y position is bottom,
-> 
-> 
-
----
-
-> #### static bottom = "bottom"
 > X position is centred, Y position is bottom,
 > 
 > 
 
 ---
 
-> #### static bottomRight = "bottomRight"
+####  bottomLeft [static]
+> default value **"bottomLeft"**
+> 
+> to use write **Align.bottomLeft**
+> 
+> X position is left, Y position is bottom,
+> 
+> 
+
+---
+
+####  bottomRight [static]
+> default value **"bottomRight"**
+> 
+> to use write **Align.bottomRight**
+> 
 > X position is right, Y position is bottom,
 > 
 > 
 
 ---
 
-> #### static right = "right"
-> X position is right, Y position is centred,
+####  centre [static]
+> default value **"centre"**
 > 
+> to use write **Align.centre**
 > 
-
----
-
-> #### static topRight = "topRight"
-> X position is right, Y position is top,
-> 
-> 
-
----
-
-> #### static centre = "centre"
 > X position is centred, Y position is centred,
 > 
 > 
 
 ---
 
+####  left [static]
+> default value **"left"**
+> 
+> to use write **Align.left**
+> 
+> X position is left, Y position is centred,
+> 
+> 
+
+---
+
+####  right [static]
+> default value **"right"**
+> 
+> to use write **Align.right**
+> 
+> X position is right, Y position is centred,
+> 
+> 
+
+---
+
+####  top [static]
+> default value **"top"**
+> 
+> to use write **Align.top**
+> 
+> X position is centred, Y position is top,
+> 
+> 
+
+---
+
+####  topLeft [static]
+> default value **"topLeft"**
+> 
+> to use write **Align.topLeft**
+> 
+> X position is left, Y position is top,
+> 
+> 
+
+---
+
+####  topRight [static]
+> default value **"topRight"**
+> 
+> to use write **Align.topRight**
+> 
+> X position is right, Y position is top,
+> 
+> 
+
+---
+
+## getters and setters
+## Methods
+engine created by Hurray Banana &copy;2023-2024

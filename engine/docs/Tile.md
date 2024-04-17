@@ -1,27 +1,62 @@
-> ### class Tile extends Rawtile
-> @classdesc defines a single tile in a tilemap with all the extra support needed for tiles
+engine created by Hurray Banana &copy;2023-2024
+## class Tile extends Rawtile
+>  defines a single tile in a tilemap with all the extra support needed for tiles
 > 
 > 
 
 ---
 
-> #### hmap = null
+## Constructor
+> #### constructor(texture, portion, hmap, vmap)
+> to use write **new Tile(texture, portion, hmap, vmap)**
 > 
-> {**Int32Array[]**} holds height of tile horizontally from left to right full tiles will have a hmap containing all zeros
+> creates a new tile
+> 
+> 
+> **Parameters**
+> 
+> {**texture**} **texture** texture with the image for tile
+> 
+> {**Rectangle**} **portion** portion of texture to show, if using whole texture then don't suppy a value
+> 
+> {**int[]**} **hmap** a horizontal height map for the tile, leave undefined if not wanted
+> 
+> {**int[]**} **vmap** a vertical height map for the tile, leave undefined if not wanted
 > 
 > 
 
 ---
 
-> #### vmap = null
+## properties
+#### hmap
+> default value **null**
 > 
-> {**Int32Array[]**} holds the width of the tile vertically from left full tiles will have a vmap containing all zeros
+> to use write **this.hmap**
+> 
+> 
+> type {**Int32Array[]**} holds height of tile horizontally from left to right full tiles will have a hmap containing all zeros
 > 
 > 
 
 ---
 
-> #### distancebottom(x)
+#### vmap
+> default value **null**
+> 
+> to use write **this.vmap**
+> 
+> 
+> type {**Int32Array[]**} holds the width of the tile vertically from left full tiles will have a vmap containing all zeros
+> 
+> 
+
+---
+
+## getters and setters
+## Methods
+#### distancebottom(x)
+> to use write **this.distancebottom(x)**
+> 
 > 
 > returns {**int**} gets the height of the tile from it's bottom edge based on the offset given use when walking/running or falling
 > 
@@ -34,20 +69,9 @@
 
 ---
 
-> #### distancetop(x)
+#### distanceleft(y)
+> to use write **this.distanceleft(y)**
 > 
-> returns {**int**} gets distance of tile from its top edge
-> 
-> 
-> **Parameters**
-> 
-> {**int**} **x** offset from left hand edge tile
-> 
-> 
-
----
-
-> #### distanceleft(y)
 > 
 > returns {**int**} gets distance from left edge of tile
 > 
@@ -60,7 +84,9 @@
 
 ---
 
-> #### distanceright(y)
+#### distanceright(y)
+> to use write **this.distanceright(y)**
+> 
 > 
 > returns {**int**} gets distance from right edge of tile
 > 
@@ -73,7 +99,24 @@
 
 ---
 
-> #### setHorizontalmap(l, r)
+#### distancetop(x)
+> to use write **this.distancetop(x)**
+> 
+> 
+> returns {**int**} gets distance of tile from its top edge
+> 
+> 
+> **Parameters**
+> 
+> {**int**} **x** offset from left hand edge tile
+> 
+> 
+
+---
+
+#### setHorizontalmap(l, r)
+> to use write **this.setHorizontalmap(l, r)**
+> 
 > specifies the distance offset of the tile edges from the top of the tile.
 > 
 > The heights are interpolated between the left and right values.
@@ -93,7 +136,9 @@
 
 ---
 
-> #### setVerticalmap(t, b)
+#### setVerticalmap(t, b)
+> to use write **this.setVerticalmap(t, b)**
+> 
 > specifies the distance offset of the tile edges from the left of the tile.
 > 
 > The widths are interpolated between the top and bottom values.
@@ -113,21 +158,4 @@
 
 ---
 
-> #### constructor(texture, portion, hmap, vmap)
-> creates a new tile
-> 
-> 
-> **Parameters**
-> 
-> {**texture**} **texture** texture with the image for tile
-> 
-> {**Rectangle**} **portion** portion of texture to show, if using whole texture then don't suppy a value
-> 
-> {**int[]**} **hmap** a horizontal height map for the tile, leave undefined if not wanted
-> 
-> {**int[]**} **vmap** a vertical height map for the tile, leave undefined if not wanted
-> 
-> 
-
----
-
+engine created by Hurray Banana &copy;2023-2024

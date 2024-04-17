@@ -1,43 +1,80 @@
-> ### class vector3
-> @classdesc 3d position and methods
+engine created by Hurray Banana &copy;2023-2024
+## class vector3
+>  3d position and methods
 > 
 > 
 
 ---
 
-> #### #x=0
+## Constructor
+> #### constructor(x, y, z)
+> to use write **new vector3(x, y, z)**
 > 
-> {**float**} holds x component
-> 
-> 
-
----
-
-> #### #y=0
-> 
-> {**float**} holds y component
+> creates an instance of a new vector3
 > 
 > 
-
----
-
-> #### #z=0
+> **Parameters**
 > 
-> {**float**} holds z component
+> {**float**} **x** initial x component of vector
+> 
+> {**float**} **y** initial y component of vector
+> 
+> {**float**} **z** initial z component of vector if missing z component is set to zero
 > 
 > 
 
 ---
 
-> #### #length
+## properties
+#### #length
+> to use write **this.#length**
 > 
-> {**float**} holds length of component
+> 
+> type {**float**} holds length of component
 > 
 > 
 
 ---
 
-> #### angularDirectionTo(from, directionVector, to, minimumAngle)
+#### #x
+> default value **0**
+> 
+> to use write **this.#x**
+> 
+> 
+> type {**float**} holds x component
+> 
+> 
+
+---
+
+#### #y
+> default value **0**
+> 
+> to use write **this.#y**
+> 
+> 
+> type {**float**} holds y component
+> 
+> 
+
+---
+
+#### #z
+> default value **0**
+> 
+> to use write **this.#z**
+> 
+> 
+> type {**float**} holds z component
+> 
+> 
+
+---
+
+#### angularDirectionTo(from, directionVector, to, minimumAngle)
+> to use write **this.angularDirectionTo(from, directionVector, to, minimumAngle)**
+> 
 > Determines whether rotating clockwise or anticlockwise is closest for a given position and direction
 > 
 > Useful for create homing and tracking effects, returns -1 if turned anti-clocwise, 1 if clockwise or 0 if didn't turn
@@ -46,178 +83,90 @@
 
 ---
 
-> #### getter length
+## getters and setters
+####   backward [getter] [static]
+> to use write **vector3.backward**
 > 
-> returns {**float**} pre calculated length of vector3, also it's magnitude
 > 
-> 
-
----
-
-> #### getter distance
-> 
-> returns {**float**} pre calculated length of vector3, also it's magnitude
+> returns {**vector3**} a new vector3 object (0,0,-1)
 > 
 > 
 
 ---
 
-> #### getter iszero
+####   down [getter] [static]
+> to use write **vector3.down**
 > 
-> returns {**bool**} true if all 3 components are 0
 > 
-> 
-
----
-
-> #### getter isone
-> 
-> returns {**bool**} true if all 3 components are 1
+> returns {**vector3**} a new vector3 object (0,1,0)
 > 
 > 
 
 ---
 
-> #### getter clone
-> create a new instance of a vector3 with the values of this one - not a reference
+####   forward [getter] [static]
+> to use write **vector3.forward**
+> 
+> 
+> returns {**vector3**} a new vector3 object (0,0,1)
 > 
 > 
 
 ---
 
-> #### getter x
-> gets the x component of the vector
+####   left [getter] [static]
+> to use write **vector3.left**
 > 
 > 
-> returns {**float**} value
-> 
-> 
-
----
-
-> #### getter y
-> gets the y component of the vector
-> 
-> 
-> returns {**float**} value
+> returns {**vector3**} a new vector3 object (-1,0,0)
 > 
 > 
 
 ---
 
-> #### getter z
-> gets the z component of the vector
+####   one [getter] [static]
+> to use write **vector3.one**
 > 
 > 
-> returns {**float**} value
-> 
-> 
-
----
-
-> #### getter w
-> gets the width component of the vector (x component)
-> 
-> 
-> returns {**float**} value
+> returns {**vector3**} a new vector3 object (1,1,1)
 > 
 > 
 
 ---
 
-> #### getter h
-> gets the height component of the vector (y component)
+####   right [getter] [static]
+> to use write **vector3.right**
 > 
 > 
-> returns {**float**} value
-> 
-> 
-
----
-
-> #### getter d
-> gets the depth component of the vector (z component)
-> 
-> 
-> returns {**float**} value
+> returns {**vector3**} a new vector3 object (1,0,0)
 > 
 > 
 
 ---
 
-> #### setter x
-> sets the x component of the vector
+####   up [getter] [static]
+> to use write **vector3.up**
 > 
 > 
-> **Parameters**
-> 
-> {**float**} **value** 
-> 
-> 
-
----
-
-> #### setter y
-> sets the y component of the vector
-> 
-> 
-> **Parameters**
-> 
-> {**float**} **value** 
+> returns {**vector3**} a new vector3 object (0,-1,0)
 > 
 > 
 
 ---
 
-> #### setter z
-> sets the z component of the vector
+####   zero [getter] [static]
+> to use write **vector3.zero**
 > 
 > 
-> **Parameters**
-> 
-> {**float**} **value** 
-> 
-> 
-
----
-
-> #### setter w
-> sets the width component (x component of the vector)
-> 
-> 
-> **Parameters**
-> 
-> {**float**} **value** 
+> returns {**vector3**} a new vector3 object (0,0,0)
 > 
 > 
 
 ---
 
-> #### setter h
-> sets the height component (y component of the vector)
+#### clone [getter]
+> to use write **this.clone**
 > 
-> 
-> **Parameters**
-> 
-> {**float**} **value** 
-> 
-> 
-
----
-
-> #### setter d
-> sets the depth component (z component of the vector)
-> 
-> 
-> **Parameters**
-> 
-> {**float**} **value** 
-> 
-> 
-
----
-
-> #### getter clone
 > returns a new vector3 that is a copy of the values of this one, not a reference a separate object
 > 
 > be warned clone creates an object so is about 20x slower than setting individual vector coords
@@ -235,182 +184,234 @@
 
 ---
 
-> #### static getter zero
+#### clone [getter]
+> to use write **this.clone**
 > 
-> returns {**vector3**} a new vector3 object (0,0,0)
-> 
-> 
-
----
-
-> #### static getter one
-> 
-> returns {**vector3**} a new vector3 object (1,1,1)
+> create a new instance of a vector3 with the values of this one - not a reference
 > 
 > 
 
 ---
 
-> #### static getter left
+#### d [getter]
+> to use write **this.d**
 > 
-> returns {**vector3**} a new vector3 object (-1,0,0)
+> gets the depth component of the vector (z component)
 > 
 > 
-
----
-
-> #### static getter right
-> 
-> returns {**vector3**} a new vector3 object (1,0,0)
+> returns {**float**} value
 > 
 > 
 
 ---
 
-> #### static getter up
+#### d [setter]
+> to use write **this.d = value**
 > 
-> returns {**vector3**} a new vector3 object (0,-1,0)
-> 
-> 
-
----
-
-> #### static getter down
-> 
-> returns {**vector3**} a new vector3 object (0,1,0)
-> 
-> 
-
----
-
-> #### static getter backward
-> 
-> returns {**vector3**} a new vector3 object (0,0,-1)
-> 
-> 
-
----
-
-> #### static getter forward
-> 
-> returns {**vector3**} a new vector3 object (0,0,1)
-> 
-> 
-
----
-
-> #### constructor(x, y, z)
-> creates an instance of a new vector3
+> sets the depth component (z component of the vector)
 > 
 > 
 > **Parameters**
 > 
-> {**float**} **x** initial x component of vector
-> 
-> {**float**} **y** initial y component of vector
-> 
-> {**float**} **z** initial z component of vector if missing z component is set to zero
+> {**float**} **value** 
 > 
 > 
 
 ---
 
-> #### equal(a)
-> returns true if given vector is the same value as this one
+#### distance [getter]
+> to use write **this.distance**
 > 
 > 
-> returns {**bool**} true if 3 components are the same, false if any one component isn;t
+> returns {**float**} pre calculated length of vector3, also it's magnitude
+> 
+> 
+
+---
+
+#### h [getter]
+> to use write **this.h**
+> 
+> gets the height component of the vector (y component)
+> 
+> 
+> returns {**float**} value
+> 
+> 
+
+---
+
+#### h [setter]
+> to use write **this.h = value**
+> 
+> sets the height component (y component of the vector)
 > 
 > 
 > **Parameters**
 > 
-> {**vector3**} **a** vector to compare
+> {**float**} **value** 
 > 
 > 
 
 ---
 
-> #### set(x, y, z)
-> sets the vector and calculates its length
+#### isone [getter]
+> to use write **this.isone**
+> 
+> 
+> returns {**bool**} true if all 3 components are 1
+> 
+> 
+
+---
+
+#### iszero [getter]
+> to use write **this.iszero**
+> 
+> 
+> returns {**bool**} true if all 3 components are 0
+> 
+> 
+
+---
+
+#### length [getter]
+> to use write **this.length**
+> 
+> 
+> returns {**float**} pre calculated length of vector3, also it's magnitude
+> 
+> 
+
+---
+
+#### w [getter]
+> to use write **this.w**
+> 
+> gets the width component of the vector (x component)
+> 
+> 
+> returns {**float**} value
+> 
+> 
+
+---
+
+#### w [setter]
+> to use write **this.w = value**
+> 
+> sets the width component (x component of the vector)
 > 
 > 
 > **Parameters**
 > 
-> {**float**} **x** 
-> 
-> {**float**} **y** 
-> 
-> {**float**} **z** 
+> {**float**} **value** 
 > 
 > 
 
 ---
 
-> #### #calcdist()
-> pre-calculates the length of the vector
+#### x [getter]
+> to use write **this.x**
+> 
+> gets the x component of the vector
+> 
+> 
+> returns {**float**} value
 > 
 > 
 
 ---
 
-> #### static lerp(a, b, p)
-> produces a vector3 value interpolated between vectors a and b
+#### x [setter]
+> to use write **this.x = value**
 > 
-> 
-> returns {**vector3**} interpolated
+> sets the x component of the vector
 > 
 > 
 > **Parameters**
 > 
-> {**vector3**} **a** first vector3
-> 
-> {**vector3**} **b** second vector3
-> 
-> {**float**} **p** value between 0 and 1 controlling interpolation between a and b
+> {**float**} **value** 
 > 
 > 
 
 ---
 
-> #### normalise()
-> normalises this vector (unit length 1) this destroys the orginal vector
+#### y [getter]
+> to use write **this.y**
 > 
-> use normalisedclone if you want a new vector that is the normalised version of this vector
-> 
-> 
-
----
-
-> #### normalisedclone()
-> returns a new vector3 that is the normalised form of this vector3
+> gets the y component of the vector
 > 
 > 
-> returns {**vector3**} a new vector3 instance which is the normalised version of this vector3
+> returns {**float**} value
 > 
 > 
 
 ---
 
-> #### static normalised(x,y,z)
-> creates a normalised vector based on the x and y and z values
+#### y [setter]
+> to use write **this.y = value**
 > 
-> 
-> returns {**vector3**} unit vector3
+> sets the y component of the vector
 > 
 > 
 > **Parameters**
 > 
-> {**float**} **x** 
-> 
-> {**float**} **y** 
-> 
-> {**float**} **z** 
+> {**float**} **value** 
 > 
 > 
 
 ---
 
-> #### static anglefromdirection(direction, additionalAngle)
+#### z [getter]
+> to use write **this.z**
+> 
+> gets the z component of the vector
+> 
+> 
+> returns {**float**} value
+> 
+> 
+
+---
+
+#### z [setter]
+> to use write **this.z = value**
+> 
+> sets the z component of the vector
+> 
+> 
+> **Parameters**
+> 
+> {**float**} **value** 
+> 
+> 
+
+---
+
+## Methods
+####  add(a, b) [static]
+> to use write **vector3.add(a, b)**
+> 
+> add the 2 given vector3's returning a new instance v1 + v2
+> 
+> 
+> returns {**vector3**}
+> 
+> 
+> **Parameters**
+> 
+> {**vector3**} **a** first vector
+> 
+> {**vector3**} **b** second vector
+> 
+> 
+
+---
+
+####  anglefromdirection(direction, additionalAngle) [static]
+> to use write **vector3.anglefromdirection(direction, additionalAngle)**
+> 
 > returns the angle of the given  direction vector
 > 
 > This only examines 2d values as it is a bearing (which is 2d)
@@ -429,7 +430,9 @@
 
 ---
 
-> #### static anglefromdirectionR(direction, additionalAngle)
+####  anglefromdirectionR(direction, additionalAngle) [static]
+> to use write **vector3.anglefromdirectionR(direction, additionalAngle)**
+> 
 > returns the angle of the given  direction vector
 > 
 > This only examines 2d values as it is a bearing (which is 2d)
@@ -448,26 +451,44 @@
 
 ---
 
-> #### static directionfromangle(angle, additionalAngle)
-> returns the 3d vector based on the angle
+####  cross(a, b) [static]
+> to use write **vector3.cross(a, b)**
 > 
-> The z value is set to zero
-> 
-> 
-> returns {**vector3**} a new vector3 unit direction vector
+> calculates just the normal to the 2 given vectors
 > 
 > 
 > **Parameters**
 > 
-> {**float**} **angle** in degrees
+> {**vector3**} **a** 
 > 
-> {**float**} **additionalAngle** an angle to add on in degrees
+> {**vector3**} **b** 
 > 
 > 
 
 ---
 
-> #### static directionfromangle(angle, additionalAngle)
+####  crosszonly(a, b) [static]
+> to use write **vector3.crosszonly(a, b)**
+> 
+> calculates just the z component on the normal to 2 given vectors (the angle between 2 vectors)
+> 
+> 
+> returns {**float**}
+> 
+> 
+> **Parameters**
+> 
+> {**vector3**} **a** 
+> 
+> {**vector3**} **b** 
+> 
+> 
+
+---
+
+####  directionfromangle(angle, additionalAngle) [static]
+> to use write **vector3.directionfromangle(angle, additionalAngle)**
+> 
 > returns the 3d vector based on the angle
 > 
 > The z value is set to zero
@@ -486,7 +507,259 @@
 
 ---
 
-> #### lookAt(from, to, accuracy, includeZ)
+####  directionfromangle(angle, additionalAngle) [static]
+> to use write **vector3.directionfromangle(angle, additionalAngle)**
+> 
+> returns the 3d vector based on the angle
+> 
+> The z value is set to zero
+> 
+> 
+> returns {**vector3**} a new vector3 unit direction vector
+> 
+> 
+> **Parameters**
+> 
+> {**float**} **angle** in degrees
+> 
+> {**float**} **additionalAngle** an angle to add on in degrees
+> 
+> 
+
+---
+
+####  distance(a, b) [static]
+> to use write **vector3.distance(a, b)**
+> 
+> returns the distance between the 2 vector3 objects
+> 
+> 
+> returns {**float**}
+> 
+> 
+> **Parameters**
+> 
+> {**vector3**} **a** first vector
+> 
+> {**vector3**} **b** second vector
+> 
+> 
+
+---
+
+####  distanceSQ(a, b) [static]
+> to use write **vector3.distanceSQ(a, b)**
+> 
+> returns the square distance between 2 vector3's
+> 
+> faster to compare squares if only relative difference is required
+> 
+> 
+> returns {**float**}
+> 
+> 
+> **Parameters**
+> 
+> {**vector3**} **a** first vector
+> 
+> {**vector3**} **b** second vector
+> 
+> 
+
+---
+
+####  dot(a, b) [static]
+> to use write **vector3.dot(a, b)**
+> 
+> calculates the dot product between 2 vector3 values
+> 
+> 
+> **Parameters**
+> 
+> {**vector3**} **a** 
+> 
+> {**vector3**} **b** 
+> 
+> 
+
+---
+
+####  lerp(a, b, p) [static]
+> to use write **vector3.lerp(a, b, p)**
+> 
+> produces a vector3 value interpolated between vectors a and b
+> 
+> 
+> returns {**vector3**} interpolated
+> 
+> 
+> **Parameters**
+> 
+> {**vector3**} **a** first vector3
+> 
+> {**vector3**} **b** second vector3
+> 
+> {**float**} **p** value between 0 and 1 controlling interpolation between a and b
+> 
+> 
+
+---
+
+####  normalised(x,y,z) [static]
+> to use write **vector3.normalised(x,y,z)**
+> 
+> creates a normalised vector based on the x and y and z values
+> 
+> 
+> returns {**vector3**} unit vector3
+> 
+> 
+> **Parameters**
+> 
+> {**float**} **x** 
+> 
+> {**float**} **y** 
+> 
+> {**float**} **z** 
+> 
+> 
+
+---
+
+####  ordinalise(direction) [static]
+> to use write **vector3.ordinalise(direction)**
+> 
+> finds the ordinalised (cardinals NSEW) direction closest to the given direction vector
+> 
+> 
+> returns {**vector3**} in one of NSEW directions
+> 
+> 
+> **Parameters**
+> 
+> {**vector3**} **direction** direction vector to
+> 
+> 
+
+---
+
+####  sub(a, b) [static]
+> to use write **vector3.sub(a, b)**
+> 
+> subtract the 2 given vector3's returning a new one a - b
+> 
+> 
+> returns {**vector3**}
+> 
+> 
+> **Parameters**
+> 
+> {**vector3**} **a** first vector
+> 
+> {**vector3**} **b** second vector
+> 
+> 
+
+---
+
+#### #calcdist()
+> to use write **this.#calcdist()**
+> 
+> pre-calculates the length of the vector
+> 
+> 
+
+---
+
+#### add(x, y, z)
+> to use write **this.add(x, y, z)**
+> 
+> if the first parameter is a vector3 object then it is added to this vector
+> 
+> if all 3 parameters are suppied then they are taken as individual
+> 
+> x y and z value
+> 
+> 
+> **Parameters**
+> 
+> {**float|vector3**} **x** either the x component of a vector (supply y and z parameters) or a vector3 value (don't supply y or z parameters)
+> 
+> {**float**} **y** y component of a vector
+> 
+> {**float**} **z** z component of a vector
+> 
+> 
+
+---
+
+#### cloneto(here)
+> to use write **this.cloneto(here)**
+> 
+> clones this vector3 to the existing vector passed as a parameter
+> 
+> 
+> **Parameters**
+> 
+> {**vector3**} **here** 
+> 
+> 
+
+---
+
+#### div(scalar)
+> to use write **this.div(scalar)**
+> 
+> divides this vector by the scaler value
+> 
+> vector3 / scaler
+> 
+> 
+> **Parameters**
+> 
+> {**float**} **scalar** 
+> 
+> 
+
+---
+
+#### divNew(scalar)
+> to use write **this.divNew(scalar)**
+> 
+> divides this vector3 by the scaler and returns a new vector3
+> 
+> 
+> returns {**vector3**} new instance
+> 
+> 
+> **Parameters**
+> 
+> {**float**} **scalar** 
+> 
+> 
+
+---
+
+#### equal(a)
+> to use write **this.equal(a)**
+> 
+> returns true if given vector is the same value as this one
+> 
+> 
+> returns {**bool**} true if 3 components are the same, false if any one component isn;t
+> 
+> 
+> **Parameters**
+> 
+> {**vector3**} **a** vector to compare
+> 
+> 
+
+---
+
+#### lookAt(from, to, accuracy, includeZ)
+> to use write **this.lookAt(from, to, accuracy, includeZ)**
+> 
 > Returns a normalised direction vector looking from the starting position to the other position
 > 
 > 
@@ -507,67 +780,23 @@
 
 ---
 
-> #### static ordinalise(direction)
-> finds the ordinalised (cardinals NSEW) direction closest to the given direction vector
+#### mul(scalar)
+> to use write **this.mul(scalar)**
 > 
-> 
-> returns {**vector3**} in one of NSEW directions
+> multiplies this vector by the scaler value
 > 
 > 
 > **Parameters**
 > 
-> {**vector3**} **direction** direction vector to
+> {**float**} **scalar** 
 > 
 > 
 
 ---
 
-> #### static crosszonly(a, b)
-> calculates just the z component on the normal to 2 given vectors (the angle between 2 vectors)
+#### mulNew(scalar)
+> to use write **this.mulNew(scalar)**
 > 
-> 
-> returns {**float**}
-> 
-> 
-> **Parameters**
-> 
-> {**vector3**} **a** 
-> 
-> {**vector3**} **b** 
-> 
-> 
-
----
-
-> #### static cross(a, b)
-> calculates just the normal to the 2 given vectors
-> 
-> 
-> **Parameters**
-> 
-> {**vector3**} **a** 
-> 
-> {**vector3**} **b** 
-> 
-> 
-
----
-
-> #### static dot(a, b)
-> calculates the dot product between 2 vector3 values
-> 
-> 
-> **Parameters**
-> 
-> {**vector3**} **a** 
-> 
-> {**vector3**} **b** 
-> 
-> 
-
----
-
-> #### mulNew(scalar)
 > multiplies this vector3 by the scaler and returns a new vector3
 > 
 > 
@@ -582,85 +811,50 @@
 
 ---
 
-> #### divNew(scalar)
-> divides this vector3 by the scaler and returns a new vector3
+#### normalise()
+> to use write **this.normalise()**
 > 
+> normalises this vector (unit length 1) this destroys the orginal vector
 > 
-> returns {**vector3**} new instance
-> 
-> 
-> **Parameters**
-> 
-> {**float**} **scalar** 
+> use normalisedclone if you want a new vector that is the normalised version of this vector
 > 
 > 
 
 ---
 
-> #### mul(scalar)
-> multiplies this vector by the scaler value
+#### normalisedclone()
+> to use write **this.normalisedclone()**
+> 
+> returns a new vector3 that is the normalised form of this vector3
 > 
 > 
-> **Parameters**
-> 
-> {**float**} **scalar** 
-> 
-> 
-
----
-
-> #### div(scalar)
-> divides this vector by the scaler value
-> 
-> vector3 / scaler
-> 
-> 
-> **Parameters**
-> 
-> {**float**} **scalar** 
+> returns {**vector3**} a new vector3 instance which is the normalised version of this vector3
 > 
 > 
 
 ---
 
-> #### add(x, y, z)
-> if the first parameter is a vector3 object then it is added to this vector
+#### set(x, y, z)
+> to use write **this.set(x, y, z)**
 > 
-> if all 3 parameters are suppied then they are taken as individual
-> 
-> x y and z value
+> sets the vector and calculates its length
 > 
 > 
 > **Parameters**
 > 
-> {**float|vector3**} **x** either the x component of a vector (supply y and z parameters) or a vector3 value (don't supply y or z parameters)
+> {**float**} **x** 
 > 
-> {**float**} **y** y component of a vector
+> {**float**} **y** 
 > 
-> {**float**} **z** z component of a vector
+> {**float**} **z** 
 > 
 > 
 
 ---
 
-> #### static add(a, b)
-> add the 2 given vector3's returning a new instance v1 + v2
+#### sub(x, y, z)
+> to use write **this.sub(x, y, z)**
 > 
-> 
-> returns {**vector3**}
-> 
-> 
-> **Parameters**
-> 
-> {**vector3**} **a** first vector
-> 
-> {**vector3**} **b** second vector
-> 
-> 
-
----
-
-> #### sub(x, y, z)
 > if the first parameter is a vector3 object then it is subtracted from this vector
 > 
 > this - vector3 or this - vector3(x,y,z)
@@ -682,68 +876,4 @@
 
 ---
 
-> #### static sub(a, b)
-> subtract the 2 given vector3's returning a new one a - b
-> 
-> 
-> returns {**vector3**}
-> 
-> 
-> **Parameters**
-> 
-> {**vector3**} **a** first vector
-> 
-> {**vector3**} **b** second vector
-> 
-> 
-
----
-
-> #### static distance(a, b)
-> returns the distance between the 2 vector3 objects
-> 
-> 
-> returns {**float**}
-> 
-> 
-> **Parameters**
-> 
-> {**vector3**} **a** first vector
-> 
-> {**vector3**} **b** second vector
-> 
-> 
-
----
-
-> #### static distanceSQ(a, b)
-> returns the square distance between 2 vector3's
-> 
-> faster to compare squares if only relative difference is required
-> 
-> 
-> returns {**float**}
-> 
-> 
-> **Parameters**
-> 
-> {**vector3**} **a** first vector
-> 
-> {**vector3**} **b** second vector
-> 
-> 
-
----
-
-> #### cloneto(here)
-> clones this vector3 to the existing vector passed as a parameter
-> 
-> 
-> **Parameters**
-> 
-> {**vector3**} **here** 
-> 
-> 
-
----
-
+engine created by Hurray Banana &copy;2023-2024
