@@ -1,5 +1,8 @@
 # p5hosting
 
+## javascript game engine
+[documentation index](./engine/readme.md])
+
 ## Graphy 
 Dijkstra and A* realtime solver
 
