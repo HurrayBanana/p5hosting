@@ -1,7 +1,7 @@
 # p5hosting
 
 ## javascript game engine
-[documentation index](./engine/readme.md)
+[documentation index](https://hurraybanana.github.io/p5hosting/engine/index.html)
 
 ## Graphy 
 Dijkstra and A* realtime solver
