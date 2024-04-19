@@ -17,16 +17,6 @@ engine created by Hurray Banana &copy;2023-2024
 ---
 
 ## properties
-#### #tilemaps
-> to use write **this.#tilemaps**
-> 
-> 
-> type {**Tilemap[]**} holds a list of active maps
-> 
-> 
-
----
-
 ## getters and setters
 #### debugdisplay [getter]
 > to use write **this.debugdisplay**
@@ -38,15 +28,6 @@ engine created by Hurray Banana &copy;2023-2024
 ---
 
 ## Methods
-#### #bringoutthedead()
-> to use write **this.#bringoutthedead()**
-> 
-> removes any tilemaps marked as remove
-> 
-> 
-
----
-
 #### add(tilemap)
 > to use write **this.add(tilemap)**
 > 

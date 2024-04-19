@@ -43,29 +43,12 @@ engine created by Hurray Banana &copy;2023-2024
 ---
 
 ## properties
-#### #corner
-> to use write **this.#corner**
-> 
-> top front left corner of box @type {vector3}
-> 
-> 
-
----
-
-#### #dimension
-> to use write **this.#dimension**
-> 
-> width, height and depth of box @type {vector3}
-> 
-> 
-
----
-
 ## getters and setters
 ####   unit [getter] [static]
 > to use write **Box.unit**
 > 
-> creates a unit box with corner 0,0,0 and dimensions 1,1,1 @returns {Box}
+> 
+> returns {**Box**} creates a unit box with corner 0,0,0 and dimensions 1,1,1
 > 
 > 
 
@@ -74,7 +57,8 @@ engine created by Hurray Banana &copy;2023-2024
 #### b [getter]
 > to use write **this.b**
 > 
-> gets the bottom of the box @returns {float}
+> 
+> returns {**float**} gets the bottom of the box
 > 
 > 
 
@@ -83,7 +67,8 @@ engine created by Hurray Banana &copy;2023-2024
 #### back [getter]
 > to use write **this.back**
 > 
-> gets the back of the box @returns {float}
+> 
+> returns {**float**} gets the back of the box
 > 
 > 
 
@@ -92,7 +77,8 @@ engine created by Hurray Banana &copy;2023-2024
 #### bottom [getter]
 > to use write **this.bottom**
 > 
-> gets the bottom of the box @returns {float}
+> 
+> returns {**float**} gets the bottom of the box
 > 
 > 
 
@@ -101,7 +87,8 @@ engine created by Hurray Banana &copy;2023-2024
 #### centre [getter]
 > to use write **this.centre**
 > 
-> gets the centre of the box @returns {vector3}
+> 
+> returns {**vector3**} gets the centre of the box
 > 
 > 
 
@@ -110,7 +97,8 @@ engine created by Hurray Banana &copy;2023-2024
 #### centrex [getter]
 > to use write **this.centrex**
 > 
-> gets the x centre of the box @returns {float}
+> 
+> returns {**float**} gets the x centre of the box
 > 
 > 
 
@@ -119,7 +107,8 @@ engine created by Hurray Banana &copy;2023-2024
 #### centrey [getter]
 > to use write **this.centrey**
 > 
-> gets the y centre of the box @returns {float}
+> 
+> returns {**float**} gets the y centre of the box
 > 
 > 
 
@@ -128,7 +117,8 @@ engine created by Hurray Banana &copy;2023-2024
 #### centrez [getter]
 > to use write **this.centrez**
 > 
-> gets the z centre of the box @returns {float}
+> 
+> returns {**float**} gets the z centre of the box
 > 
 > 
 
@@ -137,7 +127,8 @@ engine created by Hurray Banana &copy;2023-2024
 #### d [getter]
 > to use write **this.d**
 > 
-> depth of box @returns {float}
+> 
+> returns {**float**} depth of box
 > 
 > 
 
@@ -149,7 +140,7 @@ engine created by Hurray Banana &copy;2023-2024
 > 
 > **Parameters**
 > 
-> {***  {float**} **value** sets depth of box
+> {**float**} **value** sets depth of box
 > 
 > 
 
@@ -158,7 +149,8 @@ engine created by Hurray Banana &copy;2023-2024
 #### depth [getter]
 > to use write **this.depth**
 > 
-> depth of box @returns {float}
+> 
+> returns {**float**} depth of box
 > 
 > 
 
@@ -167,7 +159,8 @@ engine created by Hurray Banana &copy;2023-2024
 #### front [getter]
 > to use write **this.front**
 > 
-> gets the front of the box @returns {float}
+> 
+> returns {**float**} gets the front of the box
 > 
 > 
 
@@ -176,7 +169,8 @@ engine created by Hurray Banana &copy;2023-2024
 #### h [getter]
 > to use write **this.h**
 > 
-> height of box @returns {float}
+> 
+> returns {**float**} height of box
 > 
 > 
 
@@ -188,7 +182,7 @@ engine created by Hurray Banana &copy;2023-2024
 > 
 > **Parameters**
 > 
-> {***  {float**} **value** sets height of box
+> {**float**} **value** sets height of box
 > 
 > 
 
@@ -197,7 +191,8 @@ engine created by Hurray Banana &copy;2023-2024
 #### height [getter]
 > to use write **this.height**
 > 
-> height of box @returns {float}
+> 
+> returns {**float**} height of box
 > 
 > 
 
@@ -206,7 +201,8 @@ engine created by Hurray Banana &copy;2023-2024
 #### l [getter]
 > to use write **this.l**
 > 
-> gets the left hand side of the box @returns {float}
+> 
+> returns {**float**} gets the left hand side of the box
 > 
 > 
 
@@ -215,7 +211,8 @@ engine created by Hurray Banana &copy;2023-2024
 #### left [getter]
 > to use write **this.left**
 > 
-> gets the left hand side of the box @returns {float}
+> 
+> returns {**float**} gets the left hand side of the box
 > 
 > 
 
@@ -224,7 +221,8 @@ engine created by Hurray Banana &copy;2023-2024
 #### r [getter]
 > to use write **this.r**
 > 
-> gets the right hand side of the box @returns {float}
+> 
+> returns {**float**} gets the right hand side of the box
 > 
 > 
 
@@ -233,7 +231,8 @@ engine created by Hurray Banana &copy;2023-2024
 #### right [getter]
 > to use write **this.right**
 > 
-> gets the right hand side of the box @returns {float}
+> 
+> returns {**float**} gets the right hand side of the box
 > 
 > 
 
@@ -242,7 +241,8 @@ engine created by Hurray Banana &copy;2023-2024
 #### t [getter]
 > to use write **this.t**
 > 
-> gets the top of the box @returns {float}
+> 
+> returns {**float**} gets the top of the box
 > 
 > 
 
@@ -251,7 +251,8 @@ engine created by Hurray Banana &copy;2023-2024
 #### top [getter]
 > to use write **this.top**
 > 
-> gets the top of the box @returns {float}
+> 
+> returns {**float**} gets the top of the box
 > 
 > 
 
@@ -260,7 +261,8 @@ engine created by Hurray Banana &copy;2023-2024
 #### w [getter]
 > to use write **this.w**
 > 
-> width of box @returns {float}
+> 
+> returns {**float**} width of box
 > 
 > 
 
@@ -272,7 +274,7 @@ engine created by Hurray Banana &copy;2023-2024
 > 
 > **Parameters**
 > 
-> {***  {float**} **value** sets width of box
+> {**float**} **value** sets width of box
 > 
 > 
 
@@ -281,7 +283,8 @@ engine created by Hurray Banana &copy;2023-2024
 #### width [getter]
 > to use write **this.width**
 > 
-> width of box @returns {float}
+> 
+> returns {**float**} width of box
 > 
 > 
 
@@ -290,7 +293,8 @@ engine created by Hurray Banana &copy;2023-2024
 #### x [getter]
 > to use write **this.x**
 > 
-> gets the left hand side of the box @returns {float}
+> 
+> returns {**float**} gets the left hand side of the box @returns {float}
 > 
 > 
 
@@ -302,7 +306,7 @@ engine created by Hurray Banana &copy;2023-2024
 > 
 > **Parameters**
 > 
-> {***  {float**} **value** sets left side of box
+> {**float**} **value** sets left side of box
 > 
 > 
 
@@ -311,7 +315,8 @@ engine created by Hurray Banana &copy;2023-2024
 #### y [getter]
 > to use write **this.y**
 > 
-> gets the top hand side of the box @returns {float}
+> 
+> returns {**float**} gets the top hand side of the box
 > 
 > 
 
@@ -323,7 +328,7 @@ engine created by Hurray Banana &copy;2023-2024
 > 
 > **Parameters**
 > 
-> {***  {float**} **value** sets top side of box
+> {**float**} **value** sets top side of box
 > 
 > 
 
@@ -332,7 +337,8 @@ engine created by Hurray Banana &copy;2023-2024
 #### z [getter]
 > to use write **this.z**
 > 
-> gets the front hand side of the box @returns {float}
+> 
+> returns {**float**} gets the front hand side of the box
 > 
 > 
 
@@ -344,7 +350,7 @@ engine created by Hurray Banana &copy;2023-2024
 > 
 > **Parameters**
 > 
-> {***  {float**} **value** sets front side of box
+> {**float**} **value** sets front side of box
 > 
 > 
 

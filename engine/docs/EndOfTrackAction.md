@@ -108,6 +108,4 @@ engine created by Hurray Banana &copy;2023-2024
 
 ---
 
-## getters and setters
-## Methods
 engine created by Hurray Banana &copy;2023-2024

@@ -17,15 +17,6 @@ engine created by Hurray Banana &copy;2023-2024
 ---
 
 ## properties
-#### #count
-> to use write **this.#count**
-> 
-> holds number of particles being managed/drawn
-> 
-> 
-
----
-
 #### sets
 > to use write **this.sets**
 > 

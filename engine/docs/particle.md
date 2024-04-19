@@ -304,7 +304,6 @@ engine created by Hurray Banana &copy;2023-2024
 
 ---
 
-## getters and setters
 ## Methods
 #### cleanup()
 > to use write **this.cleanup()**

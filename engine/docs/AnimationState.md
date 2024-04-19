@@ -9,61 +9,6 @@ engine created by Hurray Banana &copy;2023-2024
 ---
 
 ## properties
-#### #animationmethod
-> default value **AnimateMethod.none**
-> 
-> to use write **this.#animationmethod**
-> 
-> Specifies the current animation method
-> 
-> 
-> type {**AnimateMethod**}
-> 
-> 
-
----
-
-#### #callbackAnimate
-> default value **null**
-> 
-> to use write **this.#callbackAnimate**
-> 
-> method called when the animation frame is changed
-> 
-> 
-> type {**{callback:method|function,instance:object**} }
-> 
-> 
-
----
-
-#### #callbackEnd
-> default value **null**
-> 
-> to use write **this.#callbackEnd**
-> 
-> method called when the sprite is hidden with
-> 
-> or settting visible to false, or from flashing
-> 
-> ```js
-> example
-> this.hide();
-> ```
-> 
-
----
-
-#### #callbackManual
-> to use write **this.#callbackManual**
-> 
-> 
-> type {**{callback:method|function,instance:object**} } holds manual animation callback
-> 
-> 
-
----
-
 #### active
 > default value **-1**
 > 
@@ -388,5 +333,4 @@ engine created by Hurray Banana &copy;2023-2024
 
 ---
 
-## Methods
 engine created by Hurray Banana &copy;2023-2024

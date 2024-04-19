@@ -26,42 +26,6 @@ engine created by Hurray Banana &copy;2023-2024
 ---
 
 ## properties
-#### #h
-> to use write **this.#h**
-> 
-> height  @type {float}
-> 
-> 
-
----
-
-#### #w
-> to use write **this.#w**
-> 
-> width  @type {float}
-> 
-> 
-
----
-
-#### #x
-> to use write **this.#x**
-> 
-> left position @type {float}
-> 
-> 
-
----
-
-#### #y
-> to use write **this.#y**
-> 
-> top position  @type {float}
-> 
-> 
-
----
-
 ## getters and setters
 ####   one [getter] [static]
 > to use write **Rectangle.one**
@@ -106,7 +70,8 @@ engine created by Hurray Banana &copy;2023-2024
 #### centre [getter]
 > to use write **this.centre**
 > 
-> gets the centre as a vector3 object - can be used in place of a vector2
+> 
+> returns {**vector3**} gets the centre as a vector3 object - can be used in place of a vector2
 > 
 > 
 
@@ -115,7 +80,8 @@ engine created by Hurray Banana &copy;2023-2024
 #### centrex [getter]
 > to use write **this.centrex**
 > 
-> gets the horizontal centre of the rectangle @returns {float}
+> 
+> returns {**float**} gets the horizontal centre of the rectangle
 > 
 > 
 
@@ -124,7 +90,8 @@ engine created by Hurray Banana &copy;2023-2024
 #### centrey [getter]
 > to use write **this.centrey**
 > 
-> gets the vertical centre of the rectangle
+> 
+> returns {**float**} gets the vertical centre of the rectangle
 > 
 > 
 
@@ -156,7 +123,7 @@ engine created by Hurray Banana &copy;2023-2024
 > 
 > **Parameters**
 > 
-> {***  {float**} **value**  the height of the rectangle
+> {**float**} **value**  the height of the rectangle
 > 
 > 
 
@@ -248,7 +215,7 @@ engine created by Hurray Banana &copy;2023-2024
 > 
 > **Parameters**
 > 
-> {***  {float**} **value**  the width of the rectangle
+> {**float**} **value**  the width of the rectangle
 > 
 > 
 
@@ -280,7 +247,7 @@ engine created by Hurray Banana &copy;2023-2024
 > 
 > **Parameters**
 > 
-> {***  {float**} **value**  the left side of the rectangle
+> {**float**} **value**  the left side of the rectangle
 > 
 > 
 
@@ -302,7 +269,7 @@ engine created by Hurray Banana &copy;2023-2024
 > 
 > **Parameters**
 > 
-> {***  {float**} **value**  the top of the rectangle
+> {**float**} **value**  the top of the rectangle
 > 
 > 
 
@@ -371,6 +338,9 @@ engine created by Hurray Banana &copy;2023-2024
 > original texture rectangle portion
 > 
 > This was for some internal test code that no longer exists
+> 
+> 
+> returns {**vector2**}
 > 
 > 
 > **Parameters**
@@ -509,7 +479,7 @@ engine created by Hurray Banana &copy;2023-2024
 > creates a rnadom position inside this rectangle
 > 
 > 
-> returns {**{vector3**}
+> returns {**vector3**} random position requested
 > 
 > 
 > **Parameters**

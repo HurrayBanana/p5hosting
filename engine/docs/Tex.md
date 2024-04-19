@@ -18,15 +18,6 @@ engine created by Hurray Banana &copy;2023-2024
 
 ---
 
-####  #slopePorts [static]
-> to use write **Tex.#slopePorts**
-> 
-> holds rectangles portions for the slopes
-> 
-> 
-
----
-
 ####  alphaset [static]
 > default value **"0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz !\"£$%^&*()[]{}-+=,.:?><¬";**
 > 
@@ -298,24 +289,6 @@ engine created by Hurray Banana &copy;2023-2024
 ---
 
 ## Methods
-####  #createSlopes(size) [static]
-> to use write **Tex.#createSlopes(size)**
-> 
-> generates slope quarters for given square tile size
-> 
-> 
-
----
-
-####  #trap(t, x, y, l, r, w) [static]
-> to use write **Tex.#trap(t, x, y, l, r, w)**
-> 
-> draw a vertical trapezium in a 16x16 area
-> 
-> 
-
----
-
 ####  beginload(number) [static]
 > to use write **Tex.beginload(number)**
 > 

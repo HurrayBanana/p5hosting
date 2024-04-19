@@ -28,60 +28,6 @@ engine created by Hurray Banana &copy;2023-2024
 ---
 
 ## properties
-#### #hidden
-> to use write **this.#hidden**
-> 
-> holds visibility state of the sprite @type {bool}
-> 
-> 
-
----
-
-#### #impulse
-> to use write **this.#impulse**
-> 
-> holds force to apply during impulse timers @type {vector3}
-> 
-> 
-
----
-
-#### #mysprite
-> to use write **this.#mysprite**
-> 
-> holds reference to the sprite being manipulated by the timer @type {Sprite}
-> 
-> 
-
----
-
-#### #offinterval
-> to use write **this.#offinterval**
-> 
-> holds time interval for off time during flashing  @type {float}
-> 
-> 
-
----
-
-#### #oninterval
-> to use write **this.#oninterval**
-> 
-> holds time interval for on time during flashing @type {float}
-> 
-> 
-
----
-
-#### #phase
-> to use write **this.#phase**
-> 
-> holds phase of timing for multi step actions @type {Phase}
-> 
-> 
-
----
-
 ## getters and setters
 #### phase [getter]
 > to use write **this.phase**
@@ -96,15 +42,6 @@ engine created by Hurray Banana &copy;2023-2024
 ---
 
 ## Methods
-#### #sortvisibility()
-> to use write **this.#sortvisibility()**
-> 
-> determines whether sprite should be shown or no during flashing actions
-> 
-> 
-
----
-
 #### cleanup()
 > to use write **this.cleanup()**
 > 

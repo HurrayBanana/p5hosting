@@ -27,98 +27,6 @@ engine created by Hurray Banana &copy;2023-2024
 ---
 
 ## properties
-#### #autoShowHide
-> default value **false**
-> 
-> to use write **this.#autoShowHide**
-> 
-> 
-> type {**bool**} if true the trackmanager will ensure tracks are displayed and hidden automatically as they are used by the sprite
-> 
-> 
-
----
-
-#### #callbackEOT
-> default value **null**
-> 
-> to use write **this.#callbackEOT**
-> 
-> 
-> type {**{callback:method | function,instance:object**} } stores the the delegate routine to call when a sprite meets the end of a track
-> 
-> 
-
----
-
-#### #endAction
-> default value **EndOfTrackAction.stop**
-> 
-> to use write **this.#endAction**
-> 
-> 
-> type {**EndOfTrackAction**} what to do when you get to the end of the current track
-> 
-> 
-
----
-
-#### #instantmove
-> default value **true**
-> 
-> to use write **this.#instantmove**
-> 
-> 
-> type {**bool**} if set to true then manual track position changes instantly afect the position of the sprite defaults to true, if this causes problems then set this to false
-> 
-> 
-
----
-
-#### #pixelsPerSec
-> default value **0**
-> 
-> to use write **this.#pixelsPerSec**
-> 
-> 
-> type {**float**} The speed in pixels per seconds to move along the track
-> 
-> 
-
----
-
-#### #pixelsPerSecPreCalc
-> to use write **this.#pixelsPerSecPreCalc**
-> 
-> 
-> type {**float**} precalculated value so we just multply game time needs to re-calculated every time speed adjusted or track changes MUST IMPLEMENT THIS
-> 
-> 
-
----
-
-#### #pointsCurrent
-> to use write **this.#pointsCurrent**
-> 
-> 
-> type {**int**} number of points in the active track
-> 
-> 
-
----
-
-#### #tracklist
-> default value **null**
-> 
-> to use write **this.#tracklist**
-> 
-> 
-> type {**Track[]**} holds the tracks of this sprite
-> 
-> 
-
----
-
 #### _saveTrackStep
 > to use write **this._saveTrackStep**
 > 
@@ -362,7 +270,7 @@ engine created by Hurray Banana &copy;2023-2024
 > 
 > **Parameters**
 > 
-> {***  {bool**} **if** true the trackmanager for the sprite will automatically draw and remove tracks as the sprite uses them
+> {**bool**} **if** true the trackmanager for the sprite will automatically draw and remove tracks as the sprite uses them
 > 
 > 
 
@@ -650,15 +558,6 @@ engine created by Hurray Banana &copy;2023-2024
 ---
 
 ## Methods
-#### #SetPreCalc()
-> to use write **this.#SetPreCalc()**
-> 
-> needs to be called when pixelsPerSec changes or track being used changes
-> 
-> 
-
----
-
 #### AddTrack(trackDef)
 > to use write **this.AddTrack(trackDef)**
 > 

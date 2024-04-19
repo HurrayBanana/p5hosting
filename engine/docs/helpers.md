@@ -1,48 +1,17 @@
 engine created by Hurray Banana &copy;2023-2024
-## class GravityWell
->  Defines a gravity well that can act upon a sprite if associated
-> 
+global scope
 > 
 
 ---
 
-## Constructor
-> #### constructor(location, gigaTonnes)
-> to use write **new GravityWell(location, gigaTonnes)**
+## global variables
+#### Math.PIx2
+> default value **Math.PI * 2**
 > 
-> Creates a new GravityWell specifying its location and Mass in Giga Tonnes
-> 
-> 
-> **Parameters**
-> 
-> {**vector3**} **location** 
-> 
-> {**float**} **gigaTonnes** 
+> use the name **this.Math.PIx2** directly to use this global value
 > 
 > 
-
----
-
-## properties
-####  GM [static]
-> default value **6.673E-11**
-> 
-> to use write **GravityWell.GM**
-> 
-> 
-> type {**float**} gravitational constant
-> 
-> 
-
----
-
-#### Math.PIby180
-> default value **Math.PI/180**
-> 
-> to use write **this.Math.PIby180**
-> 
-> 
-> type {**float**} multiply with a number of degrees to get radians
+> type {**float**} 360 degrees as radians
 > 
 > 
 
@@ -51,7 +20,7 @@ engine created by Hurray Banana &copy;2023-2024
 #### Math.PIby2
 > default value **Math.PI/2**
 > 
-> to use write **this.Math.PIby2**
+> use the name **this.Math.PIby2** directly to use this global value
 > 
 > 
 > type {**float**} 180 degress as radians
@@ -63,7 +32,7 @@ engine created by Hurray Banana &copy;2023-2024
 #### Math.PIby4
 > default value **Math.PI/4**
 > 
-> to use write **this.Math.PIby4**
+> use the name **this.Math.PIby4** directly to use this global value
 > 
 > 
 > type {**float**} 90 degrees as radians
@@ -72,10 +41,22 @@ engine created by Hurray Banana &copy;2023-2024
 
 ---
 
+#### Math.PIby180
+> default value **Math.PI/180**
+> 
+> use the name **this.Math.PIby180** directly to use this global value
+> 
+> 
+> type {**float**} multiply with a number of degrees to get radians
+> 
+> 
+
+---
+
 #### Math.PIx180
 > default value **Math.PI*180**
 > 
-> to use write **this.Math.PIx180**
+> use the name **this.Math.PIx180** directly to use this global value
 > 
 > 
 > type {**float**} multiply with a number of radians to get degrees
@@ -84,22 +65,10 @@ engine created by Hurray Banana &copy;2023-2024
 
 ---
 
-#### Math.PIx2
-> default value **Math.PI * 2**
-> 
-> to use write **this.Math.PIx2**
-> 
-> 
-> type {**float**} 360 degrees as radians
-> 
-> 
-
----
-
 #### Math.hb180byPI
 > default value **180/Math.PI**
 > 
-> to use write **this.Math.hb180byPI**
+> use the name **this.Math.hb180byPI** directly to use this global value
 > 
 > divide an angle in degrees by this to get a radians value
 > 
@@ -108,65 +77,6 @@ engine created by Hurray Banana &copy;2023-2024
 >   let radians = this.angle/Math.hb180byPI;
 >  
 > ```
-> 
-
----
-
-#### location
-> to use write **this.location**
-> 
-> 
-> type {**vector3**} The position of this gravity well as a vector3
-> 
-> 
-
----
-
-## getters and setters
-#### pointmass [getter]
-> to use write **this.pointmass**
-> 
-> 
-> returns {**float**} gets the point mass for the well in GigaTonnes
-> 
-> 
-
----
-
-#### pointmass [setter]
-> to use write **this.pointmass = value**
-> 
-> sets the point mass for the well in GigaTonnes
-> 
-> 
-> **Parameters**
-> 
-> {**float**} **value** mass in giga tonnes
-> 
-> 
-
----
-
-#### precalc [getter]
-> to use write **this.precalc**
-> 
-> 
-> returns {**float**} gets the pre-calculate gravitaional force
-> 
-> 
-
----
-
-## Methods
-#### cleanup()
-> to use write **this.cleanup()**
-> 
-> removes a reference to a location if it existed.
-> 
-> If you inherit from GravityWell and need to remove your own resources then implement your own
-> 
-> version of cleanup  but remember to call super.cleanup()
-> 
 > 
 
 ---

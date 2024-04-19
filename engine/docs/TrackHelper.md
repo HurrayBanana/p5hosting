@@ -57,7 +57,6 @@ engine created by Hurray Banana &copy;2023-2024
 
 ---
 
-## getters and setters
 ## Methods
 ####   Scale(existingTrack, origin,  x,  y,  z) [static]
 > to use write **TrackHelper.Scale(existingTrack, origin,  x,  y,  z)**

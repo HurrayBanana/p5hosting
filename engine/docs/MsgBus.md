@@ -16,8 +16,6 @@ engine created by Hurray Banana &copy;2023-2024
 
 ---
 
-## properties
-## getters and setters
 ## Methods
 ####  debugdisplayFull() [static]
 > to use write **MsgBus.debugdisplayFull()**

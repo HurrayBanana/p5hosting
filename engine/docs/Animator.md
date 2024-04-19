@@ -22,25 +22,6 @@ engine created by Hurray Banana &copy;2023-2024
 ---
 
 ## properties
-#### #changedframe
-> to use write **this.#changedframe**
-> 
-> 
-> type {**bool**} keeps track of animation changes during updates
-> 
-> 
-
----
-
-#### #frame
-> to use write **this.#frame**
-> 
-> holds all the defined frames for this sprite @type {{tex:texture,port:portion}[]}
-> 
-> 
-
----
-
 #### allowduplicate
 > default value **false**
 > 
@@ -81,28 +62,6 @@ engine created by Hurray Banana &copy;2023-2024
 
 ---
 
-#### first() {this.state.active
-> default value **this.state.firstthis.#changedframe = true;this.boss.setmetrics();}**
-> 
-> to use write **this.first() {this.state.active**
-> 
-> sets the frame to the first one in the currently defined animation state
-> 
-> 
-
----
-
-#### last() {this.state.active
-> default value **this.state.lastthis.#changedframe = true;this.boss.setmetrics();}**
-> 
-> to use write **this.last() {this.state.active**
-> 
-> sets the frame to the last one in the currently defined animation state
-> 
-> 
-
----
-
 #### state
 > to use write **this.state**
 > 
@@ -129,7 +88,7 @@ engine created by Hurray Banana &copy;2023-2024
 > 
 > **Parameters**
 > 
-> {***  {int**} **value** sets the active frame for display, allowing the ability to make your own custom animator
+> {**int**} **value** sets the active frame for display, allowing the ability to make your own custom animator
 > 
 > 
 
@@ -159,7 +118,7 @@ engine created by Hurray Banana &copy;2023-2024
 > to use write **this.count**
 > 
 > 
-> returns {**in**} number of frames defined for the sprite
+> returns {**int**} number of frames defined for the sprite
 > 
 > 
 
@@ -236,75 +195,6 @@ engine created by Hurray Banana &copy;2023-2024
 ---
 
 ## Methods
-#### #kill()
-> to use write **this.#kill()**
-> 
-> if animation has gone past start or end of available animation frames
-> 
-> kill the sprite ha ha!!
-> 
-> @ Very useful for running an animation then making a sprite dissapear
-> 
-> 
-
----
-
-#### #repeat()
-> to use write **this.#repeat()**
-> 
-> if animation has gone past start or end of available animation frames
-> 
-> go back to first frame and continue
-> 
-> 
-
----
-
-#### #reverse()
-> to use write **this.#reverse()**
-> 
-> if animation has gone past start or end then reverse direction
-> 
-> 
-
----
-
-#### #setlastaction(action)
-> to use write **this.#setlastaction(action)**
-> 
-> disabled, sets lastAction but shouldn't meddle directly
-> 
-> 
-> **Parameters**
-> 
-> {**LastAction**} **action** action to set
-> 
-> 
-
----
-
-#### #stop()
-> to use write **this.#stop()**
-> 
-> if animation has gone past start or end of available animation frames
-> 
-> remain at that position
-> 
-> 
-
----
-
-#### #stopthenfirst()
-> to use write **this.#stopthenfirst()**
-> 
-> if animation has gone past start or end of available animation frames
-> 
-> revert to first frame in sequence and stop animation
-> 
-> 
-
----
-
 #### animateondistance(distance, lastAction,  startFrame, endFrame)
 > to use write **this.animateondistance(distance, lastAction,  startFrame, endFrame)**
 > 
@@ -476,6 +366,24 @@ engine created by Hurray Banana &copy;2023-2024
 >       this.frame.defineSpritesheet(txsprite, {w:32,h:32}, {rowstall:1,colswide:8,left:2,top:213,xpad:2,ypad:2});
 >     
 > ```
+> 
+
+---
+
+#### first()
+> to use write **this.first()**
+> 
+> sets the frame to the first one in the currently defined animation state
+> 
+> 
+
+---
+
+#### last()
+> to use write **this.last()**
+> 
+> sets the frame to the last one in the currently defined animation state
+> 
 > 
 
 ---

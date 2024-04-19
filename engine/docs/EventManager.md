@@ -21,17 +21,6 @@ engine created by Hurray Banana &copy;2023-2024
 ---
 
 ## properties
-#### #timers
-> default value **null**
-> 
-> to use write **this.#timers**
-> 
-> list of actively managed Events
-> 
-> 
-
----
-
 ## getters and setters
 #### activeLite [getter]
 > to use write **this.activeLite**

@@ -17,69 +17,6 @@ engine created by Hurray Banana &copy;2023-2024
 ---
 
 ## properties
-#### #collisionPlist
-> to use write **this.#collisionPlist**
-> 
-> holds a list of sprites that are primary colliders, reduces collsion checking overheads @type {Sprite[]}
-> 
-> 
-
----
-
-#### #collisionlist
-> to use write **this.#collisionlist**
-> 
-> holds a list of just those sprites that are collidable, reducing some of the overheads @type {Sprite[]}
-> 
-> 
-
----
-
-#### #historycount
-> to use write **this.#historycount**
-> 
-> holds history draw tally per frame @type {int}
-> 
-> 
-
----
-
-#### #layer
-> to use write **this.#layer**
-> 
-> not used
-> 
-> 
-
----
-
-#### #renderlist
-> to use write **this.#renderlist**
-> 
-> holds the list of sprites that are to be drawn, sorted on z before drawing @type {Sprite[]}
-> 
-> 
-
----
-
-#### #spritedrawn
-> to use write **this.#spritedrawn**
-> 
-> holds last number of sprites drawn in the frame @type {int}
-> 
-> 
-
----
-
-#### #spritelist
-> to use write **this.#spritelist**
-> 
-> holds the currently managed sprite references @type {Sprite[]}
-> 
-> 
-
----
-
 #### debug
 > default value **false**
 > 
@@ -152,15 +89,6 @@ engine created by Hurray Banana &copy;2023-2024
 ---
 
 ## Methods
-#### #bringoutthedead()
-> to use write **this.#bringoutthedead()**
-> 
-> removes all sprites marked as dead
-> 
-> 
-
----
-
 #### add(sprite)
 > to use write **this.add(sprite)**
 > 

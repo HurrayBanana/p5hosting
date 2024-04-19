@@ -7,62 +7,6 @@ engine created by Hurray Banana &copy;2023-2024
 ---
 
 ## properties
-####  #backmap [static]
-> to use write **Engine.#backmap**
-> 
-> for tilemaps to be rendered before sprite layers @type {texture}
-> 
-> 
-
----
-
-####  #finalmap [static]
-> to use write **Engine.#finalmap**
-> 
-> tilemaps to be rendered after all other layers including the hud @type {texture}
-> 
-> 
-
----
-
-####  #frontmap [static]
-> to use write **Engine.#frontmap**
-> 
-> tilemaps to be rendered after all 4 sprite layers but before the hud layer
-> 
-> Can use to do fade out/in and swipes
-> 
-> be wary using with sprites as these are aligned top left
-> 
-> 
-> type {**texture**}
-> 
-> 
-
----
-
-####  #midmap [static]
-> to use write **Engine.#midmap**
-> 
-> after sprite 0 and 1 @type {texture}
-> 
-> 
-
----
-
-####  #worldsize;// [static]
-> default value **vector2.zero**
-> 
-> to use write **Engine.#worldsize;//**
-> 
-> holds an object value describing the width and height of the world render area
-> 
-> object
-> 
-> 
-
----
-
 ####  cols3bit [static]
 > default value **[**
 > 
@@ -166,10 +110,10 @@ engine created by Hurray Banana &copy;2023-2024
 
 ---
 
-####  glowbuffer //testing of persistance and fade [static]
-> to use write **Engine.glowbuffer //testing of persistance and fade**
+####  glowbuffer [static]
+> to use write **Engine.glowbuffer**
 > 
-> used for some testing stuff
+> used for some testing of persistance and fade stuff
 > 
 > 
 
@@ -229,17 +173,6 @@ engine created by Hurray Banana &copy;2023-2024
 > to use write **Engine.tilemapM**
 > 
 > reference to the tilemap manager @type {TilemapManager}
-> 
-> 
-
----
-
-#### let engineversion
-> default value **'1.23.0.1'**
-> 
-> to use write **this.let engineversion**
-> 
-> current version number of the engine
 > 
 > 
 
@@ -339,7 +272,7 @@ engine created by Hurray Banana &copy;2023-2024
 > 
 > **Parameters**
 > 
-> {***  {float**} **value** sets the height of the world area
+> {**float**} **value** sets the height of the world area
 > 
 > 
 
@@ -361,7 +294,7 @@ engine created by Hurray Banana &copy;2023-2024
 > 
 > **Parameters**
 > 
-> {***  {float**} **value** sets the width of the world area
+> {**float**} **value** sets the width of the world area
 > 
 > 
 
@@ -408,41 +341,6 @@ engine created by Hurray Banana &copy;2023-2024
 ---
 
 ## Methods
-####  #createlayers(layercount, compositor) [static]
-> to use write **Engine.#createlayers(layercount, compositor)**
-> 
-> creates sprite and glow layers
-> 
-> 
-> **Parameters**
-> 
-> {**int**} **layercount** number of sprite/particle layers and a hud
-> 
-> {**string**} **compositor** compositor to be used by glow layer
-> 
-> 
-
----
-
-####  #createview() [static]
-> to use write **Engine.#createview()**
-> 
-> do not use this it's internal only for now until I implement multiple viewports
-> 
-> 
-
----
-
-####  #getTilemapLayer() [static]
-> to use write **Engine.#getTilemapLayer()**
-> 
-> 
-> returns {**texture|canvas**} a top left aligned canvas for tilemap rendering
-> 
-> 
-
----
-
 ####  draw() [static]
 > to use write **Engine.draw()**
 > 

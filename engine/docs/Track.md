@@ -37,30 +37,6 @@ engine created by Hurray Banana &copy;2023-2024
 
 ---
 
-#### #dirtyMe
-> default value **false**
-> 
-> to use write **this.#dirtyMe**
-> 
-> 
-> type {**bool**} specifed true if the offset has been changed
-> 
-> 
-
----
-
-#### #offset
-> default value **vector3.zero**
-> 
-> to use write **this.#offset**
-> 
-> 
-> type {**vector3**} holds the offset for this track
-> 
-> 
-
----
-
 #### moving
 > default value **false**
 > 
@@ -112,7 +88,7 @@ engine created by Hurray Banana &copy;2023-2024
 > 
 > **Parameters**
 > 
-> {***  {bool**} **value**  sets the dirty
+> {**bool**} **value**  sets the dirty
 > 
 > 
 
@@ -134,7 +110,7 @@ engine created by Hurray Banana &copy;2023-2024
 > 
 > **Parameters**
 > 
-> {***  {bool**} **value** set the dirty status of the track, when reading this is reset
+> {**bool**} **value** set the dirty status of the track, when reading this is reset
 > 
 > 
 

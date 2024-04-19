@@ -32,7 +32,6 @@ engine created by Hurray Banana &copy;2023-2024
 
 ---
 
-## properties
 ## getters and setters
 ####   identity [getter] [static]
 > to use write **Matrix.identity**
