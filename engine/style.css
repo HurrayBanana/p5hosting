@@ -9,6 +9,7 @@ section{
 }
 
 #index{
+  position:sticky;
   width:200px;
 }
 a {
