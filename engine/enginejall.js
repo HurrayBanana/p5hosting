@@ -5,295 +5,6 @@
 ******************************/
 
 
-//The location of the well, vector3, if this is reference to a sprite.position then the gravity well will move with the sprite
-//The mass of the gravity from this location in Giga Tonnes (billions of Kilograms), the higher the Mass the harder the pull
-/******************************
- * gravitywell.js by Hurray Banana 2023-2024
- ******************************/ 
-/** @classdesc Defines a gravity well that can act upon a sprite if associated*/
-class GravityWell{
-    /** @type {vector3} The position of this gravity well as a vector3*/
-    location;
-    /** @type {float} The mass of this gravity well in GigaTonnes (this diminishes over distance in a linear way*/
-    #pointmass;
-    /** @type {float} gravitational constant */
-    static GM = 6.673E-11;
-    /** @type {float} pre calculated value of mass and gravity */
-    #precalc;
-    /** Creates a new GravityWell specifying its location and Mass in Giga Tonnes 
-     * 
-     * @param {vector3} location 
-     * @param {float} gigaTonnes 
-     * 
-     * You will need to experiment with the location and Mass of the GravityWells in order to achieve the desired effects
-    */
-    constructor(location, gigaTonnes){
-        this.location = location;
-        this.pointmass = gigaTonnes;
-    }
-    /** @returns {float} gets the pre-calculate gravitaional force*/
-    get precalc(){return this.#precalc;}
-    /** @returns {float} gets the point mass for the well in GigaTonnes*/
-    get pointmass(){ return this.#pointmass;}
-    /**  sets the point mass for the well in GigaTonnes 
-     * @param {float} value mass in giga tonnes
-    */
-    set pointmass(value){
-            this.#pointmass = value;
-            this.#precalc = value * 1000000000 * GravityWell.GM;
-    }
-    /** removes a reference to a location if it existed. 
-     * If you inherit from GravityWell and need to remove your own resources then implement your own
-     * version of cleanup  but remember to call super.cleanup() */
-    cleanup(){
-        //in case it's a reference
-        this.location = null;
-    }
-}
-
-//NEED  SOMETHING TO HAVE HISTORY ENABLED BUT ONLY IF SETUP CORRECTLY
-/******************************
- * history.js by Hurray Banana 2023-2024
- ******************************/ 
-
-/** @classdesc holds the definitions for a snapshot of a sprite
- */
-class Historysnap{
-    /**
-     *  texture and rectangle @type {{tex:texture,port:Rectangle}}
-     * 
-     * */
-    frame;
-    /** position of this snap @type {vector3} */
-    pos;
-    /** was the sprite in view or world co-ordinates @type {bool} */
-    world;
-    /** the scale of the sprite at the time  @type {vector2}  */
-    scale;
-    /** angle of the sprite in radians  @type {float}  */
-    angle;
-    /** will hold a colour wash to apply (not in use yet as I need some shader code)  @type {color}  */
-    wash;
-    /** alpha value of the sprite at snap time (not used yet - overriden by ) */
-    alpha;
-    // layeroffset;
-    // layer;
-}
-
-/** @classdesc provides visual snapshot functionality for sprites */
-class History{
-    /** holds each snap of the sprites data in time @type {Historysnap[]}*/
-    #snaps = [];
-    /** start position to render history from defaults to 0 (the newest snap position) this is because history is created as a circular queue @type {int}*/
-    #start = 0;
-    /** number of  current snaps @type {int}*/
-    #length = 0;
-    /** @returns {int} current length of the snap history */
-    get length() { return this.#length;}
-    /** marks current end of history list as this is operas a circular queue @type {int}*/
-    #end = 0;
-    /** specifies the start position to draw from, defaults to 0, but allows us to skip the ones closest to the sprite so we can leave a grap for disconnected trail effects */
-    #renderfrom = 0;
-    /** specifies the start position to draw from, defaults to 0, but allows us to skip the ones closest to the sprite so we can leave a grap for disconnected trail effects 
-     * @returns {int} current value
-    */
-    get renderfrom(){return this.#renderfrom;}
-    /**specifies the position to start rendering from.
-     * this needs to be within the limit of the history length
-     * @param {int} value allows us to skip the ones closest to the sprite so we can leave a grap for disconnected trail effects
-     * @example
-     * this.history = new History(this); // create the history object
-     * this.history.show(0.05,90); //snap every 50 milliseconds, take 90 samples
-     * this.history.renderfrom = 10; //skip the first ten snaps
-     * this.history.scale = -0.5; // reduce the size by 50%
-     * this.history.clampAlpha = 0.1;//don't allow alha to be higher than 10%
-    */
-    set renderfrom(value){this.#renderfrom = clamp(value, 0, this.#snaps.length - 2);}
-    /** specifies the timer elapsed so for working towards the interval for history snapping */
-    #elapsed;
-    //#samplerate;
-    /*/* specifies how often to sample history in 1 second 
-    *
-    * maximum would be 60 (every single frame)
-    *
-    * 0.5 would be once every 2 seconds
-    *
-    *use historySampleFreq if it makes more sense to specify this in terms of seconds rather frames
-    */
-    //sampleRate;
-    /** specifies how to sample history in seconds, don't set this directly use show()
-    * @type {float}
-    * maximum would be 0.0167 (every single frame)
-    *
-    * 2 would be once every 2 seconds (or every 120 frames)
-     * @example
-     * this.history = new History(this); // create the history object
-     * this.history.show(0.05,90); //snap every 50 milliseconds, take 90 samples
-     * this.history.renderfrom = 10; //skip the first ten snaps
-     * this.history.scale = -0.5; // reduce the size by 50%
-     * this.history.clampAlpha = 0.1;//don't allow alpha to be higher than 10%
-    */
-    sampleFreq;
-    //timer for history sampling
-    //#depth = 2;
-    /*/* gets the number of history position we want to record */
-    //get depth(){ return this.#depth ;}
-    /*/* sets the number of history positions to record (minimum is 2) */
-    //set depth(value){
-    //    this.#depth = value < 2 ? 2 : value;
-    //}
-    /** scale factor to apply to history rendering
-     * this value is the factor by which to increase/decrease the scale of history trails.
-     * default value is 0 ; no change in size
-     * @type {float}
-     * @example
-     * this.history.scale = 1; //increase the size by 100%
-     * this.history.scale = -0.5f; //would decrease the size by 50%,*/
-    scale = 0;
-    /** if true then history trail will fade over its distance, 
-     * if false no fading will be applied and clampAlpha value will be applied to all snaps
-     * @type {bool}*/
-    fadeAlpha = true;
-    /** holds maximum allowed alpha value in history, default 1 @type {float} */
-    #clampAlpha = 1;
-    /** 
-     * Sets the maximum alpha for the history trail, if fadeAlpha is false then this is the alpha for the entire trail
-     * depending on how often you are snapping this may need to be quite low as history will draw on top of itself
-     * @returns {float}
-    */
-    get clampAlpha(){ return this.#clampAlpha; }
-    /** Sets the maximum alpha for the history trail, if fadeAlpha is false then this is the alpha for the entire trail 
-     * @param {float} value new value between 0 and 1
-     * @example
-     * this.history = new History(this); // create the history object
-     * this.history.show(0.05,90); //snap every 50 milliseconds, take 90 samples
-     * this.history.renderfrom = 10; //skip the first ten snaps
-     * this.history.scale = -0.5; // reduce the size by 50%
-     * this.history.clampAlpha = 0.1;//don't allow alha to be higher than 10%
-    */
-    set clampAlpha(value){ this.#clampAlpha = clamp(value, 0, 1);}
-    /** sets the layer to draw history on, by default this is layer 0, the sprite first layer rendered
-     * @example this.history.layer = Engine.layer(2);
-    */
-    layer = Engine.layer(0);
-
-    /** reference to th esprite we are snapping */
-    #mysprite ;
-    /** builds the history recording system for a sprite
-     * @param {Sprite} mysprite the sprite to record history for
-     */
-    constructor(mysprite){
-        this.#mysprite = mysprite;
-    }
-    cleanup(){
-        this.#mysprite = null;
-        this.#snaps = null;
-    }
-    /** turns on history for this sprite 
-     * @example
-     * this.history = new History(this); // create the history object
-     * this.history.show(0.05,90); //snap every 50 milliseconds, take 90 samples
-     * this.history.renderfrom = 10; //skip the first ten snaps
-     * this.history.scale = -0.5; // reduce the size by 50%
-     * this.history.clampAlpha = 0.1;//don't allow alha to be higher than 10%
-     * @param {int} depth how many samples to record
-     * @param {float} rate how often (in seconds) to take a positional snapshot
-    */
-    show(rate, depth){
-        //this.depth = depth;
-        this.sampleFreq = rate;
-        this.#elapsed = 0;
-        //implement history circular queue
-        //and fully initialise 
-        this.#snaps = new Array(depth);
-        for (let p = 0; p < depth; p++){
-            this.#snaps[p] = new Historysnap();
-        }
-        this.#start = 0;
-        this.#length = 0;
-        this.#end = 0;
-    }
-
-    /** snaps if timer required current sprite settings */
-    update(){
-        if ((this.#elapsed += Engine.delta) > this.sampleFreq){
-            this.#elapsed -= this.sampleFreq;
-            let h = this.#snaps[this.#end];
-            if (this.#mysprite.visible){
-                h.frame = this.#mysprite.frame.clonecurrent;
-                h.pos = new vector3(this.#mysprite.centrex, this.#mysprite.centrey,0);//this.#mysprite.position.clone
-                h.scale = this.#mysprite.scale.clone;
-                //h.layer = this.#mysprite.layer;
-                h.angle = this.#mysprite.angleR;//angle/Math.hb180byPI;
-                //h.angle = this.#mysprite.angle/180*Math.PI;
-                h.alpha = this.alpha;//? is this right?
-                h.world = this.#mysprite.world;
-            } else {
-                h.frame = {tex:null};
-            }
-
-            //remove first if we are at max depth
-            if (this.#length == this.#snaps.length){
-                this.#start = (this.#start + 1) % this.#length;
-            } else {this.#length++;}
-            //move to next recording position
-            this.#end++;
-            if (this.#end == this.#snaps.length) {this.#end = 0;}
-            //this.#end = (this.#end + 1) % this.#snaps.length;
-        }
-    }
-    /** renders the history recorded here */
-    draw(){
-
-        //draw from end to start (newest to oldest)
-        let end = this.#end - 1 - this.#renderfrom;
-        let numbertorender = this.#length - this.#renderfrom;
-
-        let dalpha = this.fadeAlpha ?  this.#clampAlpha / numbertorender : 0;
-        let alpha = this.#clampAlpha;
-        let dscale = (this.scale == 0)? 0:-this.scale / numbertorender;
-        let scale = 1;
-
-        this.layer.push();
-
-        if (this.#mysprite.clip){
-            this.layer.clip(() => {
-            const r = this.#mysprite.cliparea;
-            this.layer.rect(r.x,r.y,r.w,r.h);
-            });
-        }            
-
-        for (let p = 0; p < numbertorender ; p++){
-            if (end < 0) end += this.#length;
-            const h = this.#snaps[end];
-            if (h.frame.tex != null){
-                this/*h*/.layer.push();
-                this/*h*/.layer.drawingContext.globalAlpha = alpha;
-                this/*h*/.layer.translate(h.pos.x + (h.world ? -Engine.mainview.x : 0), h.pos.y + (h.world ? -Engine.mainview.y : 0));
-                this/*h*/.layer.scale(scale*h.scale.x,scale*h.scale.y);
-                if (h.angle != 0){
-                    this/*h*/.layer.rotate(h.angle);
-                }
-                //cheating for now with some of the data here
-                //offset to centre - need to fix /record the true offset for the history item now
-                this/*h*/.layer.image(h.frame.tex,
-                    0,0,h.frame.port.w, h.frame.port.h,
-                    h.frame.port.x, h.frame.port.y, h.frame.port.w, h.frame.port.h
-                );
-                //h.layer.image(h.frame.tex,
-                //    0,0,h.frame.port.w*h.scale.x*scale, h.frame.port.h*h.scale.y*scale,
-                //    h.frame.port.x, h.frame.port.y, h.frame.port.w, h.frame.port.h
-                //);
-                this/*h*/.layer.pop();
-            }
-            scale -= dscale;
-            alpha -= dalpha;
-            end--;
-        }
-        this.layer.pop();
-        return numbertorender;
-    }
-}
 /******************************
  * animation.js created by Hurray Banana 2023-2024
  ******************************/ 
@@ -533,22 +244,27 @@ class Animator{
 
     /** @returns {bool} returns true if an animation state is currently active for this sprite */
     get animating(){return this.state.animationmethod != AnimateMethod.none;}
+    
     /** @returns {int} active display frame number (-1 would indicate no frames available for this sprite*/
     get active(){return this.state.active;}
+    
     /** @param {int} value sets the active frame for display, allowing the ability to make your own custom animator */
     set active(value){
         if (value >= 0 && value < this.#frame.length){
         this.state.active = value;}
     }
+    
     /** 
      * @returns {int} gets the first frame defined for the sprite
      * will be -1 if no frames defined or 0 if they are */
      get firstframe(){return (this.#frame.length == 0) ? -1:0;}
-    /** 
+    
+     /** 
      * @returns {int} gets the last frame defgined for the sprite
      * -1 if no frames defined
      */
     get lastframe(){return this.#frame.length - 1;}
+    
     /** 
      * @returns {int} gets the first frame for the current animation state
      * if no animation range set then -1 is returned   */
@@ -565,7 +281,7 @@ class Animator{
      * @return {rectangle} gets a reference to the rectangluar potion used for the current active frame */
     get currentport(){return this.#frame[this.state.active].port; }
     /** 
-     * @returns {in} number of frames defined for the sprite*/
+     * @returns {int} number of frames defined for the sprite*/
     get count() {return this.#frame.length;}
     /** 
      * @return {{tex:texture,port:rectangle}} gets a duplicate frame for thecurrent frame texture and rectangular portion 
@@ -813,11 +529,15 @@ class Animator{
     /**
      * sets the frame to the first one in the currently defined animation state
      */
-    first() {this.state.active = this.state.first;this.#changedframe = true;this.boss.setmetrics();}
+    first(){
+        this.state.active = this.state.first;this.#changedframe = true;this.boss.setmetrics();
+    }
     /**
      * sets the frame to the last one in the currently defined animation state
      */
-    last() {this.state.active = this.state.last;this.#changedframe = true;this.boss.setmetrics();}
+    last(){
+        this.state.active = this.state.last;this.#changedframe = true;this.boss.setmetrics();
+    }
     /**
      * moves the animation to the next frame in the defined sequence in manual animations
      */
@@ -1147,9 +867,601 @@ class Animator{
     }
 }//class Animator
 
+ 
+/******************************
+ * engine.js by Hurray Banana 2023-2024
+******************************/ 
+/**** current version number of the engine */
+let engineversion = '1.24.0.1';
+/** @classdesc provides global functionality for other engine components */
+class Engine{
+  /** set of colours primary, secondary, black and white @type {color[]} */
+  static cols3bit = [
+      [255,255,255],
+      [255,0,0],
+      [0,255,0],
+      [0,0,255],
+      [0,255,255],
+      [255,255,0],
+      [255,0,255],
+      [0,0,0],
+  ];
+  /** length of cols3bit for modulus work @type {int} */
+  static cols3bitlen = Engine.cols3bit.length;
+  /** @type {bool} if true then engine version will be shown with debug output */
+  static showversion = true;
+  /** if true debug output will be shown @type {bool}*/
+  static debug = false;
+  /** colour to display debug information @type {color}*/
+  static debugcolour = [255,255,255,255];
+  //static debugpos;
+  //static debugalign = Align.bottomLeft;
+  //graphics layers here
+  /** for tilemaps to be rendered before sprite layers @type {texture}*/
+  static #backmap;
+  /** the tilemap layer drawn before every other layer 
+   * be wary using with sprites as these are aligned top left
+   * @returns {texture}
+  */
+  static get backmap(){
+      Engine.#backmap.operations = true;
+      return Engine.#backmap;
+  }
+  /** after sprite 0 and 1 @type {texture}*/
+  static #midmap;
+  /** tilemaps to be rendered after sprite layers 0 and 1 but before layer 2 and 3 
+   * be wary using with sprites as these are aligned top left
+   * @returns {texture}
+  */
+  static get midmap(){Engine.#midmap.operations = true;return Engine.#midmap;}
+  /** tilemaps to be rendered after all 4 sprite layers but before the hud layer
+  * Can use to do fade out/in and swipes
+   * be wary using with sprites as these are aligned top left
+   * @type {texture}
+  */
+  static #frontmap;
+  /** tilemaps to be rendered after all sprite layers 
+   * be wary using with sprites as these are aligned top left
+   * @returns {texture}
+  */
+  static get frontmap(){Engine.#frontmap.operations = true;return Engine.#frontmap;}
+  /** tilemaps to be rendered after all other layers including the hud @type {texture}*/
+  static #finalmap;
+  /** Can use to do fade out/in and swipes which also cover the UI
+   * be wary using with sprites as these are aligned top left
+   * @returns {texture}
+  */
+  static get finalmap(){Engine.#finalmap.operations = true;return Engine.#finalmap;}
+  /**
+   * holds each of the sprite layers these are drawn from 0 upwards,
+   * the higher the layer number the later it is in the draw stack
+   * use Engine.layer() to retrieve a reference to the layer when assigning to sprites, history and particles
+   * You can use this reference to also modify settings of the texture layer (taking it away from its default settings)
+   * @type {texture[]}
+   */
+  static spl = [];
+  /**
+   * holds each of the sprite glow layers these are drawn from 0 upwards before their corresponding sprite layer number,
+   * the higher the layer number the later it is in the draw stack.
+   * glow layers are much lower resolution than the main drawing layers, which can be controlled when setting up the engine
+   * with Engine.init()
+   * 
+   * use Engine.glowlayer() to retrieve a reference to the layer when assigning to sprites, history and particles
+   * You can use this reference to also modify settings of the texture layer (taking it away from its default settings)
+   * @example 
+   * //the glow divisor is how many times smaller the glow layers are created. 
+   * //when drawn they are blown up using bilinear filtering which gives us a cheap glow effect
+   * Engine.init({glowdivisor:8,viewW:600,viewH:800,worldW:3000,worldH:2000});
+   * @type {texture[]}
+   */
+  static glow = [];
+  /** used for some testing of persistance and fade stuff */
+  static glowbuffer;
+  /**
+   * controls how many times smaller the glow layers are created. don't change this value you need to use Engine.init() to set this
+   * @type {int}
+   */
+  static glowDiv = 8;
+  /**
+   * gets the hud layer (the final sprite layer) for drawing items on top of all other sprites
+   * There are some tilemap layers that are drawn after this frontmap and finalmap
+   */
+  static get hud(){Engine.spl[Engine.spl.length-1].operations = true;return Engine.layer(Engine.spl.length-1)};
+  /** reference to the sprite manager @type {Spritemanager} */
+  static spM;
+  /** reference to the particle manager @type {particleManager} */
+  static particleM;
+  /** reference to the tilemap manager @type {TilemapManager} */
+  static tilemapM;
+  /** holds an object value describing the width and height of the world render area 
+   * object 
+  */
+  static #worldsize;// = vector2.zero;
+  /** @returns {float} the width of the world area*/
+  static get worldWidth(){return this.#worldsize.w};
+  /** @returns {float} the height of the world area*/
+  static get worldHeight(){return this.#worldsize.h;};
+  /** @param {float} value sets the width of the world area*/
+  static set worldWidth(value){this.#worldsize.w = value};
+  /** @param {float} value sets the height of the world area*/
+  static set worldHeight(value){this.#worldsize.h = value};
+  /** 
+   * @returns {Rectangle} gets a rectangle (0,0,width,height) representing the world size
+   */
+  static get worldarea(){return new Rectangle(0,0,this.#worldsize.w,this.#worldsize.h);}
+  /** gets the world size (width and height), just access the w and h properties of the object
+   * @returns {{w:int, h:int}}
+   */
+  static get worldsize(){return this.#worldsize;}
+  /** use an object to set the size of the world
+   * Engine.worldsize = {w:1000,h:1000};
+   * or a vector2 value (something with w and h properties)
+   * @param {vector2|{w:int, h:int}} value 
+   */
+  static set worldsize(value){this.worldWidth = value.w; this.worldHeight = value.h;};
+  static viewWidth;
+  static viewHeight;
+  //static canvasArea;
+  static viewports = [];
+  static get mainview(){return Engine.viewports[0];}
+  static get mainviewArea(){return Engine.viewports[0].area;}
+  static zRange = 5000;
+  static zHalf = this.zRange / 2;
+  
+  /**
+   * @returns {vector3}
+   */
+  static get viewCentre(){return Engine.viewports[0].area.centre;}// Engine.viewWidth/2;}
+  static get viewCentrex(){return Engine.viewports[0].area.centrex;}// Engine.viewWidth/2;}
+  static get viewCentrey(){return Engine.viewports[0].area.centrey;}//Engine.viewHeight/2;}
+  static get viewcount(){return Engine.viewports.length;}
+  static #framecount;
+  static #fps;
+  static #elapsed;    
+  /** initialises all the sub systems of the engine, call this from the preload function 
+   * @param {{viewW:int,viewH:int,worldW:int,worldH:int,layers:int,glowdivisor:int,compositor:string}} settings all settings are optional, if none are set or nothing is passed then defaults (listed below will be used)
+   * pass a settings object to change some of the defaults
+   * @example     Engine.init({glowdivisor:8});
+   * 
+   * //settings object can have the following values
+   * viewW:int //number of pixels wide the canvas/screen should be, default 600
+   * viewH:int //number of pixels high the canvas/screen should be, default 600
+   * worldW:int //number of pixels wide the world area should be, default 600
+   * worldH:int //number of pixels high the world area should be, default 600
+   * layers:int //number of layers including the HUD defaults to 5 (4 sprite layers and final HUD layer) - don't change it will break stuff - I need to generalise the renderer more first
+   * glowdivisor:int //how much to shrink the glow layers by (these get scaled back up so we get a cheap blur)
+   * compositor:string //the global compsition method on the glow layers, default is "lighter" @link https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/globalCompositeOperation
+   * 
+  */
+  static init(settings){
+      Engine.delta = 1/60;
+      let numlayers = 5;//4 sprites and final HUD
+      let glowdivisor = 8;
+      let compositor = "lighter";//"screen";
+      let vw = 600;
+      let vh = 600;
+      let ww = 600;
+      let wh = 600;
+      
+      if (settings !== undefined){
+          if (settings.layers !== undefined) numlayers = settings.layers;
+          if (settings.glowdivisor !== undefined) glowdivisor = settings.glowdivisor;
+          if (settings.compositor !== undefined) compositor = settings.compositor;
+          if (settings.viewW !== undefined) vw = settings.viewW;
+          if (settings.viewH !== undefined) vh = settings.viewH;
+          ww = vw;
+          wh = vh;
+          if (settings.worldW !== undefined) ww = settings.worldW;
+          if (settings.worldH !== undefined) wh = settings.worldH;
+      }
+      Engine.viewWidth = vw;
+      Engine.viewHeight = vh;
+      Engine.#worldsize = new vector2(ww, wh);
+      Engine.glowDiv = glowdivisor;
+      Engine.#createlayers(numlayers, compositor);
+      Engine.#createview();
+      Engine.tilemapM = new TilemapManager();
+      Engine.particleM = new particleManager();
+      Engine.spM = new Spritemanager(Engine.layer(Engine.spl.length-1));//hud
+      Engine.eventM = new EventManager();
+      Tex.createTextures();
+      //this.debugpos.x = 10;
+      //this.debugpos.y = vh - 10;
+      Engine.#framecount = 0;
+      Engine.#fps = 0;;
+      Engine.#elapsed = 0;
+      //Tex.waitloading();
+  }
+  /** do not use this it's internal only for now until I implement multiple viewports */
+  static #createview(){
+      //default viewport
+      Engine.viewports.push(new View(new Rectangle(0,0,Engine.viewWidth, Engine.viewHeight),0,0)); //canvas area
+  }
+  /**retrieves a specific graphic layer for assigning to sprites and particles for drawing on and changing settings of
+   * @param {int} number layer number (0-3)
+   * @example 
+   * //draw order is as follows:
+   * backmap, glow(0),layer(0),glow(1),layer(1),midmap,glow(2),layer(2),glow(3),layer(3),frontmap,hud,finalmap
+  */
+  static layer(number){
+      if (number >= 0 && number < Engine.spl.length){
+          Engine.spl[number].operations = true;
+          return Engine.spl[number];
+      } else {
+          Engine.spl[0].operations = true;
+          return Engine.spl[0];
+      }
+  }
+  /**retrieves a specific graphic layer for drawing on and changing settings of 
+   * @param {int} number glow layer number (0-3), glow layers are drawn before their corresponding sprite layer
+   * @example 
+   * //draw order is as follows:
+   * backmap, glow(0),layer(0),glow(1),layer(1),midmap,glow(2),layer(2),glow(3),layer(3),frontmap,hud,finalmap
+  */
+  static glowlayer(number){
+      if (number >= 0 && number < Engine.glow.length){
+          Engine.glow[number].operations = true;
+          return Engine.glow[number];
+      } else {
+          Engine.glow[0].operations = true;
+          return Engine.glow[0];
+      }
+  }
+  
+  /**retrieves the rectangle for a numbered viewport - 0 being the main canvas area 
+   * @param {int} number view to retrieve (currently on 0)
+   * @returns {View} the requested Viewport
+  */
+  static view(number){
+    if (number === undefined) {
+      return Engine.viewports[0];
+    }
+    else{
+      if (number >= 0 && number < Engine.viewports.length){
+          return Engine.viewports[number];
+      } else 
+      return Engine.viewports[0];
+    }
+  }
+  /**
+   * 
+   * @returns {texture|canvas} a top left aligned canvas for tilemap rendering
+   */
+  static #getTilemapLayer(){
+      let context = createGraphics(Engine.viewWidth, Engine.viewHeight);//, WEBGL);
+      context.noStroke();
+      context.noSmooth();
+      context.operations = false;
+      context.pixelDensity(1);
+      context.type = "t";
+      return context;
+  }
+  /**
+   * creates sprite and glow layers
+   * @param {int} layercount number of sprite/particle layers and a hud
+   * @param {string} compositor compositor to be used by glow layer
+   */
+  static #createlayers(layercount, compositor){
+      let c = createCanvas(Engine.viewWidth, Engine.viewHeight);//, WEBGL);
+      c.drawingContext.alpha = false;
+      window.pixelDensity(1);
+      //createCanvas(Engine.viewWidth, Engine.viewHeight, WEBGL);
+      //let l = createFramebuffer();
+      Engine.#backmap = this.#getTilemapLayer();
+      //Engine.__backmap.drawingContext.alpha = false;
+      Engine.#midmap = this.#getTilemapLayer();
+      Engine.#frontmap = this.#getTilemapLayer();
+      Engine.#finalmap = this.#getTilemapLayer();
+      Engine.spl = new Array(layercount);
+      Engine.glow = new Array(layercount);
+      for (let p = 0; p < layercount; p++){
+          Engine.spl[p] = createGraphics(Engine.viewWidth, Engine.viewHeight);//, WEBGL);
+          Engine.spl[p].rectMode(CENTER);
+          Engine.spl[p].imageMode(CENTER);
+          Engine.spl[p].noStroke();
+          Engine.spl[p].noSmooth();
+          Engine.spl[p].operations = false;
+          Engine.spl[p].wipe = true;
+          Engine.spl[p].pixelDensity(1);
+          Engine.spl[p].type = "s";
+
+          //create a glow layer for each sprite layer
+          Engine.glow[p] = createGraphics(Engine.viewWidth/Engine.glowDiv,Engine.viewHeight/Engine.glowDiv);
+          Engine.glow[p].drawingContext.globalCompositeOperation = compositor;//"screen";//compositor;
+          Engine.glow[p].noStroke();
+          Engine.glow[p].rectMode(CENTER);
+          Engine.glow[p].imageMode(CENTER);
+          Engine.glow[p].operations = false;
+          Engine.glow[p].wipe = true;
+          Engine.glow[p].pixelDensity(1);
+          Engine.glow[p].scale(1/Engine.glowDiv);//sets scale for layer
+          Engine.glow[p].type = "g";
+      }
+      //testing
+      Engine.glowbuffer = createGraphics(Engine.viewWidth/Engine.glowDiv,Engine.viewHeight/Engine.glowDiv);
+      Engine.glowbuffer.drawingContext.globalCompositeOperation = "screen";
+      Engine.glowbuffer.noStroke();
+      Engine.glowbuffer.operations = false;
+      Engine.glowbuffer.pixelDensity(1);
+      Engine.glowbuffer.scale(1/Engine.glowDiv);
+  }
+  /** @type {float} holds the fraction of a second the current frame has taken
+   * use this to get movement in pixels per second
+   * @example
+   * this.vx = 100 * Engine.delta; //move at 100 pixels over a second
+  */
+  static delta;
+  static update(delta){
+      Engine.delta = delta;
+      Engine.#framecount++;
+      Engine.#elapsed += delta;
+      if (Engine.#elapsed >= 1){
+          Engine.#elapsed -= 1;
+          Engine.#fps = Engine.#framecount;
+          Engine.#framecount = 0;
+      }
+      Engine.eventM.update();
+      Engine.tilemapM.update();
+      Engine.spM.update();
+      Engine.particleM.update();
+  }
+  static #activelayers = "";
+  static c = false;
+  /**draws the various engine rendering sub systems */
+  static draw(){
+      //let tilelayers = "tilelayers ";
+      //let spritelayers = " spritelayers ";
+      //let glowlayers = " glowlayers ";
+      Engine.tilemapM.draw();//delta);
+      Engine.spM.draw();//delta);
+      Engine.particleM.draw();//delta);
+      //let w = -width/2;
+      //let h = -height/2;
+      //compositor
+      if (this.#backmap.operations) {
+          //image(Engine.__backmap, w, h);
+          image(Engine.#backmap,0,0);
+          this.#backmap.clear();
+          //tilelayers += "[back]";
+      }
+      let p = 0;
+      for (; p < 2; p++){
+          if (Engine.glow[p].operations){
+              image(Engine.glow[p],0, 0, Engine.viewWidth, Engine.viewHeight);
+              if (Engine.glow[p].wipe) Engine.glow[p].clear();
+              //omage(Engine.glow[p],0, 0, Engine.viewWidth, Engine.viewHeight);
+              //Engine.glowbuffer.globalCompositeOperation = "difference";
+              //Engine.glowbuffer.globalalpha = 0.5;
+              //Engine.glowbuffer.image(Engine.glow[p],-25, -25, Engine.viewWidth+50, Engine.viewHeight+50);
+              //Engine.glowbuffer.image(Engine.glow[p],0, 0, Engine.viewWidth+, Engine.viewHeight);
+              //Engine.glow[p].clear();
+              //write buffer
+              //image(Engine.glowbuffer,0, 0, Engine.viewWidth, Engine.viewHeight);
+              //if (Engine.c ) Engine.glow[p].clear();
+              Engine.c = !Engine.c;
+              //trying a self filter effect instead of clearing
+              //Engine.glow[p].image(Engine.glow[p],//0,0,
+                //  400,400, 810, 810);
+                  //Engine.viewWidth*0.49/* -Engine.viewWidth*0.05*/, Engine.viewHeight*0.49/*-Engine.viewHeight*0.05*/, 
+                  //Engine.viewWidth*1.1, Engine.viewHeight*1.1);
+              //glowlayers += "[" + p + "]" ;
+          }
+          if (Engine.spl[p].operations){
+              //image(Engine.spl[p], w, h);
+              image(Engine.spl[p],0,0);
+              //clear once drawn
+              if (Engine.spl[p].wipe) Engine.spl[p].clear();
+              //spritelayers += "[" + p + "]" ;
+          }
+      }
+      if (this.#midmap.operations) {
+          //image(Engine.__midmap, w, h);
+          image(Engine.#midmap,0,0);
+          this.#midmap.clear();
+          //tilelayers += "[mid]";
+      }
+      for (; p < 4; p++){
+          if (Engine.glow[p].operations){
+              //image(Engine.glow[p], w, h, Engine.viewWidth, Engine.viewHeight);
+              image(Engine.glow[p],0, 0, Engine.viewWidth, Engine.viewHeight);
+              if (Engine.glow[p].wipe) Engine.glow[p].clear();
+              //glowlayers += "[" + p + "]" ;
+          }
+          if (Engine.spl[p].operations){
+              //image(Engine.spl[p], w, h);
+              image(Engine.spl[p],0,0);
+              //clear once drawn
+              if (Engine.spl[p].wipe) Engine.spl[p].clear();
+              //spritelayers += "[" + p + "]" ;
+          }
+      }
+      if (this.#frontmap.operations) {
+          //image(Engine.__frontmap, w, h);
+          image(Engine.#frontmap,0,0);
+          this.#frontmap.clear();
+          //tilelayers += "[front]";
+      }
+      if (Engine.showversion) {Engine.version();}
+      //draw hud
+      if (Engine.spl[p].operations){
+          //image(Engine.spl[p], w, h);
+          image(Engine.spl[p],0,0);
+          //clear once drawn
+          if (Engine.spl[p].wipe) Engine.spl[p].clear();
+          //spritelayers += "[hud]" ;
+      }
+      if (this.#finalmap.operations) {
+          //image(Engine.__finalmap, w, h);
+          image(Engine.#finalmap,0,0);
+          this.#finalmap.clear();
+          //tilelayers += "[final]";
+      }
+      if (Engine.debug){Engine.#debugout();}
+      //Engine.#activelayers = tilelayers + " " + spritelayers + " " + glowlayers;
+  }
+  static #debugout(){
+      let dm = []
+      dm.push(this.particleM.debugdisplay);
+      dm.push(this.spM.debugdisplay);
+      let m = "view[" + (Engine.mainview.x|0) + "," + (Engine.mainview.y|0) + "]";
+      m += " world[" + Engine.worldWidth + "," + Engine.worldHeight + "]";
+      m += " viewrect[" + Engine.mainview.worldarea.l + "," + Engine.mainview.worldarea.t + "," + Engine.mainview.worldarea.r + "," + Engine.mainview.worldarea.b + "]";
+      dm.push(m);
+      dm.push(Engine.#activelayers)
+      dm.push("fps[" + Engine.#fps + "]");
+      dm.push(engineversion);
+      window.push();
+      window.textAlign(LEFT, BOTTOM);
+      window.fill(Engine.debugcolour);
+      window.noStroke();
+      let dy = 0;
+      dm.forEach(mess => {
+          window.text(mess,10, Engine.mainview.area.h + dy );
+          dy -= 20;
+      });
+      window.pop();
+  }
+  static version(){
+      Engine.spl[3].push();
+      Engine.spl[3].fill(255);
+      Engine.spl[3].noStroke();
+      Engine.spl[3].text(engineversion, 10,Engine.spl[3].height - 10);
+      
+      //Engine.spl[3].text(engineversion, 10,Engine.spl[3].height - 10);
+      Engine.spl[3].pop();
+  }
+  /**internal support for executing callback routines (there are currently 4 differenet ones in Sprite alone) */
+  static processCallback(handler, data){
+      if (handler !== undefined && handler !== null) {return handler.callback.call(handler.instance, data);}    
+  }
+  /**
+   * Generates a callback handler object to pass to a callback system
+   * @param {function} handler 
+   * @param {object} instance 
+   * @returns {{callback:method|function, instance:object|null}}
+   */
+  static makeCallback(handler, instance){
+      return {callback:handler, instance:instance};
+  }
+  /** performs a rip of a tilesheet, used by Tilemap.tilesfromTilesheet()
+   * grabs a rectangluar sequence rawtiles from a texture, if wanting this for a tilemap use this.tilesfromTilesheet() inside your constructor instead
+   * @param {Tile[]} tohere array of Tiles to add these rips to 
+   * @param {image|texture} texture  image that contains the tiles we want
+   * @param {{w:32,h:32}} tilesize width and height of each tile (have to be the same size)
+   * @param {{rowstall:3,colswide:10,left:10,top:5,xpad:2,ypad:2}} data explained in comments below
+   * @example 
+   * //takes 30 tiles from txtiles and places them into the mytiles array
+   * //the tiles consist of 3 rows and 10 columns with a 2 pixel gap between each row and column
+   * //each tiles is 32x32 pixels the rectangular sequence starts 10 pixels from left and 5 pixels from top corner of sprite sheet
+   * Engine.riptiles(mytiles, txtiles, {w:32,h:32}, {rowstall:3,colswide:10,left:10,top:5,xpad:2,ypad:2});
+  */
+  static riptiles(tohere, texture, tilesize, data){
+      if (data === undefined){data = {};}
+      if (data.rowstall === undefined) {data.rowstall = Math.floor(texture.height / tilesize.h);}
+      if (data.colswide === undefined) {data.colswide = Math.floor(texture.width / tilesize.w);}
+      if (data.left === undefined) {data.left = 0;}
+      if (data.top === undefined) {data.top = 0;}
+      if (data.xpad === undefined) {data.xpad = 0;}
+      if (data.ypad === undefined) {data.ypad = 0;}
+      for (let r = 0; r < data.rowstall; r++){
+          for (let c = 0; c < data.colswide; c++){
+              let t = new Tile(texture, new Rectangle(data.left + c * (tilesize.w + data.xpad), data.top + r * (tilesize.h + data.ypad), tilesize.w, tilesize.h));
+              tohere.push(t);
+          }
+      }
+  }
+    /** performs a rip of a spritesheet to a format suitable for sprite animation frames, used by Sprite.frame.defineSpritesheet()
+   * grabs a rectangluar sequence rawtiles from a texture
+   * @param {Rawtile[]} tohere array of frames to add these rips to, use sprite.frame.defineSpritesheet() if you are doing this for a sprite
+   * @param {image|texture} texture image that contains the frames we want
+   * @param {{w:32,h:32}} tilesize width and height of each frame (have to be the same size)
+   * @param {{rowstall:3,colswide:10,left:10,top:5,xpad:2,ypad:2}} data explained in comments below
+   * @example 
+   * //takes 8 frames txsprite and adds them to the frames already defined for the sprite
+   * //the frames consist of 1 row and 8 columns with a 2 pixel gap between each row and column
+   * //each tiles is 32x32 pixels the rectangular sequence starts 2 pixels from left and 213 pixels from top corner of sprite sheet
+   * this.frame.defineSpritesheet(txsprite, {w:32,h:32}, {rowstall:1,colswide:8,left:2,top:213,xpad:2,ypad:2});
+  */
+  static ripRawtiles(tohere, texture, tilesize, data){
+      if (data === undefined){data = {};}
+      if (data.rowstall === undefined) {data.rowstall = Math.floor(texture.height / tilesize.h);}
+      if (data.colswide === undefined) {data.colswide = Math.floor(texture.width / tilesize.w);}
+      if (data.left === undefined) {data.left = 0;}
+      if (data.top === undefined) {data.top = 0;}
+      if (data.xpad === undefined) {data.xpad = 0;}
+      if (data.ypad === undefined) {data.ypad = 0;}
+      for (let r = 0; r < data.rowstall; r++){
+          for (let c = 0; c < data.colswide; c++){
+              let t = new Rawtile(texture, new Rectangle(data.left + c * (tilesize.w + data.xpad), data.top + r * (tilesize.h + data.ypad), tilesize.w, tilesize.h));
+              tohere.push(t);
+          }
+      }
+  }    
+}
+//The location of the well, vector3, if this is reference to a sprite.position then the gravity well will move with the sprite
+//The mass of the gravity from this location in Giga Tonnes (billions of Kilograms), the higher the Mass the harder the pull
+/******************************
+ * gravitywell.js by Hurray Banana 2023-2024
+ ******************************/ 
+/** @classdesc Defines a gravity well that can act upon a sprite if associated*/
+class GravityWell{
+    /** @type {vector3} The position of this gravity well as a vector3*/
+    location;
+    /** @type {float} The mass of this gravity well in GigaTonnes (this diminishes over distance in a linear way*/
+    #pointmass;
+    /** @type {float} gravitational constant */
+    static GM = 6.673E-11;
+    /** @type {float} pre calculated value of mass and gravity */
+    #precalc;
+    /** Creates a new GravityWell specifying its location and Mass in Giga Tonnes 
+     * 
+     * @param {vector3} location 
+     * @param {float} gigaTonnes 
+     * 
+     * You will need to experiment with the location and Mass of the GravityWells in order to achieve the desired effects
+    */
+    constructor(location, gigaTonnes){
+        this.location = location;
+        this.pointmass = gigaTonnes;
+    }
+    /** @returns {float} gets the pre-calculate gravitaional force*/
+    get precalc(){return this.#precalc;}
+    /** @returns {float} gets the point mass for the well in GigaTonnes*/
+    get pointmass(){ return this.#pointmass;}
+    /**  sets the point mass for the well in GigaTonnes 
+     * @param {float} value mass in giga tonnes
+    */
+    set pointmass(value){
+            this.#pointmass = value;
+            this.#precalc = value * 1000000000 * GravityWell.GM;
+    }
+    /** removes a reference to a location if it existed. 
+     * If you inherit from GravityWell and need to remove your own resources then implement your own
+     * version of cleanup  but remember to call super.cleanup() */
+    cleanup(){
+        //in case it's a reference
+        this.location = null;
+    }
+}
+
 /******************************
  * general helper functions by Hurray Banana 2023-2024
 ******************************/ 
+/** @type {float} 360 degrees as radians */
+Math.PIx2 = Math.PI * 2;
+/** @type {float} 180 degress as radians */
+Math.PIby2 = Math.PI/2;
+/** @type {float} 90 degrees as radians */
+Math.PIby4 = Math.PI/4;
+/** @type {float} multiply with a number of degrees to get radians */
+Math.PIby180 = Math.PI/180;
+/** @type {float} multiply with a number of radians to get degrees */
+Math.PIx180 = Math.PI*180; 
+/** divide an angle in degrees by this to get a radians value
+ * @example
+ * let radians = this.angle/Math.hb180byPI;
+ */
+Math.hb180byPI = 180/Math.PI;
 /**
  * Produces a linear interpolation between 2 values
  * @param {float} a base value  (0%)
@@ -1246,7 +1558,7 @@ function tickandNull(obj, delta){
  * @param {int} x left edge of text
  * @param {int} y starting height of output text
  * @param {int} linedrop distance to drop down on each string from the array
- * @param {} surface if specified the drawing will be attempted on the given image/surface or texture, if ommitted tet will appear on the default canvas
+ * @param {texture|image} surface if specified the drawing will be attempted on the given image/surface or texture, if ommitted tet will appear on the default canvas
  * @example 
  * //displaying message bus subscribers with current text settings called at end of draw() function in sketch.js
  * drawtextArray(MsgBus.debugdisplayFull(), 10,100,16);
@@ -1262,17 +1574,1216 @@ function drawtextArray(textarr, x, y, linedrop, surface){
   }
 }
 
-// pre-calculations
-Math.PIx2 = Math.PI * 2;
-Math.PIby2 = Math.PI/2;
-Math.PIby4 = Math.PI/4;
-Math.PIby180 = Math.PI/180;
-Math.PIx180 = Math.PI*180; 
-/** divide an angle in degrees by this to get a radians value
- * @example
- * let radians = this.angle/Math.hb180byPI;
+
+//NEED  SOMETHING TO HAVE HISTORY ENABLED BUT ONLY IF SETUP CORRECTLY
+/******************************
+ * history.js by Hurray Banana 2023-2024
+ ******************************/ 
+
+/** @classdesc holds the definitions for a snapshot of a sprite
  */
-Math.hb180byPI = 180/Math.PI;
+class Historysnap{
+    /**
+     *  texture and rectangle @type {{tex:texture,port:Rectangle}}
+     * 
+     * */
+    frame;
+    /** position of this snap @type {vector3} */
+    pos;
+    /** was the sprite in view or world co-ordinates @type {bool} */
+    world;
+    /** the scale of the sprite at the time  @type {vector2}  */
+    scale;
+    /** angle of the sprite in radians  @type {float}  */
+    angle;
+    /** will hold a colour wash to apply (not in use yet as I need some shader code)  @type {color}  */
+    wash;
+    /** alpha value of the sprite at snap time (not used yet - overriden by ) */
+    alpha;
+    // layeroffset;
+    // layer;
+}
+
+/** @classdesc provides visual snapshot functionality for sprites */
+class History{
+    /** holds each snap of the sprites data in time @type {Historysnap[]}*/
+    #snaps = [];
+    /** start position to render history from defaults to 0 (the newest snap position) this is because history is created as a circular queue @type {int}*/
+    #start = 0;
+    /** number of  current snaps @type {int}*/
+    #length = 0;
+    /** @returns {int} current length of the snap history */
+    get length() { return this.#length;}
+    /** marks current end of history list as this is operas a circular queue @type {int}*/
+    #end = 0;
+    /** specifies the start position to draw from, defaults to 0, but allows us to skip the ones closest to the sprite so we can leave a grap for disconnected trail effects */
+    #renderfrom = 0;
+    /** specifies the start position to draw from, defaults to 0, but allows us to skip the ones closest to the sprite so we can leave a grap for disconnected trail effects 
+     * @returns {int} current value
+    */
+    get renderfrom(){return this.#renderfrom;}
+    /**specifies the position to start rendering from.
+     * this needs to be within the limit of the history length
+     * @param {int} value allows us to skip the ones closest to the sprite so we can leave a grap for disconnected trail effects
+     * @example
+     * this.history = new History(this); // create the history object
+     * this.history.show(0.05,90); //snap every 50 milliseconds, take 90 samples
+     * this.history.renderfrom = 10; //skip the first ten snaps
+     * this.history.scale = -0.5; // reduce the size by 50%
+     * this.history.clampAlpha = 0.1;//don't allow alha to be higher than 10%
+    */
+    set renderfrom(value){this.#renderfrom = clamp(value, 0, this.#snaps.length - 2);}
+    /** specifies the timer elapsed so for working towards the interval for history snapping */
+    #elapsed;
+    //#samplerate;
+    /*/* specifies how often to sample history in 1 second 
+    *
+    * maximum would be 60 (every single frame)
+    *
+    * 0.5 would be once every 2 seconds
+    *
+    *use historySampleFreq if it makes more sense to specify this in terms of seconds rather frames
+    */
+    //sampleRate;
+    /** specifies how to sample history in seconds, don't set this directly use show()
+    * @type {float}
+    * maximum would be 0.0167 (every single frame)
+    *
+    * 2 would be once every 2 seconds (or every 120 frames)
+     * @example
+     * this.history = new History(this); // create the history object
+     * this.history.show(0.05,90); //snap every 50 milliseconds, take 90 samples
+     * this.history.renderfrom = 10; //skip the first ten snaps
+     * this.history.scale = -0.5; // reduce the size by 50%
+     * this.history.clampAlpha = 0.1;//don't allow alpha to be higher than 10%
+    */
+    sampleFreq;
+    //timer for history sampling
+    //#depth = 2;
+    /*/* gets the number of history position we want to record */
+    //get depth(){ return this.#depth ;}
+    /*/* sets the number of history positions to record (minimum is 2) */
+    //set depth(value){
+    //    this.#depth = value < 2 ? 2 : value;
+    //}
+    /** scale factor to apply to history rendering
+     * this value is the factor by which to increase/decrease the scale of history trails.
+     * default value is 0 ; no change in size
+     * @type {float}
+     * @example
+     * this.history.scale = 1; //increase the size by 100%
+     * this.history.scale = -0.5f; //would decrease the size by 50%,*/
+    scale = 0;
+    /** if true then history trail will fade over its distance, 
+     * if false no fading will be applied and clampAlpha value will be applied to all snaps
+     * @type {bool}*/
+    fadeAlpha = true;
+    /** holds maximum allowed alpha value in history, default 1 @type {float} */
+    #clampAlpha = 1;
+    /** 
+     * Sets the maximum alpha for the history trail, if fadeAlpha is false then this is the alpha for the entire trail
+     * depending on how often you are snapping this may need to be quite low as history will draw on top of itself
+     * @returns {float}
+    */
+    get clampAlpha(){ return this.#clampAlpha; }
+    /** Sets the maximum alpha for the history trail, if fadeAlpha is false then this is the alpha for the entire trail 
+     * @param {float} value new value between 0 and 1
+     * @example
+     * this.history = new History(this); // create the history object
+     * this.history.show(0.05,90); //snap every 50 milliseconds, take 90 samples
+     * this.history.renderfrom = 10; //skip the first ten snaps
+     * this.history.scale = -0.5; // reduce the size by 50%
+     * this.history.clampAlpha = 0.1;//don't allow alha to be higher than 10%
+    */
+    set clampAlpha(value){ this.#clampAlpha = clamp(value, 0, 1);}
+    /** sets the layer to draw history on, by default this is layer 0, the sprite first layer rendered
+     * @example this.history.layer = Engine.layer(2);
+    */
+    layer = Engine.layer(0);
+
+    /** reference to th esprite we are snapping */
+    #mysprite ;
+    /** builds the history recording system for a sprite
+     * @param {Sprite} mysprite the sprite to record history for
+     */
+    constructor(mysprite){
+        this.#mysprite = mysprite;
+    }
+    cleanup(){
+        this.#mysprite = null;
+        this.#snaps = null;
+    }
+    /** turns on history for this sprite 
+     * @example
+     * this.history = new History(this); // create the history object
+     * this.history.show(0.05,90); //snap every 50 milliseconds, take 90 samples
+     * this.history.renderfrom = 10; //skip the first ten snaps
+     * this.history.scale = -0.5; // reduce the size by 50%
+     * this.history.clampAlpha = 0.1;//don't allow alha to be higher than 10%
+     * @param {int} depth how many samples to record
+     * @param {float} rate how often (in seconds) to take a positional snapshot
+    */
+    show(rate, depth){
+        //this.depth = depth;
+        this.sampleFreq = rate;
+        this.#elapsed = 0;
+        //implement history circular queue
+        //and fully initialise 
+        this.#snaps = new Array(depth);
+        for (let p = 0; p < depth; p++){
+            this.#snaps[p] = new Historysnap();
+        }
+        this.#start = 0;
+        this.#length = 0;
+        this.#end = 0;
+    }
+
+    /** snaps if timer required current sprite settings */
+    update(){
+        if ((this.#elapsed += Engine.delta) > this.sampleFreq){
+            this.#elapsed -= this.sampleFreq;
+            let h = this.#snaps[this.#end];
+            if (this.#mysprite.visible){
+                h.frame = this.#mysprite.frame.clonecurrent;
+                h.pos = new vector3(this.#mysprite.centrex, this.#mysprite.centrey,0);//this.#mysprite.position.clone
+                h.scale = this.#mysprite.scale.clone;
+                //h.layer = this.#mysprite.layer;
+                h.angle = this.#mysprite.angleR;//angle/Math.hb180byPI;
+                //h.angle = this.#mysprite.angle/180*Math.PI;
+                h.alpha = this.alpha;//? is this right?
+                h.world = this.#mysprite.world;
+            } else {
+                h.frame = {tex:null};
+            }
+
+            //remove first if we are at max depth
+            if (this.#length == this.#snaps.length){
+                this.#start = (this.#start + 1) % this.#length;
+            } else {this.#length++;}
+            //move to next recording position
+            this.#end++;
+            if (this.#end == this.#snaps.length) {this.#end = 0;}
+            //this.#end = (this.#end + 1) % this.#snaps.length;
+        }
+    }
+    /** renders the history recorded here */
+    draw(){
+
+        //draw from end to start (newest to oldest)
+        let end = this.#end - 1 - this.#renderfrom;
+        let numbertorender = this.#length - this.#renderfrom;
+
+        let dalpha = this.fadeAlpha ?  this.#clampAlpha / numbertorender : 0;
+        let alpha = this.#clampAlpha;
+        let dscale = (this.scale == 0)? 0:-this.scale / numbertorender;
+        let scale = 1;
+
+        this.layer.push();
+
+        if (this.#mysprite.clip){
+            this.layer.clip(() => {
+            const r = this.#mysprite.cliparea;
+            this.layer.rect(r.x,r.y,r.w,r.h);
+            });
+        }            
+
+        for (let p = 0; p < numbertorender ; p++){
+            if (end < 0) end += this.#length;
+            const h = this.#snaps[end];
+            if (h.frame.tex != null){
+                this/*h*/.layer.push();
+                this/*h*/.layer.drawingContext.globalAlpha = alpha;
+                this/*h*/.layer.translate(h.pos.x + (h.world ? -Engine.mainview.x : 0), h.pos.y + (h.world ? -Engine.mainview.y : 0));
+                this/*h*/.layer.scale(scale*h.scale.x,scale*h.scale.y);
+                if (h.angle != 0){
+                    this/*h*/.layer.rotate(h.angle);
+                }
+                //cheating for now with some of the data here
+                //offset to centre - need to fix /record the true offset for the history item now
+                this/*h*/.layer.image(h.frame.tex,
+                    0,0,h.frame.port.w, h.frame.port.h,
+                    h.frame.port.x, h.frame.port.y, h.frame.port.w, h.frame.port.h
+                );
+                //h.layer.image(h.frame.tex,
+                //    0,0,h.frame.port.w*h.scale.x*scale, h.frame.port.h*h.scale.y*scale,
+                //    h.frame.port.x, h.frame.port.y, h.frame.port.w, h.frame.port.h
+                //);
+                this/*h*/.layer.pop();
+            }
+            scale -= dscale;
+            alpha -= dalpha;
+            end--;
+        }
+        this.layer.pop();
+        return numbertorender;
+    }
+}
+  /******************************
+   * Limit.js by Hurray Banana 2023-2024
+   ******************************/ 
+  /** 
+   * @classdesc actions to be taken once a Sprite meets or passes the limit box edge that is defined
+   * 
+   * The limit box can be any given rectangular or 3d box area or
+   * the current position of the ViewPort. Limit boxes are only active once a sprite fully enters them,
+   * if you are having trouble with a limit box make sure you make it visible using
+   * @example this.limit.Show()
+   */
+  class Limitmode{
+        /** no boundary control */
+        static none = "none";
+        /** make sprite bounce back in opposite direction
+        * Nice for keeping a sprite within the boundaries of screen or rectangle. 
+        * Such as in breakout/arkanoid type games */
+        static bounce = "bounce";
+        /** Performs a bounce but only bothers checking the front and back of the limit box
+        * Great when used in conjuction with Z gravity and auto sprite scaling
+        * to create a throbbing sprite */
+        static bounceZonly = "bounceZonly";
+        /** make sprite bounce back in opposite direction but align with collided edge
+        * Only use this if you want the sprite to start its bounce aligned to the
+        * edge of the limit box, you might get odd effects when doing this */
+        static bounceAlign = "bounceAlign";
+        /** make sprite appear on other side of limit box
+        * Aligns the sprite with the opposite edge of limit box. Which can cause
+        * odd effects with groups of sprites following each other, use wrapExact instead. */
+        static wrap = "wrap";
+        /** makes sprite appear on other side of limit box taking
+        * account of exact position when leaving the limit box
+        * use this for scrolling text or groups of sprites for an Asteroid wrapping effect */
+        //static wrapExact = "wrapExact";
+        /** only wrap in X direction, but bounce in Y direction
+        * Use this if you want the sprite to wrap horizontally but fall under gravity */
+        static wrapXBounceY = "wrapXBounceY";
+        /** only wrap in Y direction, but bounce in X direction
+        * Use this if you want the sprite to wrap vertically but bounce off the sides */
+        static wrapYBounceX = "wrapYBounceX";
+        /** make sprite stop moving in axis of limit box and align with collided edge
+        * If a sprite hits the vertical edges of limit box then its horizontal
+        * velocity is stopped, it can still move vertically until it hits the top or
+        *  bottom of the limit box */
+        static stopAt = "stopAt";
+        /** make the sprite stop moving if any of borders are touched
+        * Useful for title graphics where you want a sprite to stop in a specific
+        * horizontal or vertical position but dont want to worry about exact size of limit box required */
+        static stopFirstTouch = "stopFirstTouch";
+        /** make sprite stop moving in axis of limit box and kill if no velocity set
+        * Works like stop but if sprite has no velocity it will be killed */
+        static stopThenKill = "stopThenKill";
+        /** kill sprite once outside limit box
+        * Use this to remove sprites once they have gone past the viewport 
+        * (unless you want them to come back on screen). This will remove them without them
+        * flashing off while still visible */
+        static killPast = "killPast";
+        /** kill sprite as soon as it touches limit box
+        * Great for implementing electric fences etc... */
+        static killTouch = "killTouch";
+        /** kill sprite as soon as it enters the limit box
+        * The sprite has to fit inside the limit box
+        * Useful for setting defence boundaries around turrets etc.. */
+        static killInside = "killInside";
+        /** kills sprite if goes past X limit box, but bounces on Y */
+        static killPastXBounceY = "killPastXBounceY";
+        /** kills a sprite if it goes past the left/right boundaries and 
+        * stops sprites vertical movement if it touches top/bottom */
+        static killPastXStopY = "killPastXStopY";
+        /** killPastYStopX, kills a sprite if it goes past top/bottom 
+        * boundaries and stops sprites horizontal movement if it touches left/right */
+        static killPastYStopX = "killPastYStopX";
+        /** Notify using callback property
+        * Use this in conjuction with an update routine to determine when sprite
+        * hits an edge */
+        static inform = "inform";
+        /** Notify by setting AtBoundary to true and align with collided edge
+        * Use this in conjuction with an UpdateHandler to determine when sprite
+        * hits an edge, this can be seen in use in the Space Invaders code. As soon as one
+        * invader hits the limit box all the invaders are then dropped down a line */
+        static informAlign = "informAlign";
+        //bounceOutside
+        /** Turns gravity off once collided and aligns sprite with limit box
+        * Use this when you want a sprite to stop falling after you have
+        * made it move under gravity */
+        static turnOffGravity = "turnOffGravity";
+        /** Turns off gravity but only if contact with bottom of limit box occurs */
+        static turnOffGravityBottomOnly = "turnOffGravityBottomOnly";
+        /** executes the sprite callback routine specified. You need to handle any other actions
+        * you want to apply to the sprite yourself, the event will continue to fire if your
+        * sprite is still at the limit box, so you need to ensure that you set OnLimit = null if you do not want this behaviour */
+        static fireEvent = "fireEvent";//fireEvent // rename to callbac = "";
+  }
+  /** @classdesc class to provide various types of interactions between sprites and bounding Boxes (depth based rectangles) 
+   * @example
+   * //initiate a limit box using
+   * this.limit = new Limit(this);
+  */
+  class Limit {
+    //limitactions = new Map();//can I use this instead of a big switch block
+    //#delta;
+    /**@type {Limitmode} holds the active mode of operation for the limit box */
+    #mode;
+    /** @type {Box} specifies the region for the limit box */
+    #area;
+    /** @returns {Box} specifies the Box area (rectangular region with depth) with which to apply limit actions */
+    get area(){return this.#area;}
+    /** specifies the Box area (rectangular region with depth) with which to apply limit actions 
+     * @param {Box|Rectangle} value the area of the limit box
+    */
+    set area(value){
+        if (value instanceof Rectangle){
+            this.#area = new Box(value.x, value.y, Engine.zHalf, avaluerea.w, value.h, Engine.zRange);
+        } else if (value instanceof Box){
+            this.#area = value;
+        }
+    }
+    /** @type {Sprite} holds reference to sprite that owns the limit box */
+    #ms;
+    /** @type {bool} specifies whether the limit box is active (generally sprites need to enter a box before it comes active) */
+    #active;
+    /** @returns {bool} specifies if the specified limit box is actively being processed default is true, until sprite enter the box this will be false */
+    get active(){return this.#active;}
+    /** @type {bool} states whether limit conditions have been met*/
+    #atLimit = false;
+    /** @returns {bool} true if sprite has interacted with the specified limit mode */
+    get atLimit(){return this.#atLimit;}
+
+    /** @type {{callback:method|function,instance:object}} */
+    #callback;
+    /** retrieves the current callback which will be triggered if the sprite interacts with the limit box
+     * (if this has not been set it will be null)
+     * it will be in the form of object properties
+     * @returns {{callback:method|function,instance:object}}
+     * @example 
+     * // two propeties callback and instance
+     * let callstuff = this.callback;
+     * if (callstuff != null) console.log(callstuff.callback, callstuff.instance);
+     */
+    get callback(){return this.#callback;}
+    /**
+     * sets (or changes) the callback handler called when sprite interacts with the limit box
+     * value must be an object with 2 properties
+     * @param {{callback:method|function,instance:object}} value 
+     * @example // limitreached is a method of your inherited sprite class
+     * this.callback = {callback:this.limitreached,instance:this};
+     * // or use the Engine.makeCallback() method
+     * this.callback = Engine.makeCallback(this.limitreached, this);
+     */
+    set callback(value){
+      if (value != undefined && value.callback !== undefined && value.inst !== undefined){
+        this.#callback = value;
+      }
+    }
+    /** holds a colour to show the limit box of this sprite
+     * If null (default) box not shown
+     * if a colour is stored then it will be drawn (use alpha values so you can see the sprite)
+     * @type {color}
+     * @example
+     * //show transparent red limit box
+     * this.limit.show = [255,0,0,100];
+     */
+    show = null;
+
+
+    /** creates a Limit object for this sprite, which is initially inactive
+     * use regionaction() to define an interaction mode
+     * @param {Sprite} boss 
+     */
+    constructor(boss){
+      this.#ms = boss;
+      this.#active = false;
+      this.#mode = Limitmode.none;
+    }
+    /** removes any reference resources */
+    cleanup(){
+        this.#ms = null;
+        this.#area = null;
+        this.#callback = null;
+    }
+    /** manually turn off limit box
+     * 
+     * @example 
+     * // for complete removal use
+     * this.limit.cleanup();
+     * this.limit = null;
+     */
+    off(){this.#active = false;}
+    /** re-activates a previously set limit mode
+     * 
+     * You can also just set another region action if you want to change behaviour or just for simplicity
+     */
+    reset(){
+      if (this.#area != null && this.#mode != Limitmode.none){
+        this.#active = true;
+      }
+    }
+    /** turns off the limit mode and changes themode to Limitmode.none 
+     * Set a regionaction
+    */
+    modeoff(){this.#active = false;this.#mode = Limitmode.none;}
+    /** specifies a limitmode and an active limit area 
+     * 
+     * if you want a static area provide a clone of a previously defined area/box (if that area will change)
+     * 
+     * If you want to track a moving area/box just use the boxes reference
+     * 
+     * set a callback (and it's instance) if you want notification of limit activity
+     * @param {Limitmode} mode action to take with limit area
+     * @param {Box|Rectangle} area limit area to interact with
+     * @param {{callback:method|function,instance:object}} callback triggered if the sprite interacts with the limit box
+     */
+    regionaction(mode, area, callback){//} instance, callme){
+        if(area instanceof Rectangle){
+            this.#area = new Box(area.x, area.y, Engine.zHalf, area.w, area.h, Engine.zRange);
+        } else if (area instanceof Box){
+            this.#area = area;
+        }
+        this.#mode = this.#getMode(mode);
+        this.#active = false;
+        this.#callback = callback;
+        // if (instance !== undefined && callme !== undefined){
+        //     this.#callback = {callback:callme,instance:instance};
+        // }
+    }
+    /**
+     * Specifies a limitmode that interacts with the standard (zeroed) viewport (i.e. screen area space)
+     * @param {Limitmode} mode action to take with limit area
+     * @param {{callback:method|function,instance:object}} callback triggered if the sprite interacts with the limit box
+     */
+    viewportaction(mode, callback){//instance, callme){
+        this.regionaction(mode, Engine.mainviewArea, callback);//instance, callme);
+    }
+    /* returns the function for that mode*/
+    #getMode(mode){
+      switch (mode){
+        case Limitmode.bounce:return this.#bounce;
+        case Limitmode.wrap:return this.#wrap;
+        case Limitmode.killTouch:return this.#killtouch;
+        case Limitmode.killPast:return this.#killpast;
+        case Limitmode.none:return this.modeoff;
+        case Limitmode.bounceZonly:return this.#bounceZonly;
+        case Limitmode.bounceAlign:return this.#bounceAlign;
+        case Limitmode.wrapXBounceY:return this.#wrapXBounceY;
+        case Limitmode.wrapYBounceX:return this.#wrapYBounceX;
+        case Limitmode.stopAt:return this.#stopAt;
+        case Limitmode.stopFirstTouch:return this.#stopFirstTouch;
+        case Limitmode.stopThenKill:return this.#stopThenKill;
+        case Limitmode.killInside:return this.#killInside;
+        case Limitmode.killPastXBounceY:return this.#killPastXBounceY;
+        case Limitmode.killPastXStopY:return this.#killPastXStopY;
+        case Limitmode.killPastYStopX:return this.#killPastYStopX;
+        case Limitmode.inform:return this.#inform;
+        case Limitmode.informAlign:return this.#informAlign;
+        case Limitmode.turnOffGravity:return this.#turnOffGravity;
+        case Limitmode.turnOffGravityBottomOnly:return this.#turnOffGravityBottomOnly;
+        case Limitmode.fireEvent:return this.#fireEvent;
+        default: return this.modeoff;
+      }
+    }
+
+    /** applies relevant updates to the limit box */
+    update(){
+        this.#atLimit = false;
+        if (this.#mode != Limitmode.none){
+            if (this.#active){
+                this.#mode();
+            } else {
+                //check to see if we are in limit area and so activate
+                if (this.#ms.kright <this.#area.right  &&
+                    this.#ms.kleft > this.#area.left &&
+                    this.#ms.top > this.#area.top &&
+                    this.#ms.bottom < this.#area.bottom &&
+                    this.#ms.z > this.#area.back &&
+                    this.#ms.z < this.#area.front) {
+                    this.#active = true;
+                    if (this.#mode == Limitmode.killInside)
+                    {
+                        this.#atLimit = true;
+                        this.#ms.kill();
+                    }
+                }
+            }
+            if (this.#atLimit) {
+                Engine.processCallback(this.#callback);
+            }
+            // if (this.#atLimit && this.#callback != null){
+            //   this.#callback.callback.call(this.#callback.instance);
+            // }
+        }
+    }
+    #killpast(){
+        if (this.#ms.kleft > this.#area.right || this.#ms.kright < this.#area.left ||
+          this.#ms.top > this.#area.bottom || this.#ms.bottom < this.#area.top ||
+          this.#ms.z < this.#area.back || this.#ms.z > this.#area.front){
+              this.#ms.kill();
+              this.#atLimit = true;
+        }
+    }
+    #killtouch(){
+        if (this.#ms.kright > this.#area.right || this.#ms.kleft < this.#area.left ||
+            this.#ms.bottom > this.#area.bottom || this.#ms.top < this.#area.top ||
+            this.#ms.z < this.#area.back || this.#ms.z > this.#area.front){
+            this.#ms.kill();
+            this.#atLimit = true;
+        }
+    }
+    #bounceZonly(){
+      let diff = this.#ms.z - this.#area.back;
+      if (diff < 0){
+          this.#ms.z -= diff;// *this.#ms.e;
+          this.#ms.vz *= -this.#ms.e;
+          this.#atLimit = true;
+      } else {
+          diff = this.#ms.z - this.#area.front;
+          if (diff > 0) {
+              this.#ms.z -= diff;// * this.#ms.e;
+              this.#ms.vz *= -this.#ms.e;
+              this.#atLimit = true;
+          }
+      }
+    }
+    #bounceAlign(){} //modify already written bounce
+    #wrapXBounceY(){
+      if (this.#ms.kright < this.#area.left)
+      {
+          this.#ms.kleft = this.#area.right;
+          //SpriteHelper.AlignLeftAt(boss, this.area.right, 0);
+          this.#atLimit = true;
+      }
+      else if (this.#ms.kleft > this.#area.right)
+      {
+          this.#ms.kleft = this.#area.right;
+          //SpriteHelper.AlignRightAt(boss, this.area.left, 0);
+          this.#atLimit = true;
+      }
+      //check Y
+      let diff = this.#ms.bottom - this.#area.bottom;
+      if (diff >= 0)
+      {
+          this.#ms.y -= diff;// * this.#ms.e;
+          this.#ms.vy *= -this.#ms.e;
+          this.#atLimit = true;
+      }
+      else
+      {
+          diff = this.#ms.top - this.#area.top;
+          if (diff <= 0)
+          {
+              this.#ms.y -= diff;// * this.#ms.e;
+              this.#ms.vy *= -this.#ms.e;
+              this.#atLimit = true;
+          }
+      }
+    }
+    #wrapYBounceX(){
+      if (this.#ms.bottom < this.#area.top)
+      {
+          this.#ms.top = this.#area.bottom;
+          //SpriteHelper.AlignTopAt(boss, this.area.bottom, 0);
+          this.#atLimit = true;
+      }
+      else if (this.#ms.top > this.#area.bottom)
+      {
+          this.#ms.bottom = this.#area.top;
+          //SpriteHelper.AlignBottomAt(boss, this.area.top, 0);
+          this.#atLimit = true;
+      }
+      //check X
+      let diff = this.#ms.kright - this.#area.right;
+      if (diff > 0)
+      {
+          this.#ms.x -= diff;// * this.#ms.e;
+          this.#ms.vx *= -this.#ms.e;
+          this.#atLimit = true;
+      }
+      else
+      {
+          diff = this.#ms.kleft - this.#area.left;
+          if (diff < 0)
+          {
+              this.#ms.x -= diff;// * this.#ms.e;
+              this.#ms.vx *= -this.#ms.e;
+              this.#atLimit = true;
+          }
+      }
+    }
+    #stopAt(){
+      if (this.#ms.kright > this.#area.right)
+      {
+          this.#ms.kright = this.#area.right;
+          //SpriteHelper.AlignRightAt(boss, this.area.right, 0);
+          this.#ms.vx = 0;
+          this.#atLimit = true;
+          //this.#ms.Velocity = new Vector3(0.0f, this.#ms.vy, this.#ms.vz);
+          this.#ms.static = true;
+      }
+      else if (this.#ms.kleft < this.#area.left)
+      {
+          this.#ms.kleft = this.#area.left;
+          //SpriteHelper.AlignLeftAt(boss, this.area.left, 0);
+          this.#ms.vx = 0;
+          //this.#ms.Velocity = new Vector3(0.0f, this.#ms.vy, this.#ms.vz);
+          this.#atLimit = true;
+          this.#ms.static = true;
+      }
+      if (this.#ms.bottom > this.#area.bottom)
+      {
+          this.#ms.bottom = this.#area.bottom;
+          //SpriteHelper.AlignBottomAt(boss, this.area.bottom, 0);
+          this.#ms.vy = 0;
+          //this.#ms.Velocity = new Vector3(this.#ms.vx, 0.0f, this.#ms.vz);
+          this.#atLimit = true;
+          this.#ms.static = true;
+      }
+      else if (this.#ms.top < this.#area.top)
+      {
+          this.#ms.top = this.#area.top;
+          //SpriteHelper.AlignTopAt(boss, this.area.top, 0);
+          this.#ms.vy = 0;
+          //this.#ms.Velocity = new Vector3(this.#ms.vx, 0.0f, this.#ms.vz);
+          this.#atLimit = true;
+          this.#ms.static = true;
+      }
+      if (this.#ms.z < this.#area.back)
+      {
+          this.#ms.z = this.#area.back;
+          this.#ms.vz = 0;
+          this.#ms.static = true;
+          this.#atLimit = true;
+      }
+      else if (this.#ms.z > this.#area.front)
+      {
+          this.#ms.z = this.#area.front;
+          this.#ms.vz = 0;
+          this.#ms.static = true;
+          this.#atLimit = true;
+      }
+    }
+    #stopFirstTouch(){
+      if (this.#ms.kright > this.#area.right)
+      {
+        this.#ms.kright = this.#area.right;
+        //SpriteHelper.AlignRightAt(boss, this.area.right, 0);
+          this.#ms.Velocity = Vector3.Zero;
+          this.#ms.static = true;
+      }
+      else if (this.#ms.kleft < this.#area.left)
+      {
+        this.#ms.kleft = this.#area.left;
+        //SpriteHelper.AlignLeftAt(boss, this.area.left, 0);
+          this.#ms.Velocity = Vector3.Zero;
+          this.#atLimit = true;
+          this.#ms.static = true;
+      }
+      if (this.#ms.bottom > this.#area.bottom)
+      {
+        this.#ms.bottom = this.#area.bottom;
+        //SpriteHelper.AlignBottomAt(boss, this.area.bottom, 0);
+          this.#ms.Velocity = Vector3.Zero;
+          this.#atLimit = true;
+          this.#ms.static = true;
+      }
+      else if (this.#ms.top < this.#area.top)
+      {
+        this.#ms.top = this.#area.top;
+        //SpriteHelper.AlignTopAt(boss, this.area.top, 0);
+          this.#ms.Velocity = Vector3.Zero;
+          this.#atLimit = true;
+          this.#ms.static = true;
+      }
+      if (this.#ms.z < this.#area.back)
+      {
+          this.#ms.z = this.#area.back;
+          this.#ms.Velocity = Vector3.Zero;
+          this.#ms.static = true;
+          this.#atLimit = true;
+      }
+      else if (this.#ms.z > this.#area.front)
+      {
+          this.#ms.z = this.#area.front;
+          this.#ms.Velocity = Vector3.Zero;
+          this.#ms.static = true;
+          this.#atLimit = true;
+      }
+    }
+    #stopThenKill(){
+      if (this.#ms.kright > this.#area.right)
+      {
+          this.#ms.kright = this.#area.right;
+          //this.#ms.x = this.area.right - this.#ms.Width * 0.5;
+          this.#ms.vx = 0;
+          this.#atLimit = true;
+          this.#ms.static = true;
+      }
+      else if (this.#ms.kleft < this.#area.left)
+      {
+          this.#ms.kleft = this.#area.left;
+          //this.#ms.x = this.area.left + this.#ms.Width * 0.5;
+          this.#ms.vx = 0;
+          this.#atLimit = true;
+          this.#ms.static = true;
+      }
+      if (this.#ms.bottom > this.#area.bottom)
+      {
+          this.#ms.bottom = this.#area.bottom;
+          //this.#ms.y = this.area.bottom - this.#ms.Height *0.5;
+          this.#ms.vy = 0;
+          this.#atLimit = true;
+          this.#ms.static = true;
+      }
+      else if (this.#ms.top < this.#area.top)
+      {
+          this.#ms.top = this.#area.top;
+          //this.#ms.y = this.area.top + this.#ms.Height *0.5;
+          this.#ms.vy = 0;
+          this.#atLimit = true;
+          this.#ms.static = true;
+      }
+      if (this.#ms.z < this.#area.back)
+      {
+          this.#ms.z = this.#area.back;
+          this.#ms.vz = 0;
+          this.#ms.static = true;
+          this.#atLimit = true;
+      }
+      else if (this.#ms.z > this.#area.front)
+      {
+          this.#ms.z = this.#area.front;
+          this.#ms.vz = 0;
+          this.#ms.static = true;
+          this.#atLimit = true;
+      }
+      if (this.#ms.Velocity == Vector3.Zero)
+          this.#ms.kill();
+
+    }
+    #killInside(){}//doesn't need to do anything as this is tested elsewhere
+    #killPastXBounceY(){
+        //check x boundary
+      if (this.#ms.kleft > this.#area.right ||
+          this.#ms.kright < this.#area.left)
+      {
+          this.#ms.kill();
+          this.#atLimit = true;
+      }
+      //check Y
+      let diff = this.#ms.bottom - this.#area.bottom;
+      if (diff > 0)
+      {
+          this.#ms.y -= diff;// * this.#ms.e;
+          this.#ms.vy *= -this.#ms.e;
+          this.#atLimit = true;
+      }
+      else
+      {
+          diff = this.#ms.top - this.#area.top;
+          if (diff < 0)
+          {
+              this.#ms.y -= diff;// * this.#ms.e;
+              this.#ms.vy *= -this.#ms.e;
+              this.#atLimit = true;
+          }
+      }
+    }
+    #killPastXStopY(){
+        //check x boundary
+        if (this.#ms.kleft > this.#area.right || this.#ms.kright < this.#area.left){
+            this.#ms.kill();
+            this.#atLimit = true;
+        }
+        //check Y
+        if (this.#ms.bottom > this.#area.bottom){
+            this.#ms.bottom = this.#area.bottom;
+            //SpriteHelper.AlignBottomAt(boss, this.area.bottom, 0);
+            this.#ms.vy = 0;
+            this.#atLimit = true;
+            this.#ms.static = true;
+        } else if (this.#ms.top < this.#area.top){
+            this.#ms.top = this.#area.top;
+            //SpriteHelper.AlignTopAt(boss, this.area.top, 0);
+            this.#ms.vy = 0;
+            this.#atLimit = true;
+            this.#ms.static = true;
+        }
+    }
+    #killPastYStopX(){
+      if (this.#ms.bottom > this.#area.bottom || this.#ms.top < this.#area.top){
+          this.#ms.kill();
+          this.#atLimit = true;
+      }
+      if (this.#ms.kright > this.#area.right){
+          this.#ms.kright = this.#area.right;
+          //SpriteHelper.AlignRightAt(boss, this.area.right, 0);
+          this.#ms.vx = 0;
+          //this.#ms.Velocity = new Vector3(0.0f, this.#ms.vy, this.#ms.vz);
+          this.#atLimit = true;
+          this.#ms.static = true;
+      } else if (this.#ms.kleft < this.#area.left){
+          this.#ms.kleft = this.#area.left;
+          //SpriteHelper.AlignLeftAt(boss, this.area.left, 0);
+          this.#ms.vx = 0;
+          //this.#ms.Velocity = new Vector3(0.0f, this.#ms.vy, this.#ms.vz);
+          this.#atLimit = true;
+          this.#ms.static = true;
+      }
+    }
+    #inform(){
+      this.#atLimit = this.#ms.kright >= this.#area.right || this.#ms.kleft <= this.#area.left || 
+                      this.#ms.bottom >= this.#area.bottom || this.#ms.top <= this.#area.top ||
+                      this.#ms.z <= this.#area.back || this.#ms.z >= this.#area.front;
+    }
+    #informAlign(){
+      if (this.#ms.kright >= this.#area.right){
+          this.#ms.kright = this.#area.right;
+          //SpriteHelper.AlignRightAt(boss, this.area.right, 0);
+          this.#atLimit = true;
+      } else if (this.#ms.kleft <= this.#area.left) {
+          this.#ms.kleft = this.#area.left;
+          //SpriteHelper.AlignLeftAt(boss, this.area.left, 0);
+          this.#atLimit = true;
+      }
+      if (this.#ms.bottom >= this.#area.bottom){
+          this.#ms.bottom = this.#area.bottom;
+          //SpriteHelper.AlignBottomAt(boss, this.area.bottom, 0);
+          this.#atLimit = true;
+      } else if (this.#ms.top <= this.#area.top){
+          this.#ms.top = this.#area.top;
+          //SpriteHelper.AlignTopAt(boss, this.area.top, 0);
+          this.#atLimit = true;
+      }
+      if (this.#ms.z <= this.#area.back){
+          this.#ms.z = this.#area.back;
+          this.#atLimit = true;
+      }else if (this.#ms.z >= this.#area.front){
+          this.#ms.z = this.#area.front;
+          this.#atLimit = true;
+      }
+    }
+    #turnOffGravity(){
+      if (this.#ms.kright >= this.#area.right){
+          this.#ms.kright = this.#area.right;
+          //SpriteHelper.AlignRightAt(boss, this.area.right, 0);
+          this.#atLimit = true;
+          this.#ms.Gravity = Vector3.Zero;
+          this.#ms.vx = 0;
+      }else if (this.#ms.kleft <= this.#area.left){
+          this.#ms.kleft = this.#area.left;
+          //SpriteHelper.AlignLeftAt(boss, this.area.left, 0);
+          this.#atLimit = true;
+          this.#ms.Gravity = Vector3.Zero;
+          this.#ms.vx = 0;
+      }
+      if (this.#ms.bottom >= this.#area.bottom){
+          this.#ms.bottom = this.#area.bottom;
+          //SpriteHelper.AlignBottomAt(boss, this.area.bottom, 0);
+          this.#atLimit = true;
+          this.#ms.Gravity = Vector3.Zero;
+          this.#ms.vy = 0;
+      }else if (this.#ms.top <= this.#area.top){
+          this.#ms.top = this.#area.top;
+          //SpriteHelper.AlignTopAt(boss, this.area.top, 0);
+          this.#atLimit = true;
+          this.#ms.Gravity = Vector3.Zero;
+          this.#ms.vy = 0;
+      }
+      if (this.#ms.z <= this.#area.back){
+          this.#ms.z = this.#area.back;
+          this.#atLimit = true;
+          this.#ms.Gravity = Vector3.Zero;
+          this.#ms.vz = 0;
+      }else if (this.#ms.z >= this.#area.front){
+          this.#ms.z = this.#area.front;
+          this.#atLimit = true;
+          this.#ms.Gravity = Vector3.Zero;
+          this.#ms.vz = 0;
+      }
+    }
+    #turnOffGravityBottomOnly(){
+      if (this.#ms.bottom >= this.#area.bottom){
+          this.#ms.bottom = this.#area.bottom;
+          //SpriteHelper.AlignBottomAt(boss, this.area.bottom, 0);
+          this.#atLimit = true;
+          this.#ms.Gravity = Vector3.Zero;
+          this.#ms.vy = 0;
+      }
+    }
+    #fireEvent(){
+        if (this.#callback != null){
+            if (this.#ms.kright > this.#area.right || this.#ms.kleft < this.#area.left ||
+              this.#ms.bottom > this.#area.bottom || this.#ms.top < this.#area.top ||
+              this.#ms.z < this.#area.back || this.#ms.z > this.#area.front){
+                //LimitCallBack();
+                this.#atLimit = true;
+            }
+        }
+    }
+    #bounce(){
+        if (this.#ms.vx < 0){ // left
+          if (this.#ms.kleft <= this.#area.l) { 
+            this.#ms.vx *= -this.#ms.e;}
+        } else if (this.#ms.vx > 0) { //  right
+          if (this.#ms.kright >= this.#area.r) { 
+            this.#ms.vx *= -this.#ms.e;}
+        }
+        
+        if (this.#ms.vy < 0){ // up
+          if (this.#ms.top <= this.#area.t) { 
+            this.#ms.vy *= -this.#ms.e;}
+        } else if (this.#ms.vy > 0) { // down
+          if (this.#ms.bottom >= this.#area.b) { 
+            this.#ms.vy *= -this.#ms.e;}
+        }
+    }
+
+    #wrap(){
+        if (this.#ms.vx < 0){ // left
+            if (this.#ms.kright < this.#area.l) { 
+            this.#ms.kleft = this.#area.r;}
+        } else if (this.#ms.vx > 0) { //  right
+            if (this.#ms.kleft > this.#area.r) { 
+            this.#ms.kright = this.#area.l;}
+        } else { //no motion
+          if (this.#ms.kright < this.#area.l) { 
+            this.#ms.kleft = this.#area.r;}
+          else if (this.#ms.kleft > this.#area.r) { 
+            this.#ms.kright = this.#area.l;}
+        }
+        
+        if (this.#ms.vy < 0){ // up
+            if (this.#ms.bottom < this.#area.t) { 
+            this.#ms.top = this.#area.b;}
+        } else if (this.#ms.vy > 0) { // down
+            if (this.#ms.top > this.#area.b) { 
+            this.#ms.bottom = this.#area.t;}
+        } else { //no motion
+          if (this.#ms.bottom < this.#area.t) { 
+            this.#ms.top = this.#area.b;}
+          else if (this.#ms.top > this.#area.b) { 
+            this.#ms.bottom = this.#area.t;}  
+        }
+    }
+  }
+
+ /******************************
+   * mathhelper.js by Hurray Banana 2023-2024
+   ******************************/ 
+/** @classdesc will contain general maths routines ?? */
+class MathHelper{
+    
+}
+/** @classdesc holds a 4x4 matrix to hold combinatoral transformation in a single matrix */
+class Matrix{
+
+    //h
+    m00;m01;m02;m03;
+    m10;m11;m12;m13;
+    m20;m21;m22;m23;
+    m30;m31;m32;m33;
+
+    /** creates a new matrix
+     * @param {float[][]} matrixarr if an array with 4 rows and columns is supplied a matrix will be
+     * created with those values. If ommitted then an Identity matrix will be created 
+     * @example
+     * //an identity matrix
+     * [
+     * [1,0,0,0],
+     * [0,1,0,0],
+     * [0,0,1,0];
+     * [0,0,0,1];
+     * ]
+     */
+    constructor(matrixarr){
+        if (matrixarr === undefined){
+            this.reset();
+        } else {
+            this.m00 = matrixarr[0][0];this.m01 = matrixarr[0][1]; this.m02 = matrixarr[0][2]; this.m03 = matrixarr[0][3];
+            this.m10 = matrixarr[1][0];this.m11 = matrixarr[1][1]; this.m12 = matrixarr[1][2]; this.m13 = matrixarr[1][3];
+            this.m20 = matrixarr[2][0];this.m21 = matrixarr[2][1]; this.m22 = matrixarr[2][2]; this.m23 = matrixarr[2][3];
+            this.m30 = matrixarr[3][0];this.m31 = matrixarr[3][1]; this.m32 = matrixarr[3][2]; this.m33 = matrixarr[3][3];
+        }
+    }
+
+    /**
+     * multiply this matrix with matrix m t*m
+     * @param {Matrix} m 
+    */
+    multiply(m){
+        let m00 = this.m00;let m01 = this.m01; let m02 = this.m02; let m03 = this.m03;
+        let m10 = this.m10;let m11 = this.m11; let m12 = this.m12; let m13 = this.m13;
+        let m20 = this.m20;let m21 = this.m21; let m22 = this.m22; let m23 = this.m23;
+        let m30 = this.m30;let m31 = this.m31; let m32 = this.m32; let m33 = this.m33;
+        
+        this.m00 = m00 * m.m00 + m01 * m.m10 + m02 * m.m20 + m03 * m.m30;
+        this.m01 = m00 * m.m01 + m01 * m.m11 + m02 * m.m21 + m03 * m.m31;
+        this.m02 = m00 * m.m02 + m01 * m.m12 + m02 * m.m22 + m03 * m.m32;
+        this.m03 = m00 * m.m03 + m01 * m.m13 + m02 * m.m23 + m03 * m.m33;
+
+        this.m10 = m10 * m.m00 + m11 * m.m10 + m12 * m.m20 + m13 * m.m30;
+        this.m11 = m10 * m.m01 + m11 * m.m11 + m12 * m.m21 + m13 * m.m31;
+        this.m12 = m10 * m.m02 + m11 * m.m12 + m12 * m.m22 + m13 * m.m32;
+        this.m13 = m10 * m.m03 + m11 * m.m13 + m12 * m.m23 + m13 * m.m33;
+
+        this.m20 = m20 * m.m00 + m21 * m.m10 + m22 * m.m20 + m23 * m.m30;
+        this.m21 = m20 * m.m01 + m21 * m.m11 + m22 * m.m21 + m23 * m.m31;
+        this.m22 = m20 * m.m02 + m21 * m.m12 + m22 * m.m22 + m23 * m.m32;
+        this.m23 = m20 * m.m03 + m21 * m.m13 + m22 * m.m23 + m23 * m.m33;
+
+        this.m30 = m30 * m.m00 + m31 * m.m10 + m32 * m.m20 + m33 * m.m30;
+        this.m31 = m30 * m.m01 + m31 * m.m11 + m32 * m.m21 + m33 * m.m31;
+        this.m32 = m30 * m.m02 + m31 * m.m12 + m32 * m.m22 + m33 * m.m32;
+        this.m33 = m30 * m.m03 + m31 * m.m13 + m32 * m.m23 + m33 * m.m33;
+    }
+    /** @returns {Matrix} An identity matrix, start point for building a custom matrix*/
+    static get identity(){
+        return new Matrix();
+    }
+    /**
+     * @param {float} angle in degrees to rotate around the z axis (into the screen, effectively a 2d rotation) 
+     * @returns {Matrix} Z axis rotation matrix
+     */
+    static rotateZ(angle){
+        angle *= Math.PIby180;
+        let m = new Matrix();
+        let s = Math.sin(angle);
+        let c = Math.cos(angle);
+        m.m00 = c; m.m01 = -s;
+        m.m10 = s; m.m11 = c;
+        return m;
+    }
+    /**
+     * @param {float} angle in degrees to rotate around the y axis 
+     * @returns {Matrix} y axis rotation matrix
+     */
+    static rotateY(angle){
+        angle *= Math.PIby180;
+        let m = new Matrix();
+        let s = Math.sin(angle);
+        let c = Math.cos(angle);
+        m.m00 = c; m.m02 = s;
+        m.m20 = -s; m.m22 = c;
+        return m;
+    }
+    /**
+     * @param {float} angle in degrees to rotate around the x 
+     * @returns {Matrix} x axis rotation matrix
+     */
+    static rotateX(angle){
+        angle *= Math.PIby180;
+
+        let m = new Matrix();
+        let s = Math.sin(angle);
+        let c = Math.cos(angle);
+        m.m11 = c; m.m12 = -s;
+        m.m21 = s; m.m22 = c;
+        return m;
+    }
+    /**
+     * directly applies a z axis rotation to this matrix
+     * @param {float} angle in degrees to apply to z axis
+     */
+    applyrotZ(angle){
+        angle *= Math.PIby180;
+        let m = new Matrix();
+        let s = Math.sin(angle);
+        let c = Math.cos(angle);
+        m.m00 = c; m.m01 = -s;
+        m.m10 = s; m.m11 = c;
+        this.multiply(m);
+    }
+    /**
+     * directly applies a y axis rotation to this matrix
+     * @param {float} angle in degrees to apply to y axis
+     */
+    applyrotY(angle){
+        angle *= Math.PIby180;
+        let m = new Matrix();
+        let s = Math.sin(angle);
+        let c = Math.cos(angle);
+        m.m00 = c; m.m02 = s;
+        m.m20 = -s; m.m22 = c;
+        this.multiply(m);
+    }
+    /**
+     * directly applies a x axis rotation to this matrix
+     * @param {float} angle in degrees to apply to x axis
+     */
+    applyrotX(angle){
+        angle *= Math.PIby180;
+        let m = new Matrix();
+        let s = Math.sin(angle);
+        let c = Math.cos(angle);
+        m.m11 = c; m.m12 = -s;
+        m.m21 = s; m.m22 = c;
+        this.multiply(m);
+    }
+
+    /**
+     * creates a translation matrix
+     * @param {float} x translation in x axis
+     * @param {float} y translation in y axis
+     * @param {float} z translation in z axis
+     * @returns {Matrix} translation matrix requested
+     */
+    static translate(x,y,z){
+        let m = new Matrix();
+
+        m.m03 = x;
+        m.m13 = y;
+        m.m23 = z;
+    }
+    /**
+     * directly applies a translation matrix to this matrix
+     * @param {float} x translation in x axis
+     * @param {float} y translation in y axis
+     * @param {float} z translation in z axis
+     */
+    applytranslate(x,y,z){
+        let m = new Matrix();
+
+        m.m03 = x;
+        m.m13 = y;
+        m.m23 = z;
+        this.multiply(m);
+    }
+    /**
+     * sets this matrix to the indentity matrix
+     */
+    reset(){
+        this.m00 = 1;this.m01 = 0; this.m02 = 0; this.m03 = 0;
+        this.m10 = 0;this.m11 = 1; this.m12 = 0; this.m13 = 0;
+        this.m20 = 0;this.m21 = 0; this.m22 = 1; this.m23 = 0;
+        this.m30 = 0;this.m31 = 0; this.m32 = 0; this.m33 = 1;
+    }
+    /**
+     * applies the matrix to given vector or array of vectors
+     * @param {vector3|vector3[]} v 
+     */
+    transform(v){
+        if (Array.isArray(v)){
+            for (let p = 0; p < v.length; p++){
+                let x = v[p].x;
+                let y = v[p].y;
+                let z = v[p].z;
+                v[p].x = x * this.m00 + y * this.m01 + z * this.m02 + this.m03;
+                v[p].y = x * this.m10 + y * this.m11 + z * this.m12 + this.m13;
+                v[p].z = x * this.m20 + y * this.m21 + z * this.m22 + this.m23;
+            }
+        }else{//apply to single vector3 value
+            let x = v.x;
+            let y = v.y;
+            let z = v.z;
+            v.x = x * this.m00 + y * this.m01 + z * this.m02 + this.m03;
+            v.y = x * this.m10 + y * this.m11 + z * this.m12 + this.m13;
+            v.z = x * this.m20 + y * this.m21 + z * this.m22 + this.m23;
+        }
+    }
+    /** @returns {string} a string representation of the matrix */
+    get toString(){
+        return "[" + this.m00 + "," + this.m01 + "," + this.m02 + "," + this.m03 + "]\n"+
+        "[" + this.m10 + "," + this.m11 + "," + this.m12 + "," + this.m13 + "]\n"+
+        "[" + this.m20 + "," + this.m21 + "," + this.m22 + "," + this.m23 + "]\n"+
+        "[" + this.m30 + "," + this.m31 + "," + this.m32 + "," + this.m33 + "]";
+
+    }
+}
 
  /******************************
    * messagebus.js by Hurray Banana 2023-2024
@@ -1808,9 +3319,9 @@ class particleManager{
 
 /** @classdesc support for box areas (rectangle with depth) */
 class Box{
-    /** top front left corner of box @type {vector3} */
+    /** @type {vector3} top front left corner of box */
     #corner;
-    /** width, height and depth of box @type {vector3} */
+    /** @type {vector3} width, height and depth of box */
     #dimension;
 
     /** creates a box shape which defines a 3d cube area (3d rectangle)
@@ -1838,19 +3349,19 @@ class Box{
         this.#dimension = new vector3(width, height, depth);
       }
     }
-    /** gets the x centre of the box @returns {float}*/
+    /** @returns {float} gets the x centre of the box */
     get centrex(){return this.#corner.x + this.#dimension.x/2;}
-    /** gets the y centre of the box @returns {float} */
+    /** @returns {float} gets the y centre of the box */
     get centrey(){return this.#corner.y + this.#dimension.y/2;}
-    /** gets the z centre of the box @returns {float} */
+    /** @returns {float} gets the z centre of the box */
     get centrez(){return this.#corner.z + this.#dimension.z/2;}
-    /** gets the centre of the box @returns {vector3}*/
+    /** @returns {vector3} gets the centre of the box */
     get centre(){return new vector3(this.#corner.x + this.#dimension.x/2,this.#corner.y + this.#dimension.y/2,this.#corner.z + this.#dimension.z/2);}
-    /** gets the left hand side of the box @returns {float} */
+    /** @returns {float} gets the left hand side of the box @returns {float} */
     get x() { return this.#corner.x; }
-    /** gets the top hand side of the box @returns {float} */
+    /** @returns {float} gets the top hand side of the box */
     get y() { return this.#corner.y; }
-    /** gets the front hand side of the box @returns {float} */
+    /** @returns {float} gets the front hand side of the box */
     get z() { return this.#corner.z; }
     /** @param {float} value sets left side of box */
     set x(value){this.#corner.x = value;}
@@ -1862,44 +3373,44 @@ class Box{
     set w(value){this.#dimension.x = value;}
     /** @param {float} value sets height of box */
     set h(value){this.#dimension.y = value;}
-    /** @param {float} value sets depth of box */
+    /** @param {float} value sets depth of box*/
     set d(value){this.#dimension.z = value;}
 
-    /** gets the left hand side of the box @returns {float} */
+    /** @returns {float} gets the left hand side of the box */
     get l() { return this.#corner.x; }
-    /** gets the right hand side of the box @returns {float} */
+    /** @returns {float} gets the right hand side of the box */
     get r() { return this.#corner.x + this.#dimension.x; }
-    /** gets the top of the box @returns {float} */
+    /** @returns {float} gets the top of the box */
     get t() { return this.#corner.y; }
-    /** gets the bottom of the box @returns {float} */
+    /** @returns {float} gets the bottom of the box */
     get b() { return this.#corner.y + this.#dimension.y; }
-    /** width of box @returns {float} */
+    /** @returns {float} width of box */
     get w() { return this.#dimension.x; }
-    /** height of box @returns {float} */
+    /** @returns {float} height of box */
     get h() { return this.#dimension.y; }   
-    /** depth of box @returns {float} */
+    /** @returns {float} depth of box */
     get d() { return this.#dimension.z; } 
 
-    /** gets the left hand side of the box @returns {float} */
+    /** @returns {float} gets the left hand side of the box */
     get left() { return this.#corner.x; }
-    /** gets the right hand side of the box @returns {float} */
+    /** @returns {float} gets the right hand side of the box */
     get right() { return this.#corner.x + this.#dimension.x; }
-    /** gets the top of the box @returns {float} */
+    /** @returns {float} gets the top of the box */
     get top() { return this.#corner.y; }
-    /** gets the bottom of the box @returns {float} */
+    /** @returns {float} gets the bottom of the box */
     get bottom() { return this.#corner.y + this.#dimension.y; }
-    /** gets the front of the box @returns {float} */
+    /** @returns {float} gets the front of the box */
     get front() { return this.#corner.z; }
-    /** gets the back of the box @returns {float} */
+    /** @returns {float} gets the back of the box */
     get back() { return this.#corner.z - this.#dimension.z; }
-    /** width of box @returns {float} */
+    /** @returns {float} width of box */
     get width() { return this.#dimension.x; }
-    /** height of box @returns {float} */
+    /** @returns {float} height of box */
     get height() { return this.#dimension.y; }
-    /** depth of box @returns {float} */
+    /** @returns {float} depth of box */
     get depth() { return this.#dimension.z; } 
 
-    /** creates a unit box with corner 0,0,0 and dimensions 1,1,1 @returns {Box}*/
+    /** @returns {Box} creates a unit box with corner 0,0,0 and dimensions 1,1,1 */
     static get unit(){
       return new box(0,0,0,1,1,1);
     }
@@ -1918,13 +3429,13 @@ class Box{
   }
   /** @classdesc support for rectangular areas and actions upon them */
   class Rectangle{
-    /** left position @type {float}*/
+    /** @type {float} left position */
     #x;
-    /** top position  @type {float}*/
+    /** @type {float} top position */
     #y;
-    /** width  @type {float}*/
+    /** @type {float} width  */
     #w;
-    /** height  @type {float}*/
+    /** @type {float} height  */
     #h;
     /**
      * 
@@ -1953,11 +3464,11 @@ class Box{
       here.h = this.#h;
     }
     
-    /** gets the horizontal centre of the rectangle @returns {float}*/
+    /** @returns {float} gets the horizontal centre of the rectangle */
     get centrex(){return this.#x + this.#w/2;}
-    /** gets the vertical centre of the rectangle */
+    /** @returns {float} gets the vertical centre of the rectangle */
     get centrey(){return this.#y + this.#h/2;}
-    /** gets the centre as a vector3 object - can be used in place of a vector2 */
+    /** @returns {vector3} gets the centre as a vector3 object - can be used in place of a vector2 */
     get centre(){return new vector3(this.#x + this.#w/2,this.#y + this.#h/2,0);}
 
     /** @returns {float} left hand side of rectangle */
@@ -2118,7 +3629,7 @@ class Box{
     /**
      * creates a rnadom position inside this rectangle
      * @param {float} margin and amount of padding insode the rectangle (essentially a little bit of deflate)
-     * @returns {{vector3}}random position requested
+     * @returns {vector3} random position requested
      */
     randominsideVector3(margin){
       margin = (margin === undefined) ? 0 : margin;
@@ -2148,6 +3659,7 @@ class Box{
      * This was for some internal test code that no longer exists
      * @param {Rectangle} rect 
      * @param {vector2|vector3|{x:int,y:int}} offsetportion 
+     * @returns {vector2}
      */    
     static sub(rect, offsetportion){
       return new vector2(offsetportion.x - rect.x, offsetportion.y - rect.y);
@@ -2210,4150 +3722,6 @@ class Box{
       return new Rectangle(rect.x + sides.x, rect.y + sides.y, rect.w + sides.w, rect.h + sides.h);
     }
 }
-
- /******************************
-   * mathhelper.js by Hurray Banana 2023-2024
-   ******************************/ 
-/** @classdesc will contain general maths routines ?? */
-class MathHelper{
-    
-}
-/** @classdesc holds a 4x4 matrix to hold combinatoral transformation in a single matrix */
-class Matrix{
-
-    //h
-    m00;m01;m02;m03;
-    m10;m11;m12;m13;
-    m20;m21;m22;m23;
-    m30;m31;m32;m33;
-
-    /** creates a new matrix
-     * @param {float[][]} matrixarr if an array with 4 rows and columns is supplied a matrix will be
-     * created with those values. If ommitted then an Identity matrix will be created 
-     * @example
-     * //an identity matrix
-     * [
-     * [1,0,0,0],
-     * [0,1,0,0],
-     * [0,0,1,0];
-     * [0,0,0,1];
-     * ]
-     */
-    constructor(matrixarr){
-        if (matrixarr === undefined){
-            this.reset();
-        } else {
-            this.m00 = matrixarr[0][0];this.m01 = matrixarr[0][1]; this.m02 = matrixarr[0][2]; this.m03 = matrixarr[0][3];
-            this.m10 = matrixarr[1][0];this.m11 = matrixarr[1][1]; this.m12 = matrixarr[1][2]; this.m13 = matrixarr[1][3];
-            this.m20 = matrixarr[2][0];this.m21 = matrixarr[2][1]; this.m22 = matrixarr[2][2]; this.m23 = matrixarr[2][3];
-            this.m30 = matrixarr[3][0];this.m31 = matrixarr[3][1]; this.m32 = matrixarr[3][2]; this.m33 = matrixarr[3][3];
-        }
-    }
-
-    /**
-     * multiply this matrix with matrix m t*m
-     * @param {Matrix} m 
-    */
-    multiply(m){
-        let m00 = this.m00;let m01 = this.m01; let m02 = this.m02; let m03 = this.m03;
-        let m10 = this.m10;let m11 = this.m11; let m12 = this.m12; let m13 = this.m13;
-        let m20 = this.m20;let m21 = this.m21; let m22 = this.m22; let m23 = this.m23;
-        let m30 = this.m30;let m31 = this.m31; let m32 = this.m32; let m33 = this.m33;
-        
-        this.m00 = m00 * m.m00 + m01 * m.m10 + m02 * m.m20 + m03 * m.m30;
-        this.m01 = m00 * m.m01 + m01 * m.m11 + m02 * m.m21 + m03 * m.m31;
-        this.m02 = m00 * m.m02 + m01 * m.m12 + m02 * m.m22 + m03 * m.m32;
-        this.m03 = m00 * m.m03 + m01 * m.m13 + m02 * m.m23 + m03 * m.m33;
-
-        this.m10 = m10 * m.m00 + m11 * m.m10 + m12 * m.m20 + m13 * m.m30;
-        this.m11 = m10 * m.m01 + m11 * m.m11 + m12 * m.m21 + m13 * m.m31;
-        this.m12 = m10 * m.m02 + m11 * m.m12 + m12 * m.m22 + m13 * m.m32;
-        this.m13 = m10 * m.m03 + m11 * m.m13 + m12 * m.m23 + m13 * m.m33;
-
-        this.m20 = m20 * m.m00 + m21 * m.m10 + m22 * m.m20 + m23 * m.m30;
-        this.m21 = m20 * m.m01 + m21 * m.m11 + m22 * m.m21 + m23 * m.m31;
-        this.m22 = m20 * m.m02 + m21 * m.m12 + m22 * m.m22 + m23 * m.m32;
-        this.m23 = m20 * m.m03 + m21 * m.m13 + m22 * m.m23 + m23 * m.m33;
-
-        this.m30 = m30 * m.m00 + m31 * m.m10 + m32 * m.m20 + m33 * m.m30;
-        this.m31 = m30 * m.m01 + m31 * m.m11 + m32 * m.m21 + m33 * m.m31;
-        this.m32 = m30 * m.m02 + m31 * m.m12 + m32 * m.m22 + m33 * m.m32;
-        this.m33 = m30 * m.m03 + m31 * m.m13 + m32 * m.m23 + m33 * m.m33;
-    }
-    /** @returns {Matrix} An identity matrix, start point for building a custom matrix*/
-    static get identity(){
-        return new Matrix();
-    }
-    /**
-     * @param {float} angle in degrees to rotate around the z axis (into the screen, effectively a 2d rotation) 
-     * @returns {Matrix} Z axis rotation matrix
-     */
-    static rotateZ(angle){
-        angle *= Math.PIby180;
-        let m = new Matrix();
-        let s = Math.sin(angle);
-        let c = Math.cos(angle);
-        m.m00 = c; m.m01 = -s;
-        m.m10 = s; m.m11 = c;
-        return m;
-    }
-    /**
-     * @param {float} angle in degrees to rotate around the y axis 
-     * @returns {Matrix} y axis rotation matrix
-     */
-    static rotateY(angle){
-        angle *= Math.PIby180;
-        let m = new Matrix();
-        let s = Math.sin(angle);
-        let c = Math.cos(angle);
-        m.m00 = c; m.m02 = s;
-        m.m20 = -s; m.m22 = c;
-        return m;
-    }
-    /**
-     * @param {float} angle in degrees to rotate around the x 
-     * @returns {Matrix} x axis rotation matrix
-     */
-    static rotateX(angle){
-        angle *= Math.PIby180;
-
-        let m = new Matrix();
-        let s = Math.sin(angle);
-        let c = Math.cos(angle);
-        m.m11 = c; m.m12 = -s;
-        m.m21 = s; m.m22 = c;
-        return m;
-    }
-    /**
-     * directly applies a z axis rotation to this matrix
-     * @param {float} angle in degrees to apply to z axis
-     */
-    applyrotZ(angle){
-        angle *= Math.PIby180;
-        let m = new Matrix();
-        let s = Math.sin(angle);
-        let c = Math.cos(angle);
-        m.m00 = c; m.m01 = -s;
-        m.m10 = s; m.m11 = c;
-        this.multiply(m);
-    }
-    /**
-     * directly applies a y axis rotation to this matrix
-     * @param {float} angle in degrees to apply to y axis
-     */
-    applyrotY(angle){
-        angle *= Math.PIby180;
-        let m = new Matrix();
-        let s = Math.sin(angle);
-        let c = Math.cos(angle);
-        m.m00 = c; m.m02 = s;
-        m.m20 = -s; m.m22 = c;
-        this.multiply(m);
-    }
-    /**
-     * directly applies a x axis rotation to this matrix
-     * @param {float} angle in degrees to apply to x axis
-     */
-    applyrotX(angle){
-        angle *= Math.PIby180;
-        let m = new Matrix();
-        let s = Math.sin(angle);
-        let c = Math.cos(angle);
-        m.m11 = c; m.m12 = -s;
-        m.m21 = s; m.m22 = c;
-        this.multiply(m);
-    }
-
-    /**
-     * creates a translation matrix
-     * @param {float} x translation in x axis
-     * @param {float} y translation in y axis
-     * @param {float} z translation in z axis
-     * @returns {Matrix} translation matrix requested
-     */
-    static translate(x,y,z){
-        let m = new Matrix();
-
-        m.m03 = x;
-        m.m13 = y;
-        m.m23 = z;
-    }
-    /**
-     * directly applies a translation matrix to this matrix
-     * @param {float} x translation in x axis
-     * @param {float} y translation in y axis
-     * @param {float} z translation in z axis
-     */
-    applytranslate(x,y,z){
-        let m = new Matrix();
-
-        m.m03 = x;
-        m.m13 = y;
-        m.m23 = z;
-        this.multiply(m);
-    }
-    /**
-     * sets this matrix to the indentity matrix
-     */
-    reset(){
-        this.m00 = 1;this.m01 = 0; this.m02 = 0; this.m03 = 0;
-        this.m10 = 0;this.m11 = 1; this.m12 = 0; this.m13 = 0;
-        this.m20 = 0;this.m21 = 0; this.m22 = 1; this.m23 = 0;
-        this.m30 = 0;this.m31 = 0; this.m32 = 0; this.m33 = 1;
-    }
-    /**
-     * applies the matrix to given vector or array of vectors
-     * @param {vector3|vector3[]} v 
-     */
-    transform(v){
-        if (Array.isArray(v)){
-            for (let p = 0; p < v.length; p++){
-                let x = v[p].x;
-                let y = v[p].y;
-                let z = v[p].z;
-                v[p].x = x * this.m00 + y * this.m01 + z * this.m02 + this.m03;
-                v[p].y = x * this.m10 + y * this.m11 + z * this.m12 + this.m13;
-                v[p].z = x * this.m20 + y * this.m21 + z * this.m22 + this.m23;
-            }
-        }else{//apply to single vector3 value
-            let x = v.x;
-            let y = v.y;
-            let z = v.z;
-            v.x = x * this.m00 + y * this.m01 + z * this.m02 + this.m03;
-            v.y = x * this.m10 + y * this.m11 + z * this.m12 + this.m13;
-            v.z = x * this.m20 + y * this.m21 + z * this.m22 + this.m23;
-        }
-    }
-    /** @returns {string} a string representation of the matrix */
-    get toString(){
-        return "[" + this.m00 + "," + this.m01 + "," + this.m02 + "," + this.m03 + "]\n"+
-        "[" + this.m10 + "," + this.m11 + "," + this.m12 + "," + this.m13 + "]\n"+
-        "[" + this.m20 + "," + this.m21 + "," + this.m22 + "," + this.m23 + "]\n"+
-        "[" + this.m30 + "," + this.m31 + "," + this.m32 + "," + this.m33 + "]";
-
-    }
-}
-/******************************
- * spritemanager.js by Hurray Banana 2023-2024
- ******************************/ 
-/** 
- * @classdesc manages and processes sprites - you should not have to use this directly apart from setting debug output
- */
-class Spritemanager{
-    /** holds the currently managed sprite references @type {Sprite[]} */
-    #spritelist;
-    /** @returns {Sprite[]} an array os Sprites that you can perform further processing on */
-    get spritelist(){return this.#spritelist;}
-    /** holds the list of sprites that are to be drawn, sorted on z before drawing @type {Sprite[]} */
-    #renderlist;
-    /** holds a list of just those sprites that are collidable, reducing some of the overheads @type {Sprite[]} */
-    #collisionlist;
-    /** holds a list of sprites that are primary colliders, reduces collsion checking overheads @type {Sprite[]} */
-    #collisionPlist;
-    /** not used */
-    #layer;
-    /** set the spritemanager to output debug info defaults to false @type {bool}*/
-    debug = false;
-    /**
-     * sets the position to display the sprite information, not in use
-     * @type {vector2} 
-     * @example this.debugposition = new vector2(10,ht - 30);
-    */
-    debugposition = new vector2(10, Engine.viewHeight - 30);
-    /** specifies the colour to render debug info, not in use*/
-    debugcolour = "white";
-    /** specifies a refernce layer to render debug info to*/
-    constructor(/*layer*/){
-        // this.#layer = layer;
-        this.#spritelist = [];
-        this.#collisionlist = [];
-        this.#collisionPlist = [];
-        this.#renderlist = [];
-    }
-    /** holds history draw tally per frame @type {int}  */
-    #historycount;
-    /** holds last number of sprites drawn in the frame @type {int} */
-    #spritedrawn;
-    /** @returns {int} gets the number of sprites being processed */
-    get count(){return this.#spritelist.length;}
-
-    /** adds a sprite for automatic update and drawing processing 
-     * add a call to this method of the sprite manager in your sprites constructor
-     * @example    
-     * constructor(){
-     *      super();
-     *      Engine.spM.add(this);
-     *      //...further constructor code to setup sprite
-    */
-    add(sprite){
-        if (sprite!=undefined){
-            this.#spritelist.push(sprite);
-        } else {
-            let s = new Sprite();
-            this.#spritelist.push(s);
-        }
-        return this.#spritelist[this.#spritelist.len - 1];
-    }
-    /** adds a sprite marked as a collidable to the collision list 
-     * 
-     * @param {Sprite} spr primary collider to add
-    */
-    collisionJoin(spr){
-        if (this.#collisionlist.indexOf(spr) == -1){
-            this.#collisionlist.push(spr);
-        }
-
-    }
-    /** adds a sprite marked as a primary collider to the plist 
-     * 
-     * @param {Sprite} spr primary collider to add
-    */
-    collisionPJoin(spr){
-        if(this.#collisionPlist.indexOf(spr) == -1){
-            this.#collisionPlist.push(spr);
-        }
-    }
-    /** removes given sprite from the primary collision list
-     * @param {Sprite} spr sprite to remove
-     * called by cleanup code, no need to manually call
-     */
-    collisionPLeave(spr){
-        let p = this.#collisionPlist.indexOf(spr);
-        if (p != -1){
-            this.#collisionPlist.splice(p,1);
-        }
-    }
-    /** removes given sprite from the collision list
-     * @param {Sprite} spr sprite to remove
-     * called by cleanup code, no need to manually call
-     */
-    collisionLeave(spr){
-        let p = this.#collisionlist.indexOf(spr);
-        if (p != -1){
-            this.#collisionlist.splice(p,1);
-        }
-    }
-
-    /** performs a collision check for each sprite in the primary collision list
-     * against any sprites in the sprite collision list that match with targets for the primary
-     * calls the callbackCollide nominated method if set
-     */
-    collisioncheck(){
-        for (let p = 0; p < this.#collisionPlist.length; p++){
-            const prim = this.#collisionPlist[p];
-            if (prim.collisionList != null){
-                for (let k = 0; k < this.#collisionlist.length; k++){
-                    const sec = this.#collisionlist[k];
-                    if (k != p && sec.alive && this.istargetted(sec, prim.collisionList)){
-                        if (prim.intersectBC(sec)){
-                            Engine.processCallback(prim.callbackCollide,sec);
-                        }
-                    }
-                }
-            }
-        }
-    }
-
-    /** 
-     * determines if a sprite from the sprite managers collision list has a type
-     * logged in the primary sprites collision types list 
-     * @returns {bool} true if to be checked for collision */
-    istargetted(spr, list){
-        for (let p = 0; p < list.length; p++){
-            if (spr instanceof list[p]){
-                return true;
-            }
-        }
-        return false;
-    }
-
-    /** process the sprites in the lists */
-    update(){
-        if (this.#collisionPlist.length > 0) {this.collisioncheck();}
-
-        this.#renderlist.length = 0;
-        for (let p = 0; p < this.#spritelist.length; p++){
-            this.#spritelist[p].update();
-            if (this.#spritelist[p].visible && !this.#spritelist[p].dead){
-                this.#renderlist.push(this.#spritelist[p]);
-            }
-        }
-        // if (this.#collisionPlist.length > 0) {this.collisioncheck();}
-        this.#bringoutthedead();
-    }
-    //need a system similar to the sprite renderlist for history I think
-    /** performs sprite rendering */
-    draw(){
-        this.#historycount = 0;
-        //draw any history first - first guess
-        //sort history renderlist
-        //this.#renderlist.sort(function(a,b){return a.z < b.z ? -1 : 1;})
-        for (let p = 0; p < this.#spritelist.length; p++){
-            if (this.#spritelist[p].history != null) {
-                this.#historycount += this.#spritelist[p].history.draw();
-            }
-        }
-        //sort renderlist
-        this.#renderlist.sort(function(a,b){return a.z < b.z ? -1 : 1;})
-            
-        this.#spritedrawn = this.#renderlist.length;
-        for (let p = 0; p < this.#renderlist.length; p++){
-            //watch out for any sprites killed since adding to render list
-            //if (!this.#renderlist[p].dead){
-                this.#renderlist[p].draw();
-            //}
-        }
-        if (this.debug){this.debugdisplay();}
-    }
-    /** removes all sprites marked as dead */
-    #bringoutthedead(){
-        let p = this.#spritelist.length - 1;
-        while (p >= 0){//} && p < this.#spritelist.length){
-            if (this.#spritelist[p].dead){
-                this.#spritelist[p].cleanup();
-                this.#spritelist.splice(p,1);
-            } 
-            p--;
-        }
-    }
-    /** returns a string of basic debug information about sprites */
-    get debugdisplay(){
-        return "sprites [" + this.count + "] drawn [" + this.#spritedrawn + "] " + 
-        "history sprites [" + this.#historycount + "]";
-    }
-    /** bins all sprites without calling funerals */
-    removeall(){
-        for (let p = 0; p < this.#spritelist.length; p++){
-            this.#spritelist[p].cleanup();
-        }
-        this.#spritelist = [];
-    }
-}
-
- 
-/******************************
- * engine.js by Hurray Banana 2023-2024
-******************************/ 
-/** current version number of the engine */
-let engineversion = '1.23.0.1';
-/** @classdesc provides global functionality for other engine components */
-class Engine{
-  /** set of colours primary, secondary, black and white @type {color[]} */
-  static cols3bit = [
-      [255,255,255],
-      [255,0,0],
-      [0,255,0],
-      [0,0,255],
-      [0,255,255],
-      [255,255,0],
-      [255,0,255],
-      [0,0,0],
-  ];
-  /** length of cols3bit for modulus work @type {int} */
-  static cols3bitlen = Engine.cols3bit.length;
-  /** @type {bool} if true then engine version will be shown with debug output */
-  static showversion = true;
-  /** if true debug output will be shown @type {bool}*/
-  static debug = false;
-  /** colour to display debug information @type {color}*/
-  static debugcolour = [255,255,255,255];
-  //static debugpos;
-  //static debugalign = Align.bottomLeft;
-  //graphics layers here
-  /** for tilemaps to be rendered before sprite layers @type {texture}*/
-  static #backmap;
-  /** the tilemap layer drawn before every other layer 
-   * be wary using with sprites as these are aligned top left
-   * @returns {texture}
-  */
-  static get backmap(){
-      Engine.#backmap.operations = true;
-      return Engine.#backmap;
-  }
-  /** after sprite 0 and 1 @type {texture}*/
-  static #midmap;
-  /** tilemaps to be rendered after sprite layers 0 and 1 but before layer 2 and 3 
-   * be wary using with sprites as these are aligned top left
-   * @returns {texture}
-  */
-  static get midmap(){Engine.#midmap.operations = true;return Engine.#midmap;}
-  /** tilemaps to be rendered after all 4 sprite layers but before the hud layer
-  * Can use to do fade out/in and swipes
-   * be wary using with sprites as these are aligned top left
-   * @type {texture}
-  */
-  static #frontmap;
-  /** tilemaps to be rendered after all sprite layers 
-   * be wary using with sprites as these are aligned top left
-   * @returns {texture}
-  */
-  static get frontmap(){Engine.#frontmap.operations = true;return Engine.#frontmap;}
-  /** tilemaps to be rendered after all other layers including the hud @type {texture}*/
-  static #finalmap;
-  /** Can use to do fade out/in and swipes which also cover the UI
-   * be wary using with sprites as these are aligned top left
-   * @returns {texture}
-  */
-  static get finalmap(){Engine.#finalmap.operations = true;return Engine.#finalmap;}
-  /**
-   * holds each of the sprite layers these are drawn from 0 upwards,
-   * the higher the layer number the later it is in the draw stack
-   * use Engine.layer() to retrieve a reference to the layer when assigning to sprites, history and particles
-   * You can use this reference to also modify settings of the texture layer (taking it away from its default settings)
-   * @type {texture[]}
-   */
-  static spl = [];
-  /**
-   * holds each of the sprite glow layers these are drawn from 0 upwards before their corresponding sprite layer number,
-   * the higher the layer number the later it is in the draw stack.
-   * glow layers are much lower resolution than the main drawing layers, which can be controlled when setting up the engine
-   * with Engine.init()
-   * 
-   * use Engine.glowlayer() to retrieve a reference to the layer when assigning to sprites, history and particles
-   * You can use this reference to also modify settings of the texture layer (taking it away from its default settings)
-   * @example 
-   * //the glow divisor is how many times smaller the glow layers are created. 
-   * //when drawn they are blown up using bilinear filtering which gives us a cheap glow effect
-   * Engine.init({glowdivisor:8,viewW:600,viewH:800,worldW:3000,worldH:2000});
-   * @type {texture[]}
-   */
-  static glow = [];
-  /** used for some testing stuff */
-  static glowbuffer; //testing of persistance and fade
-  /**
-   * controls how many times smaller the glow layers are created. don't change this value you need to use Engine.init() to set this
-   * @type {int}
-   */
-  static glowDiv = 8;
-  /**
-   * gets the hud layer (the final sprite layer) for drawing items on top of all other sprites
-   * There are some tilemap layers that are drawn after this frontmap and finalmap
-   */
-  static get hud(){Engine.spl[Engine.spl.length-1].operations = true;return Engine.layer(Engine.spl.length-1)};
-  /** reference to the sprite manager @type {Spritemanager} */
-  static spM;
-  /** reference to the particle manager @type {particleManager} */
-  static particleM;
-  /** reference to the tilemap manager @type {TilemapManager} */
-  static tilemapM;
-  /** holds an object value describing the width and height of the world render area 
-   * object 
-  */
-  static #worldsize;// = vector2.zero;
-  /** @returns {float} the width of the world area*/
-  static get worldWidth(){return this.#worldsize.w};
-  /** @returns {float} the height of the world area*/
-  static get worldHeight(){return this.#worldsize.h;};
-  /** @param {float} value sets the width of the world area*/
-  static set worldWidth(value){this.#worldsize.w = value};
-  /** @param {float} value sets the height of the world area*/
-  static set worldHeight(value){this.#worldsize.h = value};
-  /** 
-   * @returns {Rectangle} gets a rectangle (0,0,width,height) representing the world size
-   */
-  static get worldarea(){return new Rectangle(0,0,this.#worldsize.w,this.#worldsize.h);}
-  /** gets the world size (width and height), just access the w and h properties of the object
-   * @returns {{w:int, h:int}}
-   */
-  static get worldsize(){return this.#worldsize;}
-  /** use an object to set the size of the world
-   * Engine.worldsize = {w:1000,h:1000};
-   * or a vector2 value (something with w and h properties)
-   * @param {vector2|{w:int, h:int}} value 
-   */
-  static set worldsize(value){this.worldWidth = value.w; this.worldHeight = value.h;};
-  static viewWidth;
-  static viewHeight;
-  //static canvasArea;
-  static viewports = [];
-  static get mainview(){return Engine.viewports[0];}
-  static get mainviewArea(){return Engine.viewports[0].area;}
-  static zRange = 5000;
-  static zHalf = this.zRange / 2;
-  
-  /**
-   * @returns {vector3}
-   */
-  static get viewCentre(){return Engine.viewports[0].area.centre;}// Engine.viewWidth/2;}
-  static get viewCentrex(){return Engine.viewports[0].area.centrex;}// Engine.viewWidth/2;}
-  static get viewCentrey(){return Engine.viewports[0].area.centrey;}//Engine.viewHeight/2;}
-  static get viewcount(){return Engine.viewports.length;}
-  static #framecount;
-  static #fps;
-  static #elapsed;    
-  /** initialises all the sub systems of the engine, call this from the preload function 
-   * @param {{viewW:int,viewH:int,worldW:int,worldH:int,layers:int,glowdivisor:int,compositor:string}} settings all settings are optional, if none are set or nothing is passed then defaults (listed below will be used)
-   * pass a settings object to change some of the defaults
-   * @example     Engine.init({glowdivisor:8});
-   * 
-   * //settings object can have the following values
-   * viewW:int //number of pixels wide the canvas/screen should be, default 600
-   * viewH:int //number of pixels high the canvas/screen should be, default 600
-   * worldW:int //number of pixels wide the world area should be, default 600
-   * worldH:int //number of pixels high the world area should be, default 600
-   * layers:int //number of layers including the HUD defaults to 5 (4 sprite layers and final HUD layer) - don't change it will break stuff - I need to generalise the renderer more first
-   * glowdivisor:int //how much to shrink the glow layers by (these get scaled back up so we get a cheap blur)
-   * compositor:string //the global compsition method on the glow layers, default is "lighter" @link https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/globalCompositeOperation
-   * 
-  */
-  static init(settings){
-      Engine.delta = 1/60;
-      let numlayers = 5;//4 sprites and final HUD
-      let glowdivisor = 8;
-      let compositor = "lighter";//"screen";
-      let vw = 600;
-      let vh = 600;
-      let ww = 600;
-      let wh = 600;
-      
-      if (settings !== undefined){
-          if (settings.layers !== undefined) numlayers = settings.layers;
-          if (settings.glowdivisor !== undefined) glowdivisor = settings.glowdivisor;
-          if (settings.compositor !== undefined) compositor = settings.compositor;
-          if (settings.viewW !== undefined) vw = settings.viewW;
-          if (settings.viewH !== undefined) vh = settings.viewH;
-          ww = vw;
-          wh = vh;
-          if (settings.worldW !== undefined) ww = settings.worldW;
-          if (settings.worldH !== undefined) wh = settings.worldH;
-      }
-      Engine.viewWidth = vw;
-      Engine.viewHeight = vh;
-      Engine.#worldsize = new vector2(ww, wh);
-      Engine.glowDiv = glowdivisor;
-      Engine.#createlayers(numlayers, compositor);
-      Engine.#createview();
-      Engine.tilemapM = new TilemapManager();
-      Engine.particleM = new particleManager();
-      Engine.spM = new Spritemanager(Engine.layer(Engine.spl.length-1));//hud
-      Engine.eventM = new EventManager();
-      Tex.createTextures();
-      //this.debugpos.x = 10;
-      //this.debugpos.y = vh - 10;
-      Engine.#framecount = 0;
-      Engine.#fps = 0;;
-      Engine.#elapsed = 0;
-      //Tex.waitloading();
-  }
-  /** do not use this it's internal only for now until I implement multiple viewports */
-  static #createview(){
-      //default viewport
-      Engine.viewports.push(new View(new Rectangle(0,0,Engine.viewWidth, Engine.viewHeight),0,0)); //canvas area
-  }
-  /**retrieves a specific graphic layer for assigning to sprites and particles for drawing on and changing settings of
-   * @param {int} number layer number (0-3)
-   * @example 
-   * //draw order is as follows:
-   * backmap, glow(0),layer(0),glow(1),layer(1),midmap,glow(2),layer(2),glow(3),layer(3),frontmap,hud,finalmap
-  */
-  static layer(number){
-      if (number >= 0 && number < Engine.spl.length){
-          Engine.spl[number].operations = true;
-          return Engine.spl[number];
-      } else {
-          Engine.spl[0].operations = true;
-          return Engine.spl[0];
-      }
-  }
-  /**retrieves a specific graphic layer for drawing on and changing settings of 
-   * @param {int} number glow layer number (0-3), glow layers are drawn before their corresponding sprite layer
-   * @example 
-   * //draw order is as follows:
-   * backmap, glow(0),layer(0),glow(1),layer(1),midmap,glow(2),layer(2),glow(3),layer(3),frontmap,hud,finalmap
-  */
-  static glowlayer(number){
-      if (number >= 0 && number < Engine.glow.length){
-          Engine.glow[number].operations = true;
-          return Engine.glow[number];
-      } else {
-          Engine.glow[0].operations = true;
-          return Engine.glow[0];
-      }
-  }
-  
-  /**retrieves the rectangle for a numbered viewport - 0 being the main canvas area 
-   * @param {int} number view to retrieve (currently on 0)
-   * @returns {View} the requested Viewport
-  */
-  static view(number){
-    if (number === undefined) {
-      return Engine.viewports[0];
-    }
-    else{
-      if (number >= 0 && number < Engine.viewports.length){
-          return Engine.viewports[number];
-      } else 
-      return Engine.viewports[0];
-    }
-  }
-  /**
-   * 
-   * @returns {texture|canvas} a top left aligned canvas for tilemap rendering
-   */
-  static #getTilemapLayer(){
-      let context = createGraphics(Engine.viewWidth, Engine.viewHeight);//, WEBGL);
-      context.noStroke();
-      context.noSmooth();
-      context.operations = false;
-      context.pixelDensity(1);
-      context.type = "t";
-      return context;
-  }
-  /**
-   * creates sprite and glow layers
-   * @param {int} layercount number of sprite/particle layers and a hud
-   * @param {string} compositor compositor to be used by glow layer
-   */
-  static #createlayers(layercount, compositor){
-      let c = createCanvas(Engine.viewWidth, Engine.viewHeight);//, WEBGL);
-      c.drawingContext.alpha = false;
-      window.pixelDensity(1);
-      //createCanvas(Engine.viewWidth, Engine.viewHeight, WEBGL);
-      //let l = createFramebuffer();
-      Engine.#backmap = this.#getTilemapLayer();
-      //Engine.__backmap.drawingContext.alpha = false;
-      Engine.#midmap = this.#getTilemapLayer();
-      Engine.#frontmap = this.#getTilemapLayer();
-      Engine.#finalmap = this.#getTilemapLayer();
-      Engine.spl = new Array(layercount);
-      Engine.glow = new Array(layercount);
-      for (let p = 0; p < layercount; p++){
-          Engine.spl[p] = createGraphics(Engine.viewWidth, Engine.viewHeight);//, WEBGL);
-          Engine.spl[p].rectMode(CENTER);
-          Engine.spl[p].imageMode(CENTER);
-          Engine.spl[p].noStroke();
-          Engine.spl[p].noSmooth();
-          Engine.spl[p].operations = false;
-          Engine.spl[p].wipe = true;
-          Engine.spl[p].pixelDensity(1);
-          Engine.spl[p].type = "s";
-
-          //create a glow layer for each sprite layer
-          Engine.glow[p] = createGraphics(Engine.viewWidth/Engine.glowDiv,Engine.viewHeight/Engine.glowDiv);
-          Engine.glow[p].drawingContext.globalCompositeOperation = compositor;//"screen";//compositor;
-          Engine.glow[p].noStroke();
-          Engine.glow[p].rectMode(CENTER);
-          Engine.glow[p].imageMode(CENTER);
-          Engine.glow[p].operations = false;
-          Engine.glow[p].wipe = true;
-          Engine.glow[p].pixelDensity(1);
-          Engine.glow[p].scale(1/Engine.glowDiv);//sets scale for layer
-          Engine.glow[p].type = "g";
-      }
-      //testing
-      Engine.glowbuffer = createGraphics(Engine.viewWidth/Engine.glowDiv,Engine.viewHeight/Engine.glowDiv);
-      Engine.glowbuffer.drawingContext.globalCompositeOperation = "screen";
-      Engine.glowbuffer.noStroke();
-      Engine.glowbuffer.operations = false;
-      Engine.glowbuffer.pixelDensity(1);
-      Engine.glowbuffer.scale(1/Engine.glowDiv);
-  }
-  /** @type {float} holds the fraction of a second the current frame has taken
-   * use this to get movement in pixels per second
-   * @example
-   * this.vx = 100 * Engine.delta; //move at 100 pixels over a second
-  */
-  static delta;
-  static update(delta){
-      Engine.delta = delta;
-      Engine.#framecount++;
-      Engine.#elapsed += delta;
-      if (Engine.#elapsed >= 1){
-          Engine.#elapsed -= 1;
-          Engine.#fps = Engine.#framecount;
-          Engine.#framecount = 0;
-      }
-      Engine.eventM.update();
-      Engine.tilemapM.update();
-      Engine.spM.update();
-      Engine.particleM.update();
-  }
-  static #activelayers = "";
-  static c = false;
-  /**draws the various engine rendering sub systems */
-  static draw(){
-      //let tilelayers = "tilelayers ";
-      //let spritelayers = " spritelayers ";
-      //let glowlayers = " glowlayers ";
-      Engine.tilemapM.draw();//delta);
-      Engine.spM.draw();//delta);
-      Engine.particleM.draw();//delta);
-      //let w = -width/2;
-      //let h = -height/2;
-      //compositor
-      if (this.#backmap.operations) {
-          //image(Engine.__backmap, w, h);
-          image(Engine.#backmap,0,0);
-          this.#backmap.clear();
-          //tilelayers += "[back]";
-      }
-      let p = 0;
-      for (; p < 2; p++){
-          if (Engine.glow[p].operations){
-              image(Engine.glow[p],0, 0, Engine.viewWidth, Engine.viewHeight);
-              if (Engine.glow[p].wipe) Engine.glow[p].clear();
-              //omage(Engine.glow[p],0, 0, Engine.viewWidth, Engine.viewHeight);
-              //Engine.glowbuffer.globalCompositeOperation = "difference";
-              //Engine.glowbuffer.globalalpha = 0.5;
-              //Engine.glowbuffer.image(Engine.glow[p],-25, -25, Engine.viewWidth+50, Engine.viewHeight+50);
-              //Engine.glowbuffer.image(Engine.glow[p],0, 0, Engine.viewWidth+, Engine.viewHeight);
-              //Engine.glow[p].clear();
-              //write buffer
-              //image(Engine.glowbuffer,0, 0, Engine.viewWidth, Engine.viewHeight);
-              //if (Engine.c ) Engine.glow[p].clear();
-              Engine.c = !Engine.c;
-              //trying a self filter effect instead of clearing
-              //Engine.glow[p].image(Engine.glow[p],//0,0,
-                //  400,400, 810, 810);
-                  //Engine.viewWidth*0.49/* -Engine.viewWidth*0.05*/, Engine.viewHeight*0.49/*-Engine.viewHeight*0.05*/, 
-                  //Engine.viewWidth*1.1, Engine.viewHeight*1.1);
-              //glowlayers += "[" + p + "]" ;
-          }
-          if (Engine.spl[p].operations){
-              //image(Engine.spl[p], w, h);
-              image(Engine.spl[p],0,0);
-              //clear once drawn
-              if (Engine.spl[p].wipe) Engine.spl[p].clear();
-              //spritelayers += "[" + p + "]" ;
-          }
-      }
-      if (this.#midmap.operations) {
-          //image(Engine.__midmap, w, h);
-          image(Engine.#midmap,0,0);
-          this.#midmap.clear();
-          //tilelayers += "[mid]";
-      }
-      for (; p < 4; p++){
-          if (Engine.glow[p].operations){
-              //image(Engine.glow[p], w, h, Engine.viewWidth, Engine.viewHeight);
-              image(Engine.glow[p],0, 0, Engine.viewWidth, Engine.viewHeight);
-              if (Engine.glow[p].wipe) Engine.glow[p].clear();
-              //glowlayers += "[" + p + "]" ;
-          }
-          if (Engine.spl[p].operations){
-              //image(Engine.spl[p], w, h);
-              image(Engine.spl[p],0,0);
-              //clear once drawn
-              if (Engine.spl[p].wipe) Engine.spl[p].clear();
-              //spritelayers += "[" + p + "]" ;
-          }
-      }
-      if (this.#frontmap.operations) {
-          //image(Engine.__frontmap, w, h);
-          image(Engine.#frontmap,0,0);
-          this.#frontmap.clear();
-          //tilelayers += "[front]";
-      }
-      if (Engine.showversion) {Engine.version();}
-      //draw hud
-      if (Engine.spl[p].operations){
-          //image(Engine.spl[p], w, h);
-          image(Engine.spl[p],0,0);
-          //clear once drawn
-          if (Engine.spl[p].wipe) Engine.spl[p].clear();
-          //spritelayers += "[hud]" ;
-      }
-      if (this.#finalmap.operations) {
-          //image(Engine.__finalmap, w, h);
-          image(Engine.#finalmap,0,0);
-          this.#finalmap.clear();
-          //tilelayers += "[final]";
-      }
-      if (Engine.debug){Engine.#debugout();}
-      //Engine.#activelayers = tilelayers + " " + spritelayers + " " + glowlayers;
-  }
-  static #debugout(){
-      let dm = []
-      dm.push(this.particleM.debugdisplay);
-      dm.push(this.spM.debugdisplay);
-      let m = "view[" + (Engine.mainview.x|0) + "," + (Engine.mainview.y|0) + "]";
-      m += " world[" + Engine.worldWidth + "," + Engine.worldHeight + "]";
-      m += " viewrect[" + Engine.mainview.worldarea.l + "," + Engine.mainview.worldarea.t + "," + Engine.mainview.worldarea.r + "," + Engine.mainview.worldarea.b + "]";
-      dm.push(m);
-      dm.push(Engine.#activelayers)
-      dm.push("fps[" + Engine.#fps + "]");
-      dm.push(engineversion);
-      window.push();
-      window.textAlign(LEFT, BOTTOM);
-      window.fill(Engine.debugcolour);
-      window.noStroke();
-      let dy = 0;
-      dm.forEach(mess => {
-          window.text(mess,10, Engine.mainview.area.h + dy );
-          dy -= 20;
-      });
-      window.pop();
-  }
-  static version(){
-      Engine.spl[3].push();
-      Engine.spl[3].fill(255);
-      Engine.spl[3].noStroke();
-      Engine.spl[3].text(engineversion, 10,Engine.spl[3].height - 10);
-      
-      //Engine.spl[3].text(engineversion, 10,Engine.spl[3].height - 10);
-      Engine.spl[3].pop();
-  }
-  /**internal support for executing callback routines (there are currently 4 differenet ones in Sprite alone) */
-  static processCallback(handler, data){
-      if (handler !== undefined && handler !== null) {return handler.callback.call(handler.instance, data);}    
-  }
-  /**
-   * Generates a callback handler object to pass to a callback system
-   * @param {function} handler 
-   * @param {object} instance 
-   * @returns {{callback:method|function, instance:object|null}}
-   */
-  static makeCallback(handler, instance){
-      return {callback:handler, instance:instance};
-  }
-  /** performs a rip of a tilesheet, used by Tilemap.tilesfromTilesheet()
-   * grabs a rectangluar sequence rawtiles from a texture, if wanting this for a tilemap use this.tilesfromTilesheet() inside your constructor instead
-   * @param {Tile[]} tohere array of Tiles to add these rips to 
-   * @param {image|texture} texture  image that contains the tiles we want
-   * @param {{w:32,h:32}} tilesize width and height of each tile (have to be the same size)
-   * @param {{rowstall:3,colswide:10,left:10,top:5,xpad:2,ypad:2}} data explained in comments below
-   * @example 
-   * //takes 30 tiles from txtiles and places them into the mytiles array
-   * //the tiles consist of 3 rows and 10 columns with a 2 pixel gap between each row and column
-   * //each tiles is 32x32 pixels the rectangular sequence starts 10 pixels from left and 5 pixels from top corner of sprite sheet
-   * Engine.riptiles(mytiles, txtiles, {w:32,h:32}, {rowstall:3,colswide:10,left:10,top:5,xpad:2,ypad:2});
-  */
-  static riptiles(tohere, texture, tilesize, data){
-      if (data === undefined){data = {};}
-      if (data.rowstall === undefined) {data.rowstall = Math.floor(texture.height / tilesize.h);}
-      if (data.colswide === undefined) {data.colswide = Math.floor(texture.width / tilesize.w);}
-      if (data.left === undefined) {data.left = 0;}
-      if (data.top === undefined) {data.top = 0;}
-      if (data.xpad === undefined) {data.xpad = 0;}
-      if (data.ypad === undefined) {data.ypad = 0;}
-      for (let r = 0; r < data.rowstall; r++){
-          for (let c = 0; c < data.colswide; c++){
-              let t = new Tile(texture, new Rectangle(data.left + c * (tilesize.w + data.xpad), data.top + r * (tilesize.h + data.ypad), tilesize.w, tilesize.h));
-              tohere.push(t);
-          }
-      }
-  }
-    /** performs a rip of a spritesheet to a format suitable for sprite animation frames, used by Sprite.frame.defineSpritesheet()
-   * grabs a rectangluar sequence rawtiles from a texture
-   * @param {Rawtile[]} tohere array of frames to add these rips to, use sprite.frame.defineSpritesheet() if you are doing this for a sprite
-   * @param {image|texture} texture image that contains the frames we want
-   * @param {{w:32,h:32}} tilesize width and height of each frame (have to be the same size)
-   * @param {{rowstall:3,colswide:10,left:10,top:5,xpad:2,ypad:2}} data explained in comments below
-   * @example 
-   * //takes 8 frames txsprite and adds them to the frames already defined for the sprite
-   * //the frames consist of 1 row and 8 columns with a 2 pixel gap between each row and column
-   * //each tiles is 32x32 pixels the rectangular sequence starts 2 pixels from left and 213 pixels from top corner of sprite sheet
-   * this.frame.defineSpritesheet(txsprite, {w:32,h:32}, {rowstall:1,colswide:8,left:2,top:213,xpad:2,ypad:2});
-  */
-  static ripRawtiles(tohere, texture, tilesize, data){
-      if (data === undefined){data = {};}
-      if (data.rowstall === undefined) {data.rowstall = Math.floor(texture.height / tilesize.h);}
-      if (data.colswide === undefined) {data.colswide = Math.floor(texture.width / tilesize.w);}
-      if (data.left === undefined) {data.left = 0;}
-      if (data.top === undefined) {data.top = 0;}
-      if (data.xpad === undefined) {data.xpad = 0;}
-      if (data.ypad === undefined) {data.ypad = 0;}
-      for (let r = 0; r < data.rowstall; r++){
-          for (let c = 0; c < data.colswide; c++){
-              let t = new Rawtile(texture, new Rectangle(data.left + c * (tilesize.w + data.xpad), data.top + r * (tilesize.h + data.ypad), tilesize.w, tilesize.h));
-              tohere.push(t);
-          }
-      }
-  }    
-}
-/******************************
- * textures.js by Hurray Banana 2023-2024
- ******************************/ 
-/** @classdesc support to help with textures, loading and manipulating */
-class Tex{
-    /** font used to pre-render textures ready for sprites (alphabet stuff)
-     * change it before calling Engine.init()
-     * default monospace
-     */
-    static prerenderFont = "monospace";
-    /** font size to use for pre-render texture characters - default 24 @type {int} */
-    static prerenderFontsize = 24;
-    /** texture size to use for pre-render texture characters - default 32 @type {int}*/
-    static prerenderFontTextureSize = 32;
-    /** extra sizing for fonts that don't report ascenders and descenders properly.
-     * Use this when pre-rendered character textures get cropped
-     * defaults to 0, try making it 4, 6 etc... until rendering is ok
-     * @type {int}
-     */
-    static prerenderFontTextureSizeExtra = 0;
-    //texture space
-    /** single pixel for scaling for rectangles @type {texture}*/
-    static singlepixel;
-    /** texture with just white pixels 50x50  @type {texture}*/
-    static rect50by50;
-    /** 8x8 pixel triangle white outline with black triangle  @type {texture}*/
-    static triangle;
-    /** white circle   @type {texture}*/
-    static circle4by4;
-    /** white circle   @type {texture}*/
-    static circle8by8;
-    /** white circle   @type {texture}*/
-    static circle16by16;
-    /** white circle   @type {texture}*/
-    static circle32by32;
-    /** T target can be used for visualisations  @type {texture}*/
-    static target;
-    /** holds alphaset as textures @type {texture[]}*/
-    static txAlpha = [];
-    /** holds alphaset as textures with a border @type {texture[]}*/
-    static txAlphaBordered = [];
-    /** set of textures generated for each of the characters */
-    static alphaset = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz !\"£$%^&*()[]{}-+=,.:;?><¬";
-    /** 
-     * generates a stock alphabet as a set of sprite textures
-    */
-    static genAlphaset(){
-        //push();
-        //get metrics
-        // textFont(Tex.prerenderFont);
-        // textSize(Tex.prerenderFontsize);
-        // Tex.prerenderFontTextureSize = textAscent() + textDescent();
-        // pop();
-        Tex.txAlpha = new Array(Tex.alphaset.length);
-        Tex.txAlphaBordered = new Array(Tex.alphaset.length);
-        for (let p =0; p < Tex.alphaset.length; p++){
-            Tex.txAlpha[p] = this.makeLetter(Tex.alphaset[p]);
-            Tex.txAlphaBordered[p] = this.makeLetter(Tex.alphaset[p],true);
-        }
-    }
-    /**
-     * takes the first character in string and returns appropriate texture, will return a ¬ if doesn't exist
-     * @param {string} ch character to obtain texture of
-     * @param {bool} border if false or undefined will return normal character texture if true will get a bordered version
-     * @returns {texture} requested texture if exists or a not texture
-     */
-    static getAlphachar(ch, border){
-        let p = Tex.alphaset.indexOf(ch[0]);
-        if (p == -1) p = Tex.alphaset.length - 1;
-        return (border === undefined || !border) ? Tex.txAlpha[p] : Tex.txAlphaBordered[p];
-    }
-    /**
-     * returns the indexed texture from the alphaset, if outside range will return a ¬
-     * @param {string} ch character to obtain texture of
-     * @param {bool} border if true will get a bordered version
-     * @returns {texture} texture requested if possible
-     */
-    static getAlphaindex(idx, border){
-        if (p < 0 || p >= Tex.alphaset.length) p = Tex.alphaset.length - 1;
-        return (border === undefined || !border) ? Tex.txAlpha[p] : Tex.txAlphaBordered[p];
-    }
-    /** slope tiles 16x16 
-     * contains the following basic slopes
-     * 0,0 0,4 0,8 0,12 0,16
-     * 4,0 4,4 4,8 4,12 4,16
-     * 8,0 8,4 8,8 8,12 8,16
-     * 12,0 12,4 12,8 12,12 12,16
-     * 16,0 16,4 16,8 16,12
-     * used for testing purposes - for slope interactions when complete
-    */
-    static slopes;
-    /** holds rectangles portions for the slopes */
-    static #slopePorts;
-    /** holds slope textures from testing */
-    static tsSlopes;
-    /** returns a Tile object for the given slope*/
-    static getslopetile(left, right){
-        left >>= 2;
-        right >>= 2;
-        //finish this
-    }
-    /**
-     * hashes an RGB colour value for texture name in texture cache
-     * @param {colour} colour 
-     * @returns hashed colour
-     */
-    static colTonum(colour){
-        return colour[0]*1024 + colour[1]*256 + colour[2];
-    }
-    /** get a coloured pixel for making sprites which when scaled can make any sized rectangle 
-     * @param {colour} tintcolour 
-     * @returns {texture}
-    */
-    static getColouredPixel(tintcolour){
-        let colHash = Tex.colTonum(tintcolour);
-        let tex = Tex.tintcache.get(Tex.singlepixel.__hbname + colHash) ;
-        if (tex === undefined){
-            tex = createGraphics(1, 1);
-            tex.pixelDensity(1);
-            tex.fill(tintcolour);
-            tex.noStroke();
-            tex.rect(0,0,1,1);
-            tex.__hbname = Tex.singlepixel.__hbname;
-            tex.__hbtint = colHash;
-            Tex.tintcache.set(tex.__hbname + tex.__hbtint, tex);
-        }
-        return tex;
-    }    
-    //NEED TO TAKE ONBOARD THE ALPHA (as this is part of the tint)
-    /** takes a texture and produces a tinted version     
-     * tintcolour should be a rgb array 
-     * @param {texture} texture texture/image to copy
-     * @param {color} tintcolour to apply to the texture
-     * @param {float} alpha alpha value to apply to the tint 0 transparent 1 fully opaque
-     * @param {string} compositor if supplied overrides the default composite operation "destination-atop" with your own has to be valid operation
-     * @returns {texture} the coloured texture requested
-     @example [255,0,0] - rgb array full red, no green, no blue
-     DO NOT USE IN A GAME LOOP THESE SHOULD BE CREATED BEFORE GAME STARTS, as this may take time
-     if texture in that colour has been requested before then the cached version will be selected
-    */
-     static getTintedCopy(texture, tintcolour, alpha, compositor){
-        compositor = (compositor === undefined) ? "destination-atop" : compositor;
-        let colHash = Tex.colTonum(tintcolour);
-        let tex = Tex.tintcache.get(texture.__hbname + colHash) ;
-        if (tex === undefined){
-            if (alpha === undefined){alpha = 1;}
-            tex = createGraphics(texture.width, texture.height);
-            tex.pixelDensity(1);
-            tex.drawingContext.globalAlpha = alpha;
-            tex.fill(tintcolour);
-            tex.noStroke();
-            tex.rect(0,0,tex.width,tex.height);
-            tex.drawingContext.globalCompositeOperation = compositor;// "destination-atop";
-            tex.drawingContext.globalAlpha = 1;
-            tex.image(texture,0,0);
-            tex.__hbname = texture.__hbname;
-            tex.__hbtint = colHash;
-            Tex.tintcache.set(tex.__hbname + tex.__hbtint, tex);
-        }
-        return tex;
-    }      
-    /** holds all the cached tinted textures used for quick look up rather than keep generating*/
-    static tintcache = new Map();
-    /** holds all the cached textures */
-    static texturecache = new Map();
-    /** simple counter so cache can keep track and avoid duplicates */
-    static texnum = 0;
-    /** holds the image load requests as these happen asynchronously */
-    static loadQ = [];
-    /**
-     * let the engine know how many images you are loading 
-     * @param {int} number number of images to be loaded in this session
-     * use this if you are loading a lot and need to hold up further processing until they have loaded
-     * use Tex.loadcomplete to let you know if this has happend or not
-     */
-    static beginload(number){
-        Tex.loadcount = 0;
-        Tex.loadnumbner = number
-    }
-    /**
-     * gets true if loadnumber matches requested number set with beginload
-     * @returns {bool}
-     */
-    static get loadcomplete() { return Tex.loadcount == Tex.loadnumbner;}
-    /**
-     *  load and log a particular image/texture
-     * @param {string} fileNpath 
-     * @param {function} texture this is easier to do as an anonymous function see example provided here
-     * @example
-     * //assuming txtiles has been declared globally somewhere (eg. in sketch)  
-     * //anonymous function accepts parameter img, stores reference in txtiles
-     * Tex.loadToTexture("./tiles.png", (img)=>{txtiles=img;});
-     */
-    static loadToTexture(fileNpath, callback){
-        let tex = Tex.texturecache.get(fileNpath);
-        if (tex === undefined && !this.loadQ.includes(fileNpath)){
-            Tex.loadQ.push(fileNpath);
-            loadImage(fileNpath, (img)=>{
-                let t = img; 
-                t.__hbtint = this.colTonum([255,255,255])
-                t.__hbname = fileNpath;
-                //remove from q
-                Tex.texturecache.set(t.__hbname + t.__hbtint, t);
-                Tex.loadQ.splice(Tex.loadQ.indexOf(fileNpath),1);
-                Tex.loadcount++;
-                callback(t);
-                }
-            );
-        } else {console.log("attempt to load texture "+fileNpath+" again");}
-    }
-    //do not use stupid thing
-    // static waitloading(){
-    //     while (this.loadQ.length > 0);
-    // }
-    /** creates all the textures ready for use */
-    static createTextures(){
-        Tex.singlepixel = Tex.setupTexture(1,1);
-        Tex.singlepixel.background(255);
-
-        Tex.rect50by50 = Tex.setupTexture(50,50);
-        Tex.rect50by50.background(255);
-        
-        Tex.target = Tex.makeLetter("T",true);
-        Tex.genAlphaset();
-        // triangle
-        Tex.triangle = Tex.setupTexture(16,16);
-        Tex.triangle.triangle(0,15,8,0,15,15);
-        //circles
-        Tex.circle4by4 = Tex.setupTexture(4,4);
-        Tex.circle4by4.ellipse(2,2,1,1);
-
-        Tex.circle8by8 = Tex.setupTexture(8,8);
-        Tex.circle8by8.ellipse(4,4,3,3);
-
-        Tex.circle16by16 = Tex.setupTexture(16,16);
-        Tex.circle16by16.ellipse(8,8,7,7);
-
-        Tex.circle32by32 = Tex.setupTexture(32,32);
-        Tex.circle32by32.ellipse(16,16,15,15);
-        Tex.slopes = Tex.#createSlopes(16);
-    }
-    /** generates the alphabetic character textures */
-    static makeLetter(t, border){
-        // test for rendermetrics
-        push();
-        textFont(Tex.prerenderFont);
-        textSize(Tex.prerenderFontsize);
-        let b = textAscent();
-        let c = textDescent();
-        Tex.prerenderFontTextureSize = b + c + Tex.prerenderFontTextureSizeExtra;
-        pop();
-        let tx = Tex.setupTexture(Tex.prerenderFontTextureSize,Tex.prerenderFontTextureSize);
-        // tx.textFont("monospace");
-        tx.textFont(Tex.prerenderFont);
-        tx.textSize(Tex.prerenderFontsize);
-
-        //
-        tx.stroke(255);
-        tx.strokeWeight(2);
-        tx.noFill();
-        if (border !== undefined)
-            tx.rect(2,2,Tex.prerenderFontTextureSize-4,Tex.prerenderFontTextureSize-4,4,4,4,4);
-        tx.fill(255);
-        tx.textAlign(CENTER, CENTER);
-        tx.text(t,Tex.prerenderFontTextureSize/2,Tex.prerenderFontTextureSize/2);  
-        return tx;
-    }
-    /** generic routine to create a texture with the width and height requested
-     * will add it to the texture cache
-     * 
-     */
-
-    /**
-     * generic routine to create a texture with the width and height requested
-     * will add it to the texture cache
-     * @param {int} width number of pixels wide
-     * @param {int} height number of pixels high
-     * @returns {texture} texture to be drawn and written to
-     */
-    static setupTexture(width, height){
-        let t = createGraphics(width, height);
-        t.pixelDensity(1);
-        t.clear();
-        t.fill(255);
-        t.noStroke();
-        t.noSmooth();      
-        t.__hbname = "tx" + Tex.texnum++;
-        t.__hbtint = this.colTonum([255,255,255])
-        this.texturecache.set(t.__hbname + t.__hbtint, t);
-        return t;  
-    }
- 
-    /**
-     * generates a transparent texture with pixels set by a binary string array (white pixels equate 1 from the string array)
-     * 
-     * this can be used to generate tinted textures using getTintedCopy()
-     * 
-     * @param {string[]} each string in array represents a row of horizontal pixels, from top to bottom in binary (0/1), each string should contain the same number of bits
-     * @param {int} scalex number of pixels each bit represents horizontally, if ommitted assumes 1 pixel per bit
-     * @param {int} scaley number of pixels vertically each string represents, if ommitted assumes 1 row per string
-     * @returns {texture} texture to be drawn and written to
-     * @example 
-     * let tank = [
-     *      "0001000",
-     *      "0001000",
-     *      "1101011",
-     *      "1111111",
-     *      "1111111",
-     *      "1100011",
-     *      "1100011",
-     *      ];
-     * // use 4 pixels for each bit supplied horizontally and vertically
-     * tex28x28 = Tex.bitarrayTotexture(tank, 4, 4);
-     */
-    static bitarrayTotexture(bits, scalex, scaley){
-        scalex = (scalex === undefined)? 1 : scalex;
-        scaley = (scaley === undefined)? 1 : scaley;
-        let h = bits.length;
-        let w = Tex.longestString(bits);
-        let t = Tex.setupTexture(w *scalex, h * scaley);
-        for (let y = 0; y < h; y++){
-            for (let x = 0; x < w; x++){
-                if (bits[y][x] == "1"){
-                    t.rect(x * scalex, y * scaley, scalex, scaley);
-                }
-            }
-        }        
-        return t;
-    }
-
-    /** used by bitarray system to work out some metrics around bits, packs out shorter bit patterns
-     * @param {string[]} arr 
-     * @returns {int} longest string in the array
-     */
-    static longestString(arr){
-        let b = arr[0].length;
-        for (let p = 1; p < arr.length; p++){
-            b = arr[p].length > b ? arr[p].length : b;
-        }
-        //auto pad to right with 0
-        for (let p = 0; p < arr.length; p++){
-            if (arr[p].length < b){
-                arr[p] = arr[p].padEnd(b,"0");
-            }  
-        }
-        return b;
-    }
-    /** slope tiles 16x16 
-     * contains the following basic slopes
-     * 0,0 0,4 0,8 0,12 0,16
-     * 4,0 4,4 4,8 4,12 4,16
-     * 8,0 8,4 8,8 8,12 8,16
-     * 12,0 12,4 12,8 12,12 12,16
-     * 16,0 16,4 16,8 16,12
-    */
-    /** generates slope quarters for given square tile size */
-    static #createSlopes(size){
-        //each tile 16x16 going to define 5x5 array of tiles (some space for dumping other tiles in later on)
-        const t = Tex.setupTexture(256,256);
-        Tex.tsSlopes = [];
-        let q = (size/4) | 0;
-        
-        for (let y = 0; y < 5; y++){
-            for (let x = 0; x < 5; x++){
-                Tex.#trap(t, x * size, y * size, q * y , q * x, size);
-                let n = new Tile(t,  new Rectangle(x * size, y * size, size, size));
-                n.setHorizontalmap(q * y, q * x);
-                //let data = {};
-                //data.port = new Rectangle(x * size, y * size, size, size);
-                //data.tex = t;
-                //data.l = q * y;
-                //data.r = q * x;
-                Tex.tsSlopes.push(n);
-                //Engine.tsSlopes.push(data);
-            }
-        }
-        return t;
-    }
-    /** draw a vertical trapezium in a 16x16 area */
-    static #trap(t, x, y, l, r, w){
-        //draw triangle
-        t.fill(120);
-        if (l != r){
-            let x1 = x;
-            let y1 = y + l;
-
-            let x2 = x + w;
-            let y2 = y + r;
-
-            let x3 = x + ((l > r) ? w:0);
-            let y3 =  y + ((l > r) ? l:r);
-
-            t.triangle(x1,y1, x2,y2, x3, y3);
-        }
-        let height = (l>r) ? l : r;
-        if (height<w){
-            t.rect(x,y+height, w, w-height);
-        }
-    }    
-}
-"use strict";
-/******************************
- * view.js by Hurray Banana 2023-2024
- ******************************/
-/**
- * @classdesc describes a rectangle viewport to control display areas, defaults to same size of canvas
- */
-class View{
-    /** determines if viewport is prevented from extended beyond the world defined area
-     * when moving or positioning the viewport
-     * @type {bool}
-     */
-    clamp = true;
-    /** current position of the viewport @type {vector3} */
-    #position;
-    /**
-     * rectangular area of the viewport x and y values are always zero but does state width and height
-     * @type {Rectangle}
-     */
-    #area;
-    /**
-     * as area but the x and y positions reflect the current position of the viewport
-     * @returns {Rectangle}
-     */
-    #movedarea;
-    /**  rectangular area of the viewport x and y values are always zero but does state width and height
-     * @returns {Rectangle}
-     */
-    get area(){return this.#area;}
-    /**
-     * as area but the x and y positions reflect the current position of the viewport in the world
-     * @returns {Rectangle}
-     */
-    get worldarea(){return this.#movedarea;}
-    /** the position of the viewport, it's displacement as a vector3 value
-     * @returns {vector3}
-     */
-    get position(){return this.#position;}
-    /** sets the position of the viewport in the world using a vector3 value
-     * if clamp is set to true then the viewport will be restricted to the world area
-     * @param {vector3} value 
-     */
-    set position(value){
-        if (this.clamp){
-            this.#position.x = clamp(value.x, 0, Engine.worldWidth - this.#area.w);
-            this.#position.y = clamp(value.y, 0, Engine.worldHeight - this.#area.h);
-            this.#position.z = value.z;
-            this.#movedarea.x = this.#position.x | 0;
-            this.#movedarea.y = this.#position.y | 0;
-        }else{
-            this.#position = value;
-        }
-    }
-    /** the position of the viewport, it's displacement as a vector2 value
-     * @returns {vector2}
-     */
-    get position2d(){return new vector2(this.#position.x, this.#position.y);}
-    /** sets the position of the viewport in the world using a vector2 value
-     * if clamp is set to true then the viewport will be restricted to the world area
-     * @param {vector2} value 
-     */
-    set position2d(value){
-        if (this.clamp){
-            this.#position.x = clamp(value.x, 0, Engine.worldWidth - this.#area.w);
-            this.#position.y = clamp(value.y, 0, Engine.worldHeight - this.#area.h);
-            this.#movedarea.x = this.#position.x | 0;
-            this.#movedarea.y = this.#position.y | 0;
-        }else{
-            this.#position.x = value.x;
-            this.#position.y = value.y;
-        }
-    }
-    /**
-     * gets the width of the viewport @returns {float}
-     */
-    get w(){return this.#area.w;}
-    /**
-     * gets the height of the viewport @returns {float}
-     */
-    get h(){return this.#area.h;}
-    
-    /**
-     * gets the horizontal position (offset) of the viewport @returns {float}
-     */
-    get x(){return this.#position.x;};
-    /**
-     * sets the horizontal position (offset) of the viewport @param {float} value
-     * if clamp is set the horizontal position will be set such that the viewport stays within the world area defined
-     */
-    set x(value){this.#position.x = this.clamp ? clamp(value, 0, Engine.worldWidth - this.#area.w) : value;this.#movedarea.x = this.#position.x | 0;};
-    /**
-     * gets the vertical position (offset) of the viewport @returns {float}
-     */
-    get y(){return this.#position.y;};
-    /**
-     * sets the vertical position (offset) of the viewport @param {float} value
-     * if clamp is set the vertical position will be set such that the viewport stays within the world area defined
-     */
-    set y(value){this.#position.y = this.clamp ? clamp(value, 0, Engine.worldHeight - this.#area.h) : value;this.#movedarea.y = this.#position.y | 0;};
-    /**
-     * Creates a new viewport
-     * @param {Rectangle} viewport a rectangular region to size the viewport (the width and height are what is taken from the rectangle)
-     * @param {float} startx a start position for the horizontal position of the viewport in the world
-     * @param {float} starty a start position for the vertical position of the viewport in the world
-     */
-    constructor(viewport, startx, starty){
-        this.#area = viewport;
-        this.#movedarea = new Rectangle(startx, starty, viewport.w, viewport.h);
-        startx= (startx === undefined) ? 0 : startx;
-        starty = (starty === undefined) ? 0 : starty;
-        this.#position = new vector3(startx, starty, 0);
-    }
-    /**
-     * I don't know what this is actually supposed to do, Sprite draw is using the rectangle version, this might be old/not needed in this form
-     * I'm going to rename to see if it breaks anything
-     * @param {Rectangle} r 
-     * @param {bool} world 
-     * @returns {bool}
-     */
-    AM_I_NEEDED_in(r, world){//
-        if (world)
-                return !(r.left >= this.#movedarea.right ||
-                        r.right <= this.#movedarea.left ||
-                        r.top >= this.#movedarea.bottom ||
-                        r.bottom <= this.#movedarea.top
-                );
-            else
-                return !(r.left >= this.#area.width ||
-                        r.right <= 0 ||
-                        r.top >= this.#area.height ||
-                        r.bottom <= 0
-                );
-    }
-}
-  /******************************
-   * Limit.js by Hurray Banana 2023-2024
-   ******************************/ 
-  /** 
-   * @classdesc actions to be taken once a Sprite meets or passes the limit box edge that is defined
-   * 
-   * The limit box can be any given rectangular or 3d box area or
-   * the current position of the ViewPort. Limit boxes are only active once a sprite fully enters them,
-   * if you are having trouble with a limit box make sure you make it visible using
-   * @example this.limit.Show()
-   */
-  class Limitmode{
-        /** no boundary control */
-        static none = "none";
-        /** make sprite bounce back in opposite direction
-        * Nice for keeping a sprite within the boundaries of screen or rectangle. 
-        * Such as in breakout/arkanoid type games */
-        static bounce = "bounce";
-        /** Performs a bounce but only bothers checking the front and back of the limit box
-        * Great when used in conjuction with Z gravity and auto sprite scaling
-        * to create a throbbing sprite */
-        static bounceZonly = "bounceZonly";
-        /** make sprite bounce back in opposite direction but align with collided edge
-        * Only use this if you want the sprite to start its bounce aligned to the
-        * edge of the limit box, you might get odd effects when doing this */
-        static bounceAlign = "bounceAlign";
-        /** make sprite appear on other side of limit box
-        * Aligns the sprite with the opposite edge of limit box. Which can cause
-        * odd effects with groups of sprites following each other, use wrapExact instead. */
-        static wrap = "wrap";
-        /** makes sprite appear on other side of limit box taking
-        * account of exact position when leaving the limit box
-        * use this for scrolling text or groups of sprites for an Asteroid wrapping effect */
-        //static wrapExact = "wrapExact";
-        /** only wrap in X direction, but bounce in Y direction
-        * Use this if you want the sprite to wrap horizontally but fall under gravity */
-        static wrapXBounceY = "wrapXBounceY";
-        /** only wrap in Y direction, but bounce in X direction
-        * Use this if you want the sprite to wrap vertically but bounce off the sides */
-        static wrapYBounceX = "wrapYBounceX";
-        /** make sprite stop moving in axis of limit box and align with collided edge
-        * If a sprite hits the vertical edges of limit box then its horizontal
-        * velocity is stopped, it can still move vertically until it hits the top or
-        *  bottom of the limit box */
-        static stopAt = "stopAt";
-        /** make the sprite stop moving if any of borders are touched
-        * Useful for title graphics where you want a sprite to stop in a specific
-        * horizontal or vertical position but dont want to worry about exact size of limit box required */
-        static stopFirstTouch = "stopFirstTouch";
-        /** make sprite stop moving in axis of limit box and kill if no velocity set
-        * Works like stop but if sprite has no velocity it will be killed */
-        static stopThenKill = "stopThenKill";
-        /** kill sprite once outside limit box
-        * Use this to remove sprites once they have gone past the viewport 
-        * (unless you want them to come back on screen). This will remove them without them
-        * flashing off while still visible */
-        static killPast = "killPast";
-        /** kill sprite as soon as it touches limit box
-        * Great for implementing electric fences etc... */
-        static killTouch = "killTouch";
-        /** kill sprite as soon as it enters the limit box
-        * The sprite has to fit inside the limit box
-        * Useful for setting defence boundaries around turrets etc.. */
-        static killInside = "killInside";
-        /** kills sprite if goes past X limit box, but bounces on Y */
-        static killPastXBounceY = "killPastXBounceY";
-        /** kills a sprite if it goes past the left/right boundaries and 
-        * stops sprites vertical movement if it touches top/bottom */
-        static killPastXStopY = "killPastXStopY";
-        /** killPastYStopX, kills a sprite if it goes past top/bottom 
-        * boundaries and stops sprites horizontal movement if it touches left/right */
-        static killPastYStopX = "killPastYStopX";
-        /** Notify using callback property
-        * Use this in conjuction with an update routine to determine when sprite
-        * hits an edge */
-        static inform = "inform";
-        /** Notify by setting AtBoundary to true and align with collided edge
-        * Use this in conjuction with an UpdateHandler to determine when sprite
-        * hits an edge, this can be seen in use in the Space Invaders code. As soon as one
-        * invader hits the limit box all the invaders are then dropped down a line */
-        static informAlign = "informAlign";
-        //bounceOutside
-        /** Turns gravity off once collided and aligns sprite with limit box
-        * Use this when you want a sprite to stop falling after you have
-        * made it move under gravity */
-        static turnOffGravity = "turnOffGravity";
-        /** Turns off gravity but only if contact with bottom of limit box occurs */
-        static turnOffGravityBottomOnly = "turnOffGravityBottomOnly";
-        /** executes the sprite callback routine specified. You need to handle any other actions
-        * you want to apply to the sprite yourself, the event will continue to fire if your
-        * sprite is still at the limit box, so you need to ensure that you set OnLimit = null if you do not want this behaviour */
-        static fireEvent = "fireEvent";//fireEvent // rename to callbac = "";
-  }
-  /** @classdesc class to provide various types of interactions between sprites and bounding Boxes (depth based rectangles) 
-   * @example
-   * //initiate a limit box using
-   * this.limit = new Limit(this);
-  */
-  class Limit {
-    //limitactions = new Map();//can I use this instead of a big switch block
-    //#delta;
-    /**@type {Limitmode} holds the active mode of operation for the limit box */
-    #mode;
-    /** @type {Box} specifies the region for the limit box */
-    #area;
-    /** @returns {Box} specifies the Box area (rectangular region with depth) with which to apply limit actions */
-    get area(){return this.#area;}
-    /** specifies the Box area (rectangular region with depth) with which to apply limit actions 
-     * @param {Box|Rectangle} value the area of the limit box
-    */
-    set area(value){
-        if (value instanceof Rectangle){
-            this.#area = new Box(value.x, value.y, Engine.zHalf, avaluerea.w, value.h, Engine.zRange);
-        } else if (value instanceof Box){
-            this.#area = value;
-        }
-    }
-    /** @type {Sprite} holds reference to sprite that owns the limit box */
-    #ms;
-    /** @type {bool} specifies whether the limit box is active (generally sprites need to enter a box before it comes active) */
-    #active;
-    /** @returns {bool} specifies if the specified limit box is actively being processed default is true, until sprite enter the box this will be false */
-    get active(){return this.#active;}
-    /** @type {bool} states whether limit conditions have been met*/
-    #atLimit = false;
-    /** @returns {bool} true if sprite has interacted with the specified limit mode */
-    get atLimit(){return this.#atLimit;}
-
-    /** @type {{callback:method|function,instance:object}} */
-    #callback;
-    /** retrieves the current callback which will be triggered if the sprite interacts with the limit box
-     * (if this has not been set it will be null)
-     * it will be in the form of object properties
-     * @returns {{callback:method|function,instance:object}}
-     * @example 
-     * // two propeties callback and instance
-     * let callstuff = this.callback;
-     * if (callstuff != null) console.log(callstuff.callback, callstuff.instance);
-     */
-    get callback(){return this.#callback;}
-    /**
-     * sets (or changes) the callback handler called when sprite interacts with the limit box
-     * value must be an object with 2 properties
-     * @param {{callback:method|function,instance:object}} value 
-     * @example // limitreached is a method of your inherited sprite class
-     * this.callback = {callback:this.limitreached,instance:this};
-     * // or use the Engine.makeCallback() method
-     * this.callback = Engine.makeCallback(this.limitreached, this);
-     */
-    set callback(value){
-      if (value != undefined && value.callback !== undefined && value.inst !== undefined){
-        this.#callback = value;
-      }
-    }
-    /** holds a colour to show the limit box of this sprite
-     * If null (default) box not shown
-     * if a colour is stored then it will be drawn (use alpha values so you can see the sprite)
-     * @type {color}
-     * @example
-     * //show transparent red limit box
-     * this.limit.show = [255,0,0,100];
-     */
-    show = null;
-
-
-    /** creates a Limit object for this sprite, which is initially inactive
-     * use regionaction() to define an interaction mode
-     * @param {Sprite} boss 
-     */
-    constructor(boss){
-      this.#ms = boss;
-      this.#active = false;
-      this.#mode = Limitmode.none;
-    }
-    /** removes any reference resources */
-    cleanup(){
-        this.#ms = null;
-        this.#area = null;
-        this.#callback = null;
-    }
-    /** manually turn off limit box
-     * 
-     * @example 
-     * // for complete removal use
-     * this.limit.cleanup();
-     * this.limit = null;
-     */
-    off(){this.#active = false;}
-    /** re-activates a previously set limit mode
-     * 
-     * You can also just set another region action if you want to change behaviour or just for simplicity
-     */
-    reset(){
-      if (this.#area != null && this.#mode != Limitmode.none){
-        this.#active = true;
-      }
-    }
-    /** turns off the limit mode and changes themode to Limitmode.none 
-     * Set a regionaction
-    */
-    modeoff(){this.#active = false;this.#mode = Limitmode.none;}
-    /** specifies a limitmode and an active limit area 
-     * 
-     * if you want a static area provide a clone of a previously defined area/box (if that area will change)
-     * 
-     * If you want to track a moving area/box just use the boxes reference
-     * 
-     * set a callback (and it's instance) if you want notification of limit activity
-     * @param {Limitmode} mode action to take with limit area
-     * @param {Box|Rectangle} area limit area to interact with
-     * @param {{callback:method|function,instance:object}} callback triggered if the sprite interacts with the limit box
-     */
-    regionaction(mode, area, callback){//} instance, callme){
-        if(area instanceof Rectangle){
-            this.#area = new Box(area.x, area.y, Engine.zHalf, area.w, area.h, Engine.zRange);
-        } else if (area instanceof Box){
-            this.#area = area;
-        }
-        this.#mode = this.#getMode(mode);
-        this.#active = false;
-        this.#callback = callback;
-        // if (instance !== undefined && callme !== undefined){
-        //     this.#callback = {callback:callme,instance:instance};
-        // }
-    }
-    /**
-     * Specifies a limitmode that interacts with the standard (zeroed) viewport (i.e. screen area space)
-     * @param {Limitmode} mode action to take with limit area
-     * @param {{callback:method|function,instance:object}} callback triggered if the sprite interacts with the limit box
-     */
-    viewportaction(mode, callback){//instance, callme){
-        this.regionaction(mode, Engine.mainviewArea, callback);//instance, callme);
-    }
-    /* returns the function for that mode*/
-    #getMode(mode){
-      switch (mode){
-        case Limitmode.bounce:return this.#bounce;
-        case Limitmode.wrap:return this.#wrap;
-        case Limitmode.killTouch:return this.#killtouch;
-        case Limitmode.killPast:return this.#killpast;
-        case Limitmode.none:return this.modeoff;
-        case Limitmode.bounceZonly:return this.#bounceZonly;
-        case Limitmode.bounceAlign:return this.#bounceAlign;
-        case Limitmode.wrapXBounceY:return this.#wrapXBounceY;
-        case Limitmode.wrapYBounceX:return this.#wrapYBounceX;
-        case Limitmode.stopAt:return this.#stopAt;
-        case Limitmode.stopFirstTouch:return this.#stopFirstTouch;
-        case Limitmode.stopThenKill:return this.#stopThenKill;
-        case Limitmode.killInside:return this.#killInside;
-        case Limitmode.killPastXBounceY:return this.#killPastXBounceY;
-        case Limitmode.killPastXStopY:return this.#killPastXStopY;
-        case Limitmode.killPastYStopX:return this.#killPastYStopX;
-        case Limitmode.inform:return this.#inform;
-        case Limitmode.informAlign:return this.#informAlign;
-        case Limitmode.turnOffGravity:return this.#turnOffGravity;
-        case Limitmode.turnOffGravityBottomOnly:return this.#turnOffGravityBottomOnly;
-        case Limitmode.fireEvent:return this.#fireEvent;
-        default: return this.modeoff;
-      }
-    }
-
-    /** applies relevant updates to the limit box */
-    update(){
-        this.#atLimit = false;
-        if (this.#mode != Limitmode.none){
-            if (this.#active){
-                this.#mode();
-            } else {
-                //check to see if we are in limit area and so activate
-                if (this.#ms.right <this.#area.right  &&
-                    this.#ms.left > this.#area.left &&
-                    this.#ms.top > this.#area.top &&
-                    this.#ms.bottom < this.#area.bottom &&
-                    this.#ms.z > this.#area.back &&
-                    this.#ms.z < this.#area.front) {
-                    this.#active = true;
-                    if (this.#mode == Limitmode.killInside)
-                    {
-                        this.#atLimit = true;
-                        this.#ms.kill();
-                    }
-                }
-            }
-            if (this.#atLimit) {
-                Engine.processCallback(this.#callback);
-            }
-            // if (this.#atLimit && this.#callback != null){
-            //   this.#callback.callback.call(this.#callback.instance);
-            // }
-        }
-    }
-    #killpast(){
-        if (this.#ms.left > this.#area.right || this.#ms.right < this.#area.left ||
-          this.#ms.top > this.#area.bottom || this.#ms.bottom < this.#area.top ||
-          this.#ms.z < this.#area.back || this.#ms.z > this.#area.front){
-              this.#ms.kill();
-              this.#atLimit = true;
-        }
-    }
-    #killtouch(){
-        if (this.#ms.right > this.#area.right || this.#ms.left < this.#area.left ||
-            this.#ms.bottom > this.#area.bottom || this.#ms.top < this.#area.top ||
-            this.#ms.z < this.#area.back || this.#ms.z > this.#area.front){
-            this.#ms.kill();
-            this.#atLimit = true;
-        }
-    }
-    #bounceZonly(){
-      let diff = this.#ms.z - this.#area.back;
-      if (diff < 0){
-          this.#ms.z -= diff;// *this.#ms.e;
-          this.#ms.vz *= -this.#ms.e;
-          this.#atLimit = true;
-      } else {
-          diff = this.#ms.z - this.#area.front;
-          if (diff > 0) {
-              this.#ms.z -= diff;// * this.#ms.e;
-              this.#ms.vz *= -this.#ms.e;
-              this.#atLimit = true;
-          }
-      }
-    }
-    #bounceAlign(){} //modify already written bounce
-    #wrapXBounceY(){
-      if (this.#ms.right < this.#area.left)
-      {
-          this.#ms.left = this.#area.right;
-          //SpriteHelper.AlignLeftAt(boss, this.area.right, 0);
-          this.#atLimit = true;
-      }
-      else if (this.#ms.left > this.#area.right)
-      {
-          this.#ms.left = this.#area.right;
-          //SpriteHelper.AlignRightAt(boss, this.area.left, 0);
-          this.#atLimit = true;
-      }
-      //check Y
-      let diff = this.#ms.bottom - this.#area.bottom;
-      if (diff >= 0)
-      {
-          this.#ms.y -= diff;// * this.#ms.e;
-          this.#ms.vy *= -this.#ms.e;
-          this.#atLimit = true;
-      }
-      else
-      {
-          diff = this.#ms.top - this.#area.top;
-          if (diff <= 0)
-          {
-              this.#ms.y -= diff;// * this.#ms.e;
-              this.#ms.vy *= -this.#ms.e;
-              this.#atLimit = true;
-          }
-      }
-    }
-    #wrapYBounceX(){
-      if (this.#ms.bottom < this.#area.top)
-      {
-          this.#ms.top = this.#area.bottom;
-          //SpriteHelper.AlignTopAt(boss, this.area.bottom, 0);
-          this.#atLimit = true;
-      }
-      else if (this.#ms.top > this.#area.bottom)
-      {
-          this.#ms.bottom = this.#area.top;
-          //SpriteHelper.AlignBottomAt(boss, this.area.top, 0);
-          this.#atLimit = true;
-      }
-      //check X
-      let diff = this.#ms.right - this.#area.right;
-      if (diff > 0)
-      {
-          this.#ms.x -= diff;// * this.#ms.e;
-          this.#ms.vx *= -this.#ms.e;
-          this.#atLimit = true;
-      }
-      else
-      {
-          diff = this.#ms.left - this.#area.left;
-          if (diff < 0)
-          {
-              this.#ms.x -= diff;// * this.#ms.e;
-              this.#ms.vx *= -this.#ms.e;
-              this.#atLimit = true;
-          }
-      }
-    }
-    #stopAt(){
-      if (this.#ms.right > this.#area.right)
-      {
-          this.#ms.right = this.#area.right;
-          //SpriteHelper.AlignRightAt(boss, this.area.right, 0);
-          this.#ms.vx = 0;
-          this.#atLimit = true;
-          //this.#ms.Velocity = new Vector3(0.0f, this.#ms.vy, this.#ms.vz);
-          this.#ms.static = true;
-      }
-      else if (this.#ms.left < this.#area.left)
-      {
-          this.#ms.left = this.#area.left;
-          //SpriteHelper.AlignLeftAt(boss, this.area.left, 0);
-          this.#ms.vx = 0;
-          //this.#ms.Velocity = new Vector3(0.0f, this.#ms.vy, this.#ms.vz);
-          this.#atLimit = true;
-          this.#ms.static = true;
-      }
-      if (this.#ms.bottom > this.#area.bottom)
-      {
-          this.#ms.bottom = this.#area.bottom;
-          //SpriteHelper.AlignBottomAt(boss, this.area.bottom, 0);
-          this.#ms.vy = 0;
-          //this.#ms.Velocity = new Vector3(this.#ms.vx, 0.0f, this.#ms.vz);
-          this.#atLimit = true;
-          this.#ms.static = true;
-      }
-      else if (this.#ms.top < this.#area.top)
-      {
-          this.#ms.top = this.#area.top;
-          //SpriteHelper.AlignTopAt(boss, this.area.top, 0);
-          this.#ms.vy = 0;
-          //this.#ms.Velocity = new Vector3(this.#ms.vx, 0.0f, this.#ms.vz);
-          this.#atLimit = true;
-          this.#ms.static = true;
-      }
-      if (this.#ms.z < this.#area.back)
-      {
-          this.#ms.z = this.#area.back;
-          this.#ms.vz = 0;
-          this.#ms.static = true;
-          this.#atLimit = true;
-      }
-      else if (this.#ms.z > this.#area.front)
-      {
-          this.#ms.z = this.#area.front;
-          this.#ms.vz = 0;
-          this.#ms.static = true;
-          this.#atLimit = true;
-      }
-    }
-    #stopFirstTouch(){
-      if (this.#ms.right > this.#area.right)
-      {
-        this.#ms.right = this.#area.right;
-        //SpriteHelper.AlignRightAt(boss, this.area.right, 0);
-          this.#ms.Velocity = Vector3.Zero;
-          this.#ms.static = true;
-      }
-      else if (this.#ms.left < this.#area.left)
-      {
-        this.#ms.left = this.#area.left;
-        //SpriteHelper.AlignLeftAt(boss, this.area.left, 0);
-          this.#ms.Velocity = Vector3.Zero;
-          this.#atLimit = true;
-          this.#ms.static = true;
-      }
-      if (this.#ms.bottom > this.#area.bottom)
-      {
-        this.#ms.bottom = this.#area.bottom;
-        //SpriteHelper.AlignBottomAt(boss, this.area.bottom, 0);
-          this.#ms.Velocity = Vector3.Zero;
-          this.#atLimit = true;
-          this.#ms.static = true;
-      }
-      else if (this.#ms.top < this.#area.top)
-      {
-        this.#ms.top = this.#area.top;
-        //SpriteHelper.AlignTopAt(boss, this.area.top, 0);
-          this.#ms.Velocity = Vector3.Zero;
-          this.#atLimit = true;
-          this.#ms.static = true;
-      }
-      if (this.#ms.z < this.#area.back)
-      {
-          this.#ms.z = this.#area.back;
-          this.#ms.Velocity = Vector3.Zero;
-          this.#ms.static = true;
-          this.#atLimit = true;
-      }
-      else if (this.#ms.z > this.#area.front)
-      {
-          this.#ms.z = this.#area.front;
-          this.#ms.Velocity = Vector3.Zero;
-          this.#ms.static = true;
-          this.#atLimit = true;
-      }
-    }
-    #stopThenKill(){
-      if (this.#ms.right > this.#area.right)
-      {
-          this.#ms.right = this.#area.right;
-          //this.#ms.x = this.area.right - this.#ms.Width * 0.5;
-          this.#ms.vx = 0;
-          this.#atLimit = true;
-          this.#ms.static = true;
-      }
-      else if (this.#ms.left < this.#area.left)
-      {
-          this.#ms.left = this.#area.left;
-          //this.#ms.x = this.area.left + this.#ms.Width * 0.5;
-          this.#ms.vx = 0;
-          this.#atLimit = true;
-          this.#ms.static = true;
-      }
-      if (this.#ms.bottom > this.#area.bottom)
-      {
-          this.#ms.bottom = this.#area.bottom;
-          //this.#ms.y = this.area.bottom - this.#ms.Height *0.5;
-          this.#ms.vy = 0;
-          this.#atLimit = true;
-          this.#ms.static = true;
-      }
-      else if (this.#ms.top < this.#area.top)
-      {
-          this.#ms.top = this.#area.top;
-          //this.#ms.y = this.area.top + this.#ms.Height *0.5;
-          this.#ms.vy = 0;
-          this.#atLimit = true;
-          this.#ms.static = true;
-      }
-      if (this.#ms.z < this.#area.back)
-      {
-          this.#ms.z = this.#area.back;
-          this.#ms.vz = 0;
-          this.#ms.static = true;
-          this.#atLimit = true;
-      }
-      else if (this.#ms.z > this.#area.front)
-      {
-          this.#ms.z = this.#area.front;
-          this.#ms.vz = 0;
-          this.#ms.static = true;
-          this.#atLimit = true;
-      }
-      if (this.#ms.Velocity == Vector3.Zero)
-          this.#ms.kill();
-
-    }
-    #killInside(){}//doesn't need to do anything as this is tested elsewhere
-    #killPastXBounceY(){
-        //check x boundary
-      if (this.#ms.left > this.#area.right ||
-          this.#ms.right < this.#area.left)
-      {
-          this.#ms.kill();
-          this.#atLimit = true;
-      }
-      //check Y
-      let diff = this.#ms.bottom - this.#area.bottom;
-      if (diff > 0)
-      {
-          this.#ms.y -= diff;// * this.#ms.e;
-          this.#ms.vy *= -this.#ms.e;
-          this.#atLimit = true;
-      }
-      else
-      {
-          diff = this.#ms.top - this.#area.top;
-          if (diff < 0)
-          {
-              this.#ms.y -= diff;// * this.#ms.e;
-              this.#ms.vy *= -this.#ms.e;
-              this.#atLimit = true;
-          }
-      }
-    }
-    #killPastXStopY(){
-        //check x boundary
-        if (this.#ms.left > this.#area.right || this.#ms.right < this.#area.left){
-            this.#ms.kill();
-            this.#atLimit = true;
-        }
-        //check Y
-        if (this.#ms.bottom > this.#area.bottom){
-            this.#ms.bottom = this.#area.bottom;
-            //SpriteHelper.AlignBottomAt(boss, this.area.bottom, 0);
-            this.#ms.vy = 0;
-            this.#atLimit = true;
-            this.#ms.static = true;
-        } else if (this.#ms.top < this.#area.top){
-            this.#ms.top = this.#area.top;
-            //SpriteHelper.AlignTopAt(boss, this.area.top, 0);
-            this.#ms.vy = 0;
-            this.#atLimit = true;
-            this.#ms.static = true;
-        }
-    }
-    #killPastYStopX(){
-      if (this.#ms.bottom > this.#area.bottom || this.#ms.top < this.#area.top){
-          this.#ms.kill();
-          this.#atLimit = true;
-      }
-      if (this.#ms.right > this.#area.right){
-          this.#ms.right = this.#area.right;
-          //SpriteHelper.AlignRightAt(boss, this.area.right, 0);
-          this.#ms.vx = 0;
-          //this.#ms.Velocity = new Vector3(0.0f, this.#ms.vy, this.#ms.vz);
-          this.#atLimit = true;
-          this.#ms.static = true;
-      } else if (this.#ms.left < this.#area.left){
-          this.#ms.left = this.#area.left;
-          //SpriteHelper.AlignLeftAt(boss, this.area.left, 0);
-          this.#ms.vx = 0;
-          //this.#ms.Velocity = new Vector3(0.0f, this.#ms.vy, this.#ms.vz);
-          this.#atLimit = true;
-          this.#ms.static = true;
-      }
-    }
-    #inform(){
-      this.#atLimit = this.#ms.right >= this.#area.right || this.#ms.left <= this.#area.left || 
-                      this.#ms.bottom >= this.#area.bottom || this.#ms.top <= this.#area.top ||
-                      this.#ms.z <= this.#area.back || this.#ms.z >= this.#area.front;
-    }
-    #informAlign(){
-      if (this.#ms.right >= this.#area.right){
-          this.#ms.right = this.#area.right;
-          //SpriteHelper.AlignRightAt(boss, this.area.right, 0);
-          this.#atLimit = true;
-      } else if (this.#ms.left <= this.#area.left) {
-          this.#ms.left = this.#area.left;
-          //SpriteHelper.AlignLeftAt(boss, this.area.left, 0);
-          this.#atLimit = true;
-      }
-      if (this.#ms.bottom >= this.#area.bottom){
-          this.#ms.bottom = this.#area.bottom;
-          //SpriteHelper.AlignBottomAt(boss, this.area.bottom, 0);
-          this.#atLimit = true;
-      } else if (this.#ms.top <= this.#area.top){
-          this.#ms.top = this.#area.top;
-          //SpriteHelper.AlignTopAt(boss, this.area.top, 0);
-          this.#atLimit = true;
-      }
-      if (this.#ms.z <= this.#area.back){
-          this.#ms.z = this.#area.back;
-          this.#atLimit = true;
-      }else if (this.#ms.z >= this.#area.front){
-          this.#ms.z = this.#area.front;
-          this.#atLimit = true;
-      }
-    }
-    #turnOffGravity(){
-      if (this.#ms.right >= this.#area.right){
-          this.#ms.right = this.#area.right;
-          //SpriteHelper.AlignRightAt(boss, this.area.right, 0);
-          this.#atLimit = true;
-          this.#ms.Gravity = Vector3.Zero;
-          this.#ms.vx = 0;
-      }else if (this.#ms.left <= this.#area.left){
-          this.#ms.left = this.#area.left;
-          //SpriteHelper.AlignLeftAt(boss, this.area.left, 0);
-          this.#atLimit = true;
-          this.#ms.Gravity = Vector3.Zero;
-          this.#ms.vx = 0;
-      }
-      if (this.#ms.bottom >= this.#area.bottom){
-          this.#ms.bottom = this.#area.bottom;
-          //SpriteHelper.AlignBottomAt(boss, this.area.bottom, 0);
-          this.#atLimit = true;
-          this.#ms.Gravity = Vector3.Zero;
-          this.#ms.vy = 0;
-      }else if (this.#ms.top <= this.#area.top){
-          this.#ms.top = this.#area.top;
-          //SpriteHelper.AlignTopAt(boss, this.area.top, 0);
-          this.#atLimit = true;
-          this.#ms.Gravity = Vector3.Zero;
-          this.#ms.vy = 0;
-      }
-      if (this.#ms.z <= this.#area.back){
-          this.#ms.z = this.#area.back;
-          this.#atLimit = true;
-          this.#ms.Gravity = Vector3.Zero;
-          this.#ms.vz = 0;
-      }else if (this.#ms.z >= this.#area.front){
-          this.#ms.z = this.#area.front;
-          this.#atLimit = true;
-          this.#ms.Gravity = Vector3.Zero;
-          this.#ms.vz = 0;
-      }
-    }
-    #turnOffGravityBottomOnly(){
-      if (this.#ms.bottom >= this.#area.bottom){
-          this.#ms.bottom = this.#area.bottom;
-          //SpriteHelper.AlignBottomAt(boss, this.area.bottom, 0);
-          this.#atLimit = true;
-          this.#ms.Gravity = Vector3.Zero;
-          this.#ms.vy = 0;
-      }
-    }
-    #fireEvent(){
-        if (this.#callback != null){
-            if (this.#ms.right > this.#area.right || this.#ms.left < this.#area.left ||
-              this.#ms.bottom > this.#area.bottom || this.#ms.top < this.#area.top ||
-              this.#ms.z < this.#area.back || this.#ms.z > this.#area.front){
-                //LimitCallBack();
-                this.#atLimit = true;
-            }
-        }
-    }
-    #bounce(){
-        if (this.#ms.vx < 0){ // left
-          if (this.#ms.left <= this.#area.l) { 
-            this.#ms.vx *= -this.#ms.e;}
-        } else if (this.#ms.vx > 0) { //  right
-          if (this.#ms.right >= this.#area.r) { 
-            this.#ms.vx *= -this.#ms.e;}
-        }
-        
-        if (this.#ms.vy < 0){ // up
-          if (this.#ms.top <= this.#area.t) { 
-            this.#ms.vy *= -this.#ms.e;}
-        } else if (this.#ms.vy > 0) { // down
-          if (this.#ms.bottom >= this.#area.b) { 
-            this.#ms.vy *= -this.#ms.e;}
-        }
-    }
-
-    #wrap(){
-        if (this.#ms.vx < 0){ // left
-            if (this.#ms.right < this.#area.l) { 
-            this.#ms.left = this.#area.r;}
-        } else if (this.#ms.vx > 0) { //  right
-            if (this.#ms.left > this.#area.r) { 
-            this.#ms.right = this.#area.l;}
-        } else { //no motion
-          if (this.#ms.right < this.#area.l) { 
-            this.#ms.left = this.#area.r;}
-          else if (this.#ms.left > this.#area.r) { 
-            this.#ms.right = this.#area.l;}
-        }
-        
-        if (this.#ms.vy < 0){ // up
-            if (this.#ms.bottom < this.#area.t) { 
-            this.#ms.top = this.#area.b;}
-        } else if (this.#ms.vy > 0) { // down
-            if (this.#ms.top > this.#area.b) { 
-            this.#ms.bottom = this.#area.t;}
-        } else { //no motion
-          if (this.#ms.bottom < this.#area.t) { 
-            this.#ms.top = this.#area.b;}
-          else if (this.#ms.top > this.#area.b) { 
-            this.#ms.bottom = this.#area.t;}  
-        }
-    }
-  }
-
-/******************************
- * vector2.js by Hurray Banana 2023-2024
- ******************************/ 
-
-/**
- * @classdesc used in some methods to lock directions to ordinal or leave in a free direction
- */
-class DirectionAccuracy {
-
-    /** x propery */
-    x= 45;
-    /** y property */
-    y;
-    /** clamp value for rotation or direction to ordinal values NSEW */
-    static ordinals = "ordinals";
-    /** calculate the direction or rotation as it occurs */
-    static free = "free";
-}
-
-/**
- * @classdesc 
- * provides support for 2d values and associated helper functions and arithmetic
- */
-class vector2{
-    /** base storage if 1st component @type {float} */
-    #x=0;
-    /** base storage if 2nd component @type {float} */
-    #y=0;
-    /** dirty storage of length pre-calculated when components change @type {float}*/
-    #length;
-    /**
-     * gets the pre-calculated magnitude of the vector
-     * @returns {float}
-     * */
-    get length(){return this.#length;}
-    /**
-     * gets the pre-calculated magnitude of the vector, alternative name
-     * @returns {float}
-     * */
-    get distance() {return this.#length;}
-    //#mag = 0; - TBR
-    /**
-     * Creates a vector2 value with the two initial values
-     * @param {float} x 
-     * @param {float} y 
-     */
-    constructor(x, y){
-        this.set(x,y);
-    }
-    /**
-     * @returns {bool} true if this vector is (0,0)}
-     */
-    get iszero(){return this.#x == 0 && this.#y == 0;}
-    /**
-     * @returns {bool} true if this vector is (1,1)}
-     */
-    get isone(){return this.#x == 1 && this.#y == 1;}    //creates a new object instance with the values from this
-    // /**
-    //  * @returns {vector2} creates a new vector2 object instance taking the x and y values as copies from this vector2,
-    //  */
-    // get clone(){return new vector2(this.#x, this.#y);}
-    /**
-     * sets the x and y components of the vector2
-     * @param {float} x x value to set
-     * @param {float} y y value to set
-     */
-    set(x,y){
-        this.#x = x;
-        this.#y = y;
-        this.#calcdist();
-    }
-    /**
-     * @returns {float} gets the x component (1st component) of the vector
-     */
-    get x(){return this.#x;}
-    /**
-     * @returns {float} gets the y component (2nd component) of the vector
-     */
-    get y(){return this.#y;}
-    /**
-     * @returns {float} gets the w component (1st component) of the vector, alternative name (of x) for different contexts
-     */
-    get w(){return this.#x;}
-    /**
-     * @returns {float} gets the h component (2nd component) of the vector, alternative name (of y) for different contexts
-     */
-    get h(){return this.#y;}
-    /**
-     * @param {float} value sets the x component (1st component) of the vector
-     */
-    set x(value){
-        if (this.#x != value){
-        this.#x = value;
-        this.#calcdist();
-        } 
-    }
-    /**
-     * @param {float} value sets the y component (1st component) of the vector
-     */
-    set y(value){
-        if (this.#y != value){
-        this.#y = value;
-        this.#calcdist();
-        } 
-    }
-    /**
-     * @param {float} value sets the w component (1st component) of the vector
-     */
-    set w(value){
-        if (this.#x != value){
-        this.#x = value;
-        this.#calcdist();
-        } 
-    }
-    /**
-     * @param {float} value sets the h component (2nd component) of the vector
-     */
-    set h(value){
-        if (this.#y != value){
-        this.#y = value;
-        this.#calcdist();
-        } 
-    }
-    /** calculates the length of the vector */
-    #calcdist(){
-        this.#length = Math.sqrt(this.#x*this.#x + this.#y*this.#y);
-    }
-    /**
-     * produces a vector2 value interpolated between vectors a and b
-     * @param {vector2} a first vector2
-     * @param {vector2} b second vector2
-     * @param {float} p value between 0 and 1 controlling interpolation between a and b
-     * @returns {vector2} interpolated 
-     */
-    static lerp(a, b, p){
-        let v = vector2.zero;
-        v.x = a.x + (b.x - a.x) * p;
-        v.y = a.y + (b.y - a.y) * p;
-        return v;
-    }
-
-    /**
-     * normalises this vector (unit length 1) this destorys the orginal vector, this destroys the previous values.
-     * If you want a normalised version of this vector withouth destroying its value then use @see {@link normalised}
-     */
-    normalise(){
-        this.#x = this.#x/this.#length;
-        this.#y = this.#y/this.#length;
-        this.#length = 1;
-    }
-    /**
-     * @returns {vector2}  a new vector that is the normalised form of this vector
-     */
-    normalised(){
-        return new vector2(this.#x/this.#length, this.#y/this.#length);
-    }
-
-    /**
-     * returns a new vector2 that is the normalised version of component values
-     * @param {float} x the x component of a vector
-     * @param {float} y the y component of a vector
-     * @returns {vector2} a new vector2 instance which is a normalised version of the given component values
-     */
-    static normalised(x,y){
-        let mag = Math.sqrt(x*x + y*y);
-        //let ux = x/mag;
-        //let uy = y/mag;
-        return new vector2(x/mag, y/mag);
-    }
-    /**
-     * The results and additional angles are in degrees use @see {@link anglefromdirectionR} for a version in radians
-     * @param {vector2} direction a 2d vector which you want the angle of
-     * @param {float} additionalAngle additional angle in radians to add on to the 
-     * @returns {float} an angle in degrees which is the direction vector given plus the additional angle specified
-     */
-    static anglefromdirection(direction, additionalAngle){
-        additionalAngle = (additionalAngle === undefined) ? 0 : additionalAngle * Math.PIby180;
-        return vector2.anglefromdirectionR(direction, additionalAngle) * Math.hb180byPI;
-    }
-    /**
-     * The results and additional angles are in radians use @see {@link anglefromdirection} for a version in degrees
-     * @param {vector2} direction a 2d vector which you want the angle of
-     * @param {float} additionalAngle additional angle in radians to add on to the 
-     * @returns {float} an angle in radians which is the direction vector given plus the additional angle specified
-     */
-    static anglefromdirectionR(direction, additionalAngle){
-        additionalAngle = (additionalAngle === undefined) ? 0 : additionalAngle;
-        let bearing = 0;
-        if (direction.y == 0)
-        {
-            if (direction.x < 0)
-                bearing = Math.PI * 1.5;
-            else
-                bearing = Math.PI * 0.5;
-        }
-        else
-        {
-            let r = Math.atan(-direction.x / direction.y);
-            if (direction.y > 0)
-                //rotationAngle = (float)(r + Math.PI);
-                if (direction.x < 0)
-                    bearing = r - Math.PI;
-                else
-                    bearing = r + Math.PI;
-            else
-                bearing = r;
-        }
-        bearing += additionalAngle;
-        return (bearing < Math.PIx2) ? bearing : bearing - Math.PIx2;
-    }
-
-    /**
-     * takes an angle and turns it into a direction vector that can be used for velocities or other movement
-     * @param {float} angle in degrees to convert to direction
-     * @param {float} additionalAngle a further angle to add on in degrees
-     * @returns {vector2} a direction vector in the direction of the 2 angles requested
-     */
-    static directionfromangle(angle, additionalAngle){
-        angle += (additionalAngle === undefined) ? 0 : additionalAngle;
-        angle = angle * Math.PIby180;
-
-        return new vector2(Math.cos(angle - Math.PIby2),
-                                Math.sin(angle - Math.PIby2));
-    }
-    /**
-     * takes an angle and turns it into a direction vector that can be used for velocities or other movement
-     * @param {float} angle in radians to convert to direction
-     * @param {float} additionalAngle a further angle to add on in radians
-     * @returns {vector2} a direction vector in the direction of the 2 angles requested
-     */
-    static directionfromangleR(angle, additionalAngle){
-        angle += (additionalAngle === undefined) ? 0 : additionalAngle;
-
-        return new vector2(Math.cos(angle - Math.PIby2),
-                                Math.sin(angle - Math.PIby2));
-    }
-    /** Returns a normalised direction vector looking from the starting sprite to the other sprite
-    * @param {vector2} from start position
-    * @param {vector2} to the direction to look towards
-    * @param {DirectionAccuracy} accuracy choose either free direction or lock to ordinals NSEW
-    * @returns {vector2} normalised Vector2 direction vector
-    */
-    static lookAt(from, to, accuracy){
-        let d = new vector2();
-        d.x = to.x - from.y;
-        d.y = to.y - from.y;
-        if (d.x == 0 && d.y == 0){
-            d = vector2.zero;
-        }else{
-            switch (accuracy)
-            {
-                case DirectionAccuracy.ordinals:
-                    d = ordinalise(d);
-                    break;
-                case DirectionAccuracy.free:
-                    d.normalise();
-                    break;
-            }
-        }
-        return d;
-    }    
-    /**
-     * attempts to give a direction vector as close to the ordinal directions (NSEW)
-     * @param {vector2} direction vector to ordinalise
-     * @returns {vector2} containing NSEW directions only
-     */
-    static ordinalise(direction){
-        if (!direction.iszero){
-            if (Math.abs(direction.y) > Math.abs(direction.x)){
-                if (direction.y > 0)
-                    return vector2.down;
-                else
-                    return vector2.up;
-            }else{
-                if (direction.x > 0)
-                    return vector2.right;
-                else
-                    return vector2.left;
-            }
-        }
-        return vector2.zero;
-    }       
-    /** calculates the dot product between 2 vector2 values 
-     * @param {vector2} a first vector
-     * @param {vector2} b second vector
-     * @returns {float} the dot product
-    */
-    static dot(a, b){
-        return a.x*b.x + a.y*b.y;
-    }
-    /**
-     * Produces a new vector2 that is this vector multiplied the scalar value
-     * @param {float} scalar value to multiply the components of this vector by
-     * @returns {vector2} a new vector2 that is this vector multiplied by the scalar value
-     */
-    mulNew(scalar){
-        return new vector2(this.#x * scalar, this.#y * scalar);
-    }
-    /**
-     * Produces a new vector2 that is this vector divided the scalar value
-     * @param {float} scalar value to multiply the components of this vector by
-     * @returns {vector2} a new vector2 that is this vector divided by the scalar value
-     */
-    divNew(scalar){
-        return new vector2(this.#x / scalar, this.#y / scalar);
-    }
-    /**
-     * multiplies this vector by the scalar value
-     * @param {float} scalar value to multiply the components of this vector by
-     */
-    mul(scalar){
-        this.x = this.#x * scalar;
-        this.y = this.#y * scalar;
-    }
-    /**
-     * divides this vector by the scalar value
-     * @param {float} scalar value to divide the components of this vector by
-     */
-    div(scalar){
-        this.x = this.#x / scalar;
-        this.y = this.#y / scalar;
-    }
-    /**
-     * Adds either a vector2 to this vector or two component values to this vector
-     * @param {float|vector2} vec if you supply a vector2 value then it is added to this vector2 value
-     * @param {float|undefined} y if defined then the 2 parameters are assumed to be an x and y value to add to this vector2 components
-     */
-    add(vec, y){
-        if (y === undefined){// if just a vector
-        this.#x = this.#x + vec.x;
-        this.#y = this.#y + vec.y;
-
-        } else {
-        this.#x += vec;
-        this.#y += y;
-        }
-        this.#calcdist();
-    }
-    /**
-     * subtracts either a vector2 from this vector or two component values from this vector
-     * @param {float|vector2} vec if you supply a vector2 value then it is subtract from this vector2 value
-     * @param {float|undefined} y if defined then the 2 parameters are assumed to be an x and y value to subtract from this vector2 components
-     */
-    sub(vec, y){
-        if (y === undefined){// if just a vector
-        this.#x -= vec.x;
-        this.#y -= vec.y;
-        } else {
-        this.#x -= vec;
-        this.#y -= y;
-        }
-        this.#calcdist();
-    }
-    /**
-     * creates a new vector2 by adding either a vector2 to this vector or two component values to this vector
-     * @param {float|vector2} vec if you supply a vector2 value then it is added to this vector2 value
-     * @param {float|undefined} y if defined then the 2 parameters are assumed to be an x and y value to add to this vector2 components
-     * @returns {vector2} a new vector2 adding the vectors or components together without affecting this vector2
-     */
-    addNew(vec, y){
-        if (y === undefined){// if just a vector
-            return new vector2(this.#x + vec.x, this.#y + vec.y);
-        } else {
-            return new vector2(this.#x + vec, this.#y + y);
-        }
-    }
-    /**
-     * creates a new vector2 by subtracting either a vector2 from this vector or two component values from this vector
-     * @param {float|vector2} vec if you supply a vector2 value then it is subtracted from this vector2 value
-     * @param {float|undefined} y if defined then the 2 parameters are assumed to be an x and y value to subtract from this vector2 components
-     * @returns {vector2} a new vector2 subtracting the vectors or components together without affecting this vector2
-     */
-    subNew(vec, y){
-        if (y === undefined){// if just a vector
-            return new vector2(this.#x - vec.x, this.#y - vec.y);
-        } else {
-            return new vector2(this.#x - vec, this.#y - y);
-        }
-    }
-    /**
-     * adds 2 vectors together v1 + v2
-     * @param {vector2} v1 first vector to add
-     * @param {vector2} v2 second vector to add
-     * @returns {vector2} a new vector2 adding two supplied vectors
-     */
-    static add(v1, v2){
-        return new vector2(v1.x + v2.x, v1.y + v2.y);
-    }
-    /**
-     * subtracts 2 vectors v1 - v2
-     * @param {vector2} v1 first vector
-     * @param {vector2} v2 second vector to subtract from the first one
-     * @returns {vector2} a new vector2 subtracting two supplied vectors
-     */
-    static sub(v1, v2){
-        return new vector2(v1.x - v2.x, v1.y - v2.y);
-    }
-    /**
-     * calculates the distance between 2 point vectors
-     * @param {vector2} v1 start point
-     * @param {vector2} v2 end point
-     * @returns {float} distance between 2 point vectors
-     */
-    static distance(v1, v2){
-        return Math.sqrt((v2.x-v1.x)**2 + (v2.y-v1.y)**2);
-    }
-    /**
-     * calculates the distance between 2 point vectors without performing square root
-     * @param {vector2} v1 start point
-     * @param {vector2} v2 end point
-     * @returns {float} squared distance between 2 point vectors
-     */
-    static distanceSQ(v1, v2){
-        return (v2.x-v1.x)**2 + (v2.y-v1.y)**2;
-    } 
-     /**returns a new vector2 that is a copy of the values of this one, not a reference a separate object
-     * 
-     * be warned clone creates an object so is about 20x slower than setting individual vector coords
-     * @example
-     * b.x = a.x;
-     * b.y = a.y;
-     * 
-     * //or using a.cloneto(b);
-     * @returns {vector2} a new vector2 with the same values as this vector2
-     */
-    get clone(){
-        return new vector2(this.#x, this.#y);
-    }
-    /**
-     * clones this vector2 to the existing vector passed as a parameter, avoiding the need to instantiate another object
-     * @param {vector2} here a vector2 instance to overwrite the values of
-    */
-    cloneto(here){
-        here.x = this.#x;
-        here.y = this.#y;
-        here.#calcdist();
-    }
-    /** @returns {vector2} new vector (0,0) */
-    static get zero(){return new vector2(0,0);}
-    /** @returns {vector2} new vector (1,1) */
-    static get one(){return new vector2(1,1);}
-    /** @returns {vector2} new vector (-1,0) */
-    static get left(){return new vector2(-1,0);}
-    /** @returns {vector2} new vector (1,0) */
-    static get right(){return new vector2(1,0);}
-    /** @returns {vector2} new vector (0,-1) */
-    static get up(){return new vector2(0,-1);}
-    /** @returns {vector2} new vector (0,1) */
-    static get down(){return new vector2(0,1);}
-
-}
-/******************************
- * vector3.js by Hurray Banana 2023-2024
- ******************************/ 
-
-/** @classdesc 3d position and methods */
-class vector3{
-    /** @type {float} holds x component */
-    #x=0;
-    /** @type {float} holds y component */
-    #y=0;
-    /** @type {float} holds z component */
-    #z=0;
-    /** @type {float} holds length of component */
-    #length;
-    //gets the pre-calculated magnitude of the vector
-    /** @returns {float} pre calculated length of vector3, also it's magnitude */
-    get length(){return this.#length;}
-    /** @returns {float} pre calculated length of vector3, also it's magnitude */
-    get distance() {return this.#length;}
-    #mag = 0;
-    /** creates an instance of a new vector3
-     * @param {float} x initial x component of vector
-     * @param {float} y initial y component of vector
-     * @param {float} z initial z component of vector if missing z component is set to zero
-     */
-    constructor(x, y, z){
-        if (z === undefined) z = 0;
-        this.set(x, y, z);
-    }
-    /**@returns {bool} true if all 3 components are 0*/
-    get iszero(){return this.#x == 0 && this.#y == 0 && this.#z == 0;}
-    /**@returns {bool} true if all 3 components are 1*/
-    get isone(){return this.#x == 1 && this.#y == 1 && this.#z == 1;}
-    /**returns true if given vector is the same value as this one 
-     * @param {vector3} a vector to compare
-     * @returns {bool} true if 3 components are the same, false if any one component isn;t
-    */
-    equal(a){
-        return this.#x == a.#x && this.#y == a.#y && this.#z == a.#z;
-    }
-    /**create a new instance of a vector3 with the values of this one - not a reference */
-    get clone(){return new vector3(this.#x, this.#y, this.#z);}
-    /**
-     * sets the vector and calculates its length
-     * @param {float} x 
-     * @param {float} y 
-     * @param {float} z 
-     */
-    set(x, y, z){
-        this.#x = x;
-        this.#y = y;
-        this.#z = z;
-        this.#calcdist();
-    }
-    /** gets the x component of the vector
-     * @returns {float} value 
-     */
-    get x(){return this.#x;}
-    /** gets the y component of the vector
-     * @returns {float} value 
-     */
-    get y(){return this.#y;}
-    /** gets the z component of the vector
-     * @returns {float} value 
-     */
-    get z(){return this.#z;}
-    /** gets the width component of the vector (x component)
-     * @returns {float} value 
-     */
-    get w(){return this.#x;}
-    /** gets the height component of the vector (y component)
-     * @returns {float} value 
-     */
-    get h(){return this.#y;}
-    /** gets the depth component of the vector (z component)
-     * @returns {float} value 
-     */
-    get d(){return this.#z;}
-    /** sets the x component of the vector
-     * @param {float} value 
-     */
-    set x(value){
-        if (this.#x != value){
-            this.#x = value;
-            this.#calcdist();
-        } 
-    }
-    /** sets the y component of the vector
-     * @param {float} value 
-     */
-    set y(value){
-        if (this.#y != value){
-            this.#y = value;
-            this.#calcdist();
-        } 
-    }
-    /** sets the z component of the vector
-     * @param {float} value 
-     */
-    set z(value){
-        if (this.#z != value){
-            this.#z = value;
-            this.#calcdist();
-        } 
-    }
-    /** sets the width component (x component of the vector)
-     * @param {float} value 
-     */
-    set w(value){
-        if (this.#x != value){
-            this.#x = value;
-            this.#calcdist();
-        } 
-    }
-    /** sets the height component (y component of the vector)
-     * @param {float} value 
-     */
-    set h(value){
-        if (this.#y != value){
-            this.#y = value;
-            this.#calcdist();
-        } 
-    }
-    /** sets the depth component (z component of the vector)
-     * @param {float} value 
-     */
-    set d(value){
-        if (this.#z != value){
-            this.#z = value;
-            this.#calcdist();
-        } 
-    }    
-    /** pre-calculates the length of the vector */
-    #calcdist(){
-        this.#length = Math.sqrt(this.#x**2 + this.#y**2 + this.#z**2);
-    }
-
-    /**
-     * produces a vector3 value interpolated between vectors a and b
-     * @param {vector3} a first vector3
-     * @param {vector3} b second vector3
-     * @param {float} p value between 0 and 1 controlling interpolation between a and b
-     * @returns {vector3} interpolated 
-     */
-    static lerp(a, b, p){
-        let v = vector3.zero;
-        v.x = a.x + (b.x - a.x) * p;
-        v.y = a.y + (b.y - a.y) * p;
-        v.z = a.z + (b.z - a.z) * p;
-        return v;
-    }
-    /**normalises this vector (unit length 1) this destroys the orginal vector
-     * 
-     * use normalisedclone if you want a new vector that is the normalised version of this vector
-    */
-    normalise(){
-        this.#x = this.#x/this.#length;
-        this.#y = this.#y/this.#length;
-        this.#z = this.#z/this.#length;
-        this.#length = 1;
-    }
-    /**returns a new vector3 that is the normalised form of this vector3
-     * @returns {vector3} a new vector3 instance which is the normalised version of this vector3
-    */
-    normalisedclone(){
-        return new vector3(this.#x/this.#length, this.#y/this.#length, this.#z/this.#length );
-    }
-    /**
-     * creates a normalised vector based on the x and y and z values
-     * @param {float} x 
-     * @param {float} y 
-     * @param {float} z 
-     * @returns {vector3} unit vector3
-    */
-    static normalised(x,y,z){
-        let mag = Math.sqrt(x**2 + y**2 + z**2);
-        return new vector3(x/mag, y/mag, z/mag);
-    }
-
-    /**returns the angle of the given  direction vector
-     * 
-     * This only examines 2d values as it is a bearing (which is 2d)
-     * @param {vector3} direction direction to convert
-     * @param {float} additionalAngle to add on to the direction in degrees
-     * @returns {float} angle in degrees
-    */
-    static anglefromdirection(direction, additionalAngle){
-        additionalAngle = (additionalAngle === undefined) ? 0 : additionalAngle * Math.PIby180;
-        return vector3.anglefromdirectionR(direction, additionalAngle) * Math.hb180byPI;
-    }
-    /**returns the angle of the given  direction vector
-     * 
-     * This only examines 2d values as it is a bearing (which is 2d)
-     * @param {vector3} direction direction to convert
-     * @param {*} additionalAngle to add on to the direction in radians
-     * @returns {float} angle in radians
-    */
-    static anglefromdirectionR(direction, additionalAngle){
-        if (additionalAngle === undefined){
-            additionalAngle = 0;
-        }
-        let bearing = 0;
-        if (direction.y == 0)
-        {
-            if (direction.x < 0)
-                bearing = Math.PI * 1.5;
-            else
-                bearing = Math.PI * 0.5;
-        }
-        else
-        {
-            let r = Math.atan(-direction.x / direction.y);
-            if (direction.y > 0)
-                //rotationAngle = (float)(r + Math.PI);
-                if (direction.x < 0)
-                    bearing = r - Math.PI;
-                else
-                    bearing = r + Math.PI;
-            else
-                bearing = r;
-        }
-        return bearing + additionalAngle;
-    }
-    /**returns the 3d vector based on the angle
-     * 
-     * The z value is set to zero
-     * @param {float} angle in degrees
-     * @param {float} additionalAngle an angle to add on in degrees
-     * @returns {vector3} a new vector3 unit direction vector
-    */
-    static directionfromangle(angle, additionalAngle){
-        if (additionalAngle === undefined){
-            additionalAngle = 0;
-        }
-
-        angle  = (angle + additionalAngle) * Math.PIby180 - Math.PIby2;
-        return new vector3(Math.cos(angle), Math.sin(angle),0);
-        // return new vector3(Math.cos(angle - Math.PI/2),
-        //     Math.sin(angle - Math.PI/2),0);
-    }
-    /**returns the 3d vector based on the angle
-     * 
-     * The z value is set to zero
-     * @param {float} angle in radians
-     * @param {float} additionalAngle an angle to add on in radians
-     * @returns {vector3} a new vector3 unit direction vector
-    */
-    static directionfromangle(angle, additionalAngle){
-        if (additionalAngle === undefined){
-            additionalAngle = 0;
-        }
-        angle  = (angle + additionalAngle) - Math.PIby2;
-        return new vector3(Math.cos(angle), Math.sin(angle),0);
-        // return new vector3(Math.cos(additionalAngle + angle - Math.PI/2),
-        //                         Math.sin(additionalAngle + angle - Math.PI/2),0);
-    }
-    /** Returns a normalised direction vector looking from the starting position to the other position
-    * @param {vector3} from start position
-    * @param {vector3} to the direction to look towards
-    * @param {DirectionAccuracy} accuracy gives exact direction if DirectionAccuracy.free or ordinalised if DirectionAccuracy.ordinals
-    * @param {bool} includeZ Specify true if you want to take the Z value into account
-    * 
-    * @returns {vector3} A normalised Vector3 direction vector in chosen direction
-    */
-    lookAt(from, to, accuracy, includeZ){
-        let d = new vector3();
-        if (includeZ){
-                d = vector3.sub(to, from);
-            }else{
-                d.x = to.x - from.y;
-                d.y = to.y - from.y;
-            }
-            if (d.x == 0 && d.y == 0 && d.z == 0){
-                d = vector3.zero;
-        }else{
-            switch (accuracy)
-            {
-                case DirectionAccuracy.ordinals:
-                    d = ordinalise(d);
-                    break;
-                case DirectionAccuracy.free:
-                    d.normalise();
-                    break;
-            }
-        }
-        return d;
-    }
-    /**
-     * finds the ordinalised (cardinals NSEW) direction closest to the given direction vector
-     * @param {vector3} direction direction vector to 
-     * @returns {vector3} in one of NSEW directions
-     */
-    static ordinalise(direction){
-        if (!direction.iszero){
-            if (Math.abs(direction.y) > Math.abs(direction.x)){
-                if (direction.y > 0)
-                    return vector3.down;
-                else
-                    return vector3.up;
-            }else{
-                if (direction.x > 0)
-                    return vector3.right;
-                else
-                    return vector3.left;
-            }
-        }
-        return vector3.zero;
-    }    
-    /** Determines whether rotating clockwise or anticlockwise is closest for a given position and direction
-    * Useful for create homing and tracking effects, returns -1 if turned anti-clocwise, 1 if clockwise or 0 if didn't turn
-    * @param {vector3} from Position to look from
-    * @param {vector3} directionVector Direction looking
-    * @param {vector3} to position aiming for
-    * @param {float} minimumAngle the step size to turn by, if rotation required is less than this then 0 will be returned
-    * 
-    * @returns {int}-1 if turned anti-clocwise, 1 if clockwise or 0 if didn't turn */
-    angularDirectionTo(from, directionVector, to, minimumAngle)
-    {
-        let dv = directionVector.normalisedclone;
-
-        //calc direction to target
-        let d = vector3.sub(to,from);
-        d.normalise();
-        let dot = vector3.dot(dv, d);
-        let crossz = vector3.crosszonly(dv, d);
-
-        if (dot < 0 || Math.abs(dot) < Math.cos(minimumAngle* Math.PI / 180))
-            return (crossz < 0) ? -1 : 1;
-        else
-            return 0;
-    }
-    /** calculates just the z component on the normal to 2 given vectors (the angle between 2 vectors)
-     * @param {vector3} a 
-     * @param {vector3} b 
-     * @returns {float}
-    */
-    static crosszonly(a, b){
-        return a.x*b.y - a.y*b.x;
-    }
-    /** calculates just the normal to the 2 given vectors
-     * @param {vector3} a 
-     * @param {vector3} b 
-    */
-    static cross(a, b){
-        return new vector3(a.y*b.z - a.z*b.y,a.z*b.x - a.x*b.z, a.x*b.y - a.y*b.x);
-    }
-    /** calculates the dot product between 2 vector3 values 
-     * @param {vector3} a 
-     * @param {vector3} b 
-    */
-    static dot(a, b){
-        return a.x*b.x + a.y*b.y + a.z*b.z;
-    }
-
-    /**multiplies this vector3 by the scaler and returns a new vector3 
-     * @param {float} scalar 
-     * @returns {vector3} new instance
-    */
-    mulNew(scalar){
-        return new vector3(this.#x * scalar, this.#y * scalar, this.#z * scalar);
-    }
-    /**divides this vector3 by the scaler and returns a new vector3 
-     * @param {float} scalar 
-     * @returns {vector3} new instance
-    */
-    divNew(scalar){
-        return new vector3(this.#x / scalar, this.#y / scalar,this.#z/scalar);
-    }
-    /**multiplies this vector by the scaler value 
-     * @param {float} scalar 
-     * 
-    */
-    mul(scalar){
-        this.x *= scalar;
-        this.y *= scalar;
-        this.z *= scalar;
-    }
-    /**divides this vector by the scaler value 
-     * 
-     * vector3 / scaler
-     * 
-     * @param {float} scalar 
-    */
-    div(scalar){
-        this.x /= scalar;
-        this.y /= scalar;
-        this.z /= scalar;
-    }
-    /**if the first parameter is a vector3 object then it is added to this vector 
-     * 
-     * if all 3 parameters are suppied then they are taken as individual
-     * x y and z value
-     * @param {float|vector3} x either the x component of a vector (supply y and z parameters) or a vector3 value (don't supply y or z parameters)
-     * @param {float} y y component of a vector
-     * @param {float} z z component of a vector
-    */
-    add(x, y, z){
-        if (y === undefined){// if just a vector
-        this.#x += x.x;
-        this.#y += x.y;
-        this.#z += x.z;
-
-        } else {
-        this.#x += x;
-        this.#y += y;
-        this.#z += z;
-        }
-        this.#calcdist();
-    }
-    /**add the 2 given vector3's returning a new instance v1 + v2
-     * @param {vector3} a first vector
-     * @param {vector3} b second vector
-     * @returns {vector3}
-    */
-    static add(a, b){
-        return  new vector3(a.x + b.x, a.y + b.y, a.z + b.z);
-    }
-    /**if the first parameter is a vector3 object then it is subtracted from this vector 
-     * 
-     * this - vector3 or this - vector3(x,y,z)
-     * 
-     * if all 3 parameters are suppied then they are taken as individual
-     * x y and z value
-     * @param {float|vector3} x either the x component of a vector (supply y and z parameters) or a vector3 value (don't supply y or z parameters)
-     * @param {float} y y component of a vector
-     * @param {float} z z component of a vector
-    */
-    sub(x, y, z){
-        if (y === undefined){// if just a vector
-        this.#x -= x.x;
-        this.#y -= x.y;
-        this.#z -= x.z;
-        } else {
-        this.#x -= x;
-        this.#y -= y;
-        this.#z -= z;
-        }
-        this.#calcdist();
-    }
-    /**subtract the 2 given vector3's returning a new one a - b
-     * @param {vector3} a first vector
-     * @param {vector3} b second vector
-     * @returns {vector3}
-    */
-    static sub(a, b){
-        return  new vector3(a.x - b.x, a.y - b.y, a.z - b.z);
-    }
-    /**returns the distance between the 2 vector3 objects 
-     * @param {vector3} a first vector
-     * @param {vector3} b second vector
-     * @returns {float} 
-    */
-    static distance(a, b){
-        return Math.sqrt((b.x-a.x)**2 + (b.y-a.y)**2+ (b.z-a.z)**2);
-    }
-    /**
-     * returns the square distance between 2 vector3's
-     * 
-     * faster to compare squares if only relative difference is required
-     * @param {vector3} a first vector
-     * @param {vector3} b second vector
-     * @returns {float} 
-     */
-    static distanceSQ(a, b){
-        return (b.x-a.x)**2 + (b.y-a.y)**2 + (b.z-a.z)**2;
-    }
-    /**returns a new vector3 that is a copy of the values of this one, not a reference a separate object
-     * 
-     * be warned clone creates an object so is about 20x slower than setting individual vector coords
-     * 
-     * b.x = a.x;
-     * 
-     * b.y = a.y;
-     * 
-     * b.z = a.z;
-     * @returns {vector3} new vector3 instance based on this ones values
-     */
-    get clone(){
-        return new vector3(this.#x, this.#y, this.#z);
-    }
-    /**clones this vector3 to the existing vector passed as a parameter 
-     * @param {vector3} here 
-    */
-    cloneto(here){
-        here.x = this.#x;
-        here.y = this.#y;
-        here.z = this.#z;
-    }
-
-    /**@returns {vector3}  a new vector3 object (0,0,0) */
-    static get zero(){return new vector3(0,0);}
-    /**@returns {vector3}  a new vector3 object (1,1,1) */
-    static get one(){return new vector3(1,1,1);}
-    /**@returns {vector3}  a new vector3 object (-1,0,0) */
-    static get left(){return new vector3(-1,0,0);}
-    /**@returns {vector3}  a new vector3 object (1,0,0) */
-    static get right(){return new vector3(1,0,0);}
-    /**@returns {vector3}  a new vector3 object (0,-1,0) */
-    static get up(){return new vector3(0,-1,0);}
-    /**@returns {vector3}  a new vector3 object (0,1,0) */
-    static get down(){return new vector3(0,1,0);}
-    /**@returns {vector3} a new vector3 object (0,0,-1) */
-    static get backward(){return new vector3(0,0,-1);}
-    /**@returns {vector3}  a new vector3 object (0,0,1) */
-    static get forward(){return new vector3(0,0,1);}
-
-}
-/******************************
- * timer.js by Hurray Banana 2023-2024
- ******************************/ 
-/**
- * @classdesc
- * provides central timing update support for both
- * stock events (Event) and sprite specific events (Timer)
- */
-class EventManager{
-    /** list of actively managed Events */
-    #timers = null;
-    /** initialises the event manager */
-    constructor(){
-        this.#timers = [];
-    }
-
-    /**
-     * adds given timer to be managed
-     * @param {Timer|Event} timer 
-     */
-    add(timer){
-        this.#timers.push(timer);
-    }
-    /**
-     * Removes a specific timer from the eventmanager
-     * @param {Timer|Event} timer 
-     */
-    remove(timer){
-        for (let p = 0; p < this.#timers.length; p++){
-            if (this.#timers[p] == timer){
-                this.#timers[p].remove();
-            }
-        }
-    }
-    /**
-     * removes all timers except for the given one, this may need to be active after some mode as ended
-     * @param {Timer|Event} timer 
-     */
-    removeallBut(timer){
-        //write this to remove all the timers and just make a new array, not finished yet
-        if (Array.isArray(timer)){
-
-        } else {
-            for (let p = 0; p < this.#timers.length; p++){
-                if (this.#timers[p] != timer){
-                    this.#timers[p].remove();
-                }
-            }            
-        }
-    }
-    /** performs the update of all managed timers and events */
-    update(){
-        for (let p = 0; p < this.#timers.length; p++){
-            const t = this.#timers[p];
-            t.update();
-        }
-        //remove stuff
-        let p = this.#timers.length - 1;
-        while (p >= 0){
-            if (this.#timers[p].action == EventAction.remove){
-                this.#timers[p].cleanup();
-                this.#timers.splice(p,1);
-            } 
-            p--;
-        }
-    }
-    /**gets a concise list of all actively managed timers and events
-     * @returns {string[]} an array of timer data
-     */
-    get activeLite(){
-        let a = [];
-        for (let p = 0; p < this.#timers.length; p++){
-            const t = this.#timers[p];
-            a.push(t.name + " [" + t.action + "]");
-        }
-        return a;
-    }
-    /**gets a list of all actively managed timers and events including details of elapsed time and intervals set
-     * @returns {string[]} an array of timer data
-     */
-    get activeLiteData(){
-        let a = [];
-        for (let p = 0; p < this.#timers.length; p++){
-            const t = this.#timers[p];
-            
-            a.push(t.name + " [" + t.action + "] " +
-            "lapse[" + this.twodp(t.elapsedTime) + "] " +
-            "int[" + 
-             (t.startafterinterval !== undefined ? this.twodp(t.startafterinterval) : "--") + ":" +
-             (t.stopafterinterval !== undefined ? this.twodp(t.stopafterinterval) : "--" ) + "]");
-        }
-        return a;
-    }
-    /**
-     * Specific version of fixing a float to 2dp with 0 front padding, used by the event debugger
-     * @param {float} val 
-     * @returns {string} a padded string
-     */
-    twodp(val){
-        val = (val * 100) | 0;
-        let x = ("" + val).length;
-        val /= 100;
-        let t =  val.toString();
-        return t.padEnd(x+1,"0");
-    }
-}
-
-/**
- * @classdesc Basic Event/Timer actions
- */
-class EventAction{
-    static remove = "remove";
-    /**no timing action */
-    static none = "none";
-    /**acts as a timer, for setting time intervals (like button repeats)
-     * 
-     * has to be checked using elapsed
-     * @example 
-     */
-    static interval = "timer";
-    /** calls a function/method after time period has elapsed */
-    static eventonce = "eventonce";
-    /** calls a function/method periodically*/
-    static event = "event";
-    /**and event that fires periodically and stops after a given period of time */
-    static eventStopafter = "eventStopafter";
-}
-/**
- * @classdesc base functionality for general timing events
- */
-class Event{
-    /**
-     * 
-     * @param {string} name debug display for event
-     */
-    constructor(name){
-        if (name instanceof Sprite)  name = "spr:" + name.myid;
-        this.name = (name !== undefined) ? name: "-";
-        this.#action = Action.none;
-
-        Engine.eventM.add(this);
-        //NEED TO ADD TO EVENTMANAGER FOR AUTO UPDATING
-    }
-    /** performs any cleanup for the time, you might need this if you create a custom event or timer that 
-     * consumes resources that it needs to de-reference. Create an overloaded method in your inherited class
-     * It will be called automatically when the Event/Timer is removed
-     */
-    cleanup(){
-        //shouldn't need (there in case future change)
-    }
-    /** requests removeall of this event */
-    remove(){
-        this.cleanup();
-        this.action = EventAction.remove;
-    }
-    /**
-     * debugging name for displaying timers
-     * @type {string}
-     */
-    name;
-    /** holds time elapsed during the current interval @type {float} */
-    #elapsedTime;
-    /**
-     * gets the timer period that elapsed for this Event/Timer so far
-     * @returns {float}
-     */
-    get elapsedTime(){return this.#elapsedTime;}
-    /**
-     * sets the elpasedTime for the Event/Timer you should'nt need to use this unless you to set a specific starting point rather then
-     * zeroing which reset() does
-     * @param {float} value 
-     */
-    set elapsedTime(value){this.#elapsedTime = value;}
-    //** true if the elapsed time is greater than the set interval */
-    get elapsed(){return this.#elapsedTime >= this.#startafterinterval;}
-    /** returns true if the timer interval has elapsed and then resets it to zero
-     * use elapsedResetAccrued if you want to accurately take account of fractional time span accruel
-     * returns false if the timer interval has not elapsed
-     * 
-     * Use this with timers to control auto fire or key delay, these are particularly useful
-     * for your own custom timers that you update yourself
-     * @example
-     * //setup a custom timer in the sprites constructor for auto fire/shoot interval restriction
-     * this.shoottimer = new Timer(this)
-     * this.shoottimer.interval(0.25);
-     * 
-     * //in an update method add this sort of code to check for keypress and timer elapsed
-     * if (keyIsDown(this.kshoot) && this.shoottimer.elapsedReset){
-     *      this.shoot();
-     * }
-     * @returns {bool} has it elapsed or not
-     */
-    get elapsedReset(){
-        if (this.#elapsedTime >= this.#startafterinterval){
-            this.#elapsedTime = 0;
-            return true;
-        } else {return false;}
-    }
-    /**
-     * Checks the timer to see if it has elapsed, if it has then the interval time is substracted from the elapsed time
-     * this factors in time differences between updates and . Use elpasedReset if you just want the elapsed time to zero (key delays)
-     * @returns {bool} has it elapsed or not
-     */
-    get elapsedResetAccrued(){
-        if (this.#elapsedTime >= this.#startafterinterval){
-            this.#elapsedTime -= this.#startafterinterval;
-        return true;
-        } else {return false;}
-    }
-    /** resets thecurrent timer (if active) */
-    reset(){this.#elapsedTime = 0;}
-
-    /** holds the interval for either the start of a timing process or the activation of a timer or event @type {float}*/
-    #startafterinterval;
-    /**
-     * gets the basic interval of a timer or the start phase interval or a timer
-     * @returns {float}
-     */
-    get startafterinterval(){return this.#startafterinterval;}
-    /**
-     * sets the basic interval of a timer or the start phase interval or a timer
-     * @param {float} value
-     */
-    set startafterinterval(value){this.#startafterinterval = value;}
-    /** holds the action stopping interval @type {float} */
-    #stopafterinterval;
-    /**
-     * gets the interval for an action stopping
-     * @returns {float}
-     */
-    get stopafterinterval(){return this.#stopafterinterval;}
-    /**
-     * sets the interval for an action stopping
-     * @param {float} value
-     */
-    set stopafterinterval(value){return this.#stopafterinterval = value;}
-
-    /** holds an event interval used mainly in visibility testing @type {float}*/
-    #actionTime;
-    /**
-     * internal timing information for checking visiblility
-     * @returns {float}
-     */
-    get actionTime(){return this.#actionTime;}
-    /**
-     * internal timing information for checking visiblility, do not modify
-     * @returns {float}
-     */
-    set actionTime(value){this.#actionTime = value;}
-    /** holds the current action of the event/timer @type {EventAction}*/
-    #action;
-    /**
-     * gets the active mode of the event/timer
-     * @returns {EventAction}
-     */
-    get action(){return this.#action;}
-    /**
-     * sets the event/timers action mode, this is set when you pick how the timer should operate, do not change directly
-     * @param {EventAction} value 
-     */
-    set action(value){this.#action = value;}
-    /**
-     * true if a timer is active 
-     * @returns {bool} 
-     * */
-    get active(){return this.#action != EventAction.none;}
-    /** holds the callback executed when the event/timer meets its interval @type {callback:method|function,instance:object}*/
-    #callback = null;
-    /** retrieves the current callback (if this has not been set it will be null)
-     * it will be in the form of object properties
-     * @example 
-     * // two propeties callback and instance
-     * let callstuff = this.timer.callback;
-     * if (callstuff != null) console.log(callstuff.callback, callstuff.instance);
-     * @returns {{callback:method|function,instance:object}}
-     */
-    get callback(){return this.#callback;}
-    /** sets (or changes) the callback handler called when animation states reach an end point
-     * value must be an object with 2 properties
-     * @example 
-     * // animationchanged is a method of your inherited sprite class
-     * this.callback = {callback:this.myactions,instance:this};
-     * // or use the Engine.makeCallback() method
-     * this.callback = Engine.makeCallback(this.myactions, this);
-     */
-    set callback(value){
-      if (value != undefined && value.callback !== undefined && value.instance !== undefined){
-        this.#callback = value;
-      }
-    }
-    /** 
-     * If a event/timer is set repeatidly it will continually reset. In my cases this would be undeserable
-     * but in certain circumstances such as mouse over effects that use a timer to revert an animation frame, you might want to keep 
-     * restarting the timer while the mouse is over the sprite. it removes the need for more complex logic to deal with this case
-     * gets the status of timer overwrites, default is false, rejecting multiple setting of timers
-     * @returns {bool}*/
-    get allowOverwrite(){return this.#allowoverwrite;}
-    /**
-     * sets the response to identical timer settings for active timers, true means allow it to be overwritten (effectively reset), flase means
-     * reject
-     * @param {bool} value 
-     */
-    set allowOverwrite(value){this.#allowoverwrite = value;}
-    #allowoverwrite = false;
-    /** 
-     * allows the resetting of a timer (time starts again)
-     * 
-     * this might be desirable if you are doing a mouse over effect, where a rendering resets to not over
-     * view after 0.2 seconds, but you keep restarting the timer while you are over the sprite
-     * default behaviour is false (ignore duplicates)
-     */
-    overwriteEnable(){this.#allowoverwrite=true;}
-    /** 
-     * turns off overwrite of duplicate timers  
-     * default behaviour is false (ignore duplicates)
-    */
-    overwriteDisable(){this.#allowoverwrite=false;}
-    /**
-     * Sets the time interval for the Event, you only need to do this if you are creating a timer for your own purposes such a key delay timer
-     * which you used ElapsedReset to check for the interval elapsing.
-     * 
-     * If you want to call a method or function after a time interval then use timer.eventonce()
-     * @param {float} time 
-     */
-    interval(time){
-        this.#action = Action.interval;
-        this.actionTime = 0; this.elapsedTime = 0;
-        this.startafterinterval = time;
-    }
-    /**
-     * Delays calling a method or function until after a period of time
-     * @param {float} callAfter time to wait before calling method/function
-     * @param {{callback:method|function,instance:object}} callback the code to call when the event occurs use 
-     * Engine.makeCallback() to create your callback
-     * @example
-     * //call the startgame method after 3 seconds
-     * Engine.eventM.eventonce(3, Engine.makeCallback(this.startgame, this));
-     */
-    eventonce(callAfter, callback){//} instance, callme){
-        if (this.#allowoverwrite || this.#action != Action.callback){
-            this.#action = Action.eventonce;
-            this.startafterinterval = callAfter;
-            this.actionTime = 0; this.elapsedTime = 0;
-            //this.#phase = Phase.startafter;
-            this.#callback = callback;
-            // if (instance !== undefined && callme !== undefined){
-            //     this.#callback = {callback:callme,instance:instance};
-            // }
-        }
-    }
-    /**
-     * creates a periodic timer which continually calls a given method/function
-     * @param {float} interval time to wait before calling method/function
-     * @param {{callback:method|function,instance:object}} callback the code to call when the event occurs use 
-     * Engine.makeCallback() to create your callback
-     * @example
-     * //call the increaseDifficulty method every 20 seconds
-     * Engine.eventM.event(203, Engine.makeCallback(this.increaseDifficulty, this));
-     * to stop calling the method/function use the events remove() method
-     */
-    event(interval, callback){//instance, callme){
-        if (this.#allowoverwrite || this.#action != Action.event){
-            this.#action = Action.event;
-            this.startafterinterval = interval;
-            this.actionTime = 0; this.elapsedTime = 0;
-            //this.#phase = Phase.startafter;
-            
-            this.#callback = callback;
-            // if (instance !== undefined && callme !== undefined){
-            //     this.#callback = {callback:callme,instance:instance};
-            // }
-        }
-    }
-    /**
-     * creates a periodic timer which continually calls a given method/function until a specified time is reached
-     * @param {float} interval time to wait before calling method/function
-     * @param {float} stopAfter period of time to wait before stopping the event
-     * @param {{callback:method|function,instance:object}} callback the code to call when the event occurs use 
-     * Engine.makeCallback() to create your callback
-     * @example
-     * //call the spawnEnemy method every 1second for 20 seconds
-     * Engine.eventM.eventStopafter(1,20, Engine.makeCallback(this.spawnEnemy, this));
-     * to stop calling the method/function use the events remove() method
-     * to stop calling the method/function use the events remove() method
-     */
-    eventStopafter(interval, stopAfter, callback){//instance, callme){
-        if (this.#allowoverwrite || this.#action != Action.eventStopafter){
-            this.#action = Action.eventStopafter;
-            this.startafterinterval = interval;
-            this.#stopafterinterval = stopAfter;
-            this.actionTime = 0; this.elapsedTime = 0;
-            //this.#phase = Phase.startafter;
-            this.#callback = callback;
-            // if (instance !== undefined && callme !== undefined){
-            //     this.#callback = {callback:callme,instance:instance};
-            // }
-        }
-    }    
-    /** updates timer checking for action responses */
-    update(){
-        if (this.action != Action.none){
-            //new timing system
-            this.#elapsedTime += Engine.delta;
-            this.actionTime += Engine.delta;
-            switch (this.action){
-                case Action.interval: break;
-                case Action.eventonce:
-                    if (this.#elapsedTime >= this.startafterinterval){
-                        //this.action = Action.none;
-                        //this.action = Action.remove;
-                        Engine.processCallback(this.callback);
-                        this.remove();
-                    } break;
-                case Action.event:
-                    if (this.#elapsedTime >= this.startafterinterval){
-                        this.#elapsedTime -= this.startafterinterval;
-                        Engine.processCallback(this.callback);
-                    } break;
-                case Action.eventStopafter:
-                    if (this.actionTime > this.#stopafterinterval){
-                        //this.action = Action.none;
-                        //this.action = Action.remove;
-                        this.remove();
-                    } else {
-                        if (this.#elapsedTime >= this.startafterinterval){
-                            this.#elapsedTime -= this.startafterinterval;
-                            Engine.processCallback(this.callback);
-                            } 
-                    } break;
-            }//switch (_method)
-        }//if (_method != Style.none)
-    }//update(delta)
-}
-/** 
- * @classdesc Determines what phase timer sub system is in (used internally) */
-class Phase{
-    /** waiting for flashing to start*/
-    static startafter = "startafter";
-    /** waiting for flashing to stop*/
-    static stopafter = "stopafter";
-    /** waiting to kill sprite*/
-    //static killafter = "killafter";
-}
-/** 
- * @classdesc specifies sprite actions for timer operations */
-class Action extends EventAction{
-    /**kills the sprite after time elapsed */
-    static killafter = "killafter";
-    /**flashes continuously */
-    static flash = "flash";
-    ///**no timing action */
-    //static none = "none";
-    ///**acts as a timer, for setting time intervals (like button repeats)
-    // * 
-    // * has to be checked using elapsed
-    // * @example 
-    // */
-    //static interval = "timer";
-    ///** calls a function/method after time period has elapsed */
-    //static eventonce = "eventonce";
-    ///** calls a function/method periodically*/
-    //static event = "event";
-    ///**and event that fires periodically and stops after a given period of time */
-    //static eventStopafter = "eventStopafter";
-    /** flashes until the stopAfter period has elapsed then stays on screen*/
-    static flashStopafter = "flashStopafter";
-    /**starts flashing after a period of time then continues flasing */
-    static flashStartafter = "flashStartafter";
-    /**flashes until the stop period then is killed */
-    static flashKillafter = "flashKillafter";
-    /**starts flashing after a period of time then stops staying on screen */
-    static flashStartafterStopafter = "flashStartafterStopafter";
-    /** starts flashing after a period of time then is killed after the kill time
-     * 
-     * this is useful for time limited pickups (or bombs) where the flashing can be used to indicate time is nearly up
-     */
-    static flashStartafterKillafter = "flashStartafterKillafter";
-    /**makes a sprite invisible and then shows it after the time period elapses */
-    static showafter = "showafter";
-    /**makes a sprite visible and then hides it after the time period elapses */
-    static hideafter = "hideafter";
-    /**apply a velocity for a period of time */
-    static impulse = "impulsestopafter";
-}
-/** 
- * @classdesc implements sprite specific timers (you can only have one)
- * If you need more sprite specific ones, create another timer, 
- * but make sure you create and update method that calls the timers update method
- * 
- * I may refactor this to be part of a eventmanager class so all timer subsystems will use a common structure
- */
-class Timer extends Event{
-    /** holds reference to the sprite being manipulated by the timer @type {Sprite} */
-    #mysprite
-    /** holds time interval for on time during flashing @type {float}*/
-    #oninterval;
-    /** holds time interval for off time during flashing  @type {float}*/
-    #offinterval;
-    /** holds visibility state of the sprite @type {bool}*/
-    #hidden;
-    /** holds phase of timing for multi step actions @type {Phase} */
-    #phase;
-    /** holds force to apply during impulse timers @type {vector3} */
-    #impulse;
-    /**
-     * get the current phase of timer action, you can use this during callbacks
-     * @returns {Phase}
-     */
-    get phase(){return this.#phase;}
-
-    /**
-     * Constructs and new sprite timer
-     * @param {Sprite} sprite the sprite associated with the sprite timers
-     */
-    constructor(sprite){
-        super("spr:" + sprite.myid);
-        this.#mysprite = sprite;
-        //this.action = Action.none;
-    }
-    /** 
-     * removes sprite reference when timer removed, override this if you create an inherited timer that adds more resources */
-    cleanup(){
-        super.cleanup();
-        this.#mysprite = null;
-    }
-    /**
-     * disable the timer, choose whether to display or hide the sprite 
-     * @param {bool} display if true sprite will be shown, false if not (important if you have been flashing a sprite)
-    */
-    off(display){
-        this.action = Action.none;
-        if (display === undefined || display)
-            this.#mysprite.show();
-        else
-            this.#mysprite.hide();
-    }
-    /**
-     * flashes the sprite on and off, duration in seconds (or fraction of)
-     * @param {float} onduration number of seconds or fraction of
-     * @param {float} offduration number of seconds or fraction of
-     * slightly longer on than off looks best
-     */
-    flash(onduration, offduration){
-        if (this.allowoverwrite || this.action != Action.flash){
-            this.action = Action.flash;
-            this.#oninterval = onduration; this.#offinterval = offduration
-            this.actionTime = 0; this.elapsedTime = 0;
-            this.#hidden = false;
-        }
-    }
-    /**
-     * flashes and sprite and then stops flashing after a period of time
-     * @param {float} stopAfter time to stop flashing in seconds
-     * @param {float} onduration number of seconds or fraction of
-     * @param {float} offduration number of seconds or fraction of
-     * @param {{callback:method|function,instance:object}} callback the code to call when the sprite stops flashing
-     * Engine.makeCallback() to create your callback
-     */
-    flashStopafter(stopAfter, onduration, offduration, callback){//instance, callme){
-        if (this.allowoverwrite || this.action != Action.flashStopafter){
-            this.action = Action.flashStopafter;
-            this.stopafterinterval = stopAfter;
-            this.#oninterval = onduration; this.#offinterval = offduration
-            this.actionTime = 0; this.elapsedTime = 0;
-            this.#hidden = false;
-            this.#phase = Phase.stopafter;
-            
-            this.callback = callback;
-            // if (instance !== undefined && callme !== undefined){
-            //     this.#callback = {callback:callme,instance:instance};
-            // }
-        }
-    }
-    /**
-     * flashes a sprite and then kills it after a period of time
-     * @param {float} killAfter seconds after which sprite should be killed off
-     * @param {float} onduration number of seconds or fraction of
-     * @param {float} offduration number of seconds or fraction of
-     */
-    flashKillafter(killAfter, onduration, offduration){//}, callback){//instance, callme){
-        if (this.allowoverwrite || this.action != Action.flashKillafter){
-            this.action = Action.flashKillafter;
-            this.stopafterinterval = killAfter;
-            this.#oninterval = onduration; this.#offinterval = offduration
-            this.actionTime = 0; this.elapsedTime = 0;
-            this.#hidden = false;
-            this.#phase = Phase.stopafter;
-            this.#mysprite.show();
-            
-            this.callback = callback;
-            // if (instance !== undefined && callme !== undefined){
-            //     this.callback = {callback:callme,instance:instance};
-            // }
-        }        
-    }
-    /**
-     * a sprite to start flashing after a certain period of time
-     * @param {float} startAfter how long before flashing starts
-     * @param {float} onduration number of seconds or fraction of
-     * @param {float} offduration number of seconds or fraction of
-     * @param {{callback:method|function,instance:object}} callback the code to call when the sprite starts flashing
-     * Engine.makeCallback() to create your callback
-     */
-    flashStartafter(startAfter, onduration, offduration, callback){//instance, callme){
-        if (this.allowoverwrite || this.action != Action.flashStartafter){
-            this.action = Action.flashStartafter;
-            this.startafterinterval = startAfter;
-            this.#oninterval = onduration; this.#offinterval = offduration
-            this.actionTime = 0; this.elapsedTime = 0;
-            this.#hidden = false;
-            this.#mysprite.show();
-            this.#phase = Phase.startafter;
-            this.callback = callback;
-            // if (instance !== undefined && callme !== undefined){
-            //     this.callback = {callback:callme,instance:instance};
-            // }
-        }
-    }
-    /**
-     * Flashes a sprite after a certain period of time and then kills it after another time period has ended
-     * @param {float} killAfter seconds after which sprite should be killed off
-     * @param {float} startAfter how long before flashing starts
-     * @param {float} onduration number of seconds or fraction of
-     * @param {float} offduration number of seconds or fraction of
-     * @param {{callback:method|function,instance:object}} callback the code to call when the sprite starts flashing
-     * Engine.makeCallback() to create your callback
-     */
-    flashStartafterKillafter(startAfter, killAfter, onduration, offduration, callback){//instance, callme){
-        if (this.allowoverwrite || this.action != Action.flashStartafterKillafter){
-            this.action = Action.flashStartafterKillafter;
-            this.startafterinterval = startAfter; this.stopafterinterval = killAfter;
-            this.#oninterval = onduration; this.#offinterval = offduration
-            this.actionTime = 0; this.elapsedTime = 0;
-            this.#hidden = false;
-            this.#mysprite.show();
-            this.#phase = Phase.startafter;
-            this.callback = callback;
-            // if (instance !== undefined && callme !== undefined){
-            //     this.callback = {callback:callme,instance:instance};
-            // }
-        }
-    }
-    /**
-     * a visible sprite starts to flash after a period of time, it then stops flashing after a further period of time
-     * @param {float} startAfter period of time to start flasher
-     * @param {float} stopAfter period of time for flashing to continue before it stops
-     * @param {float} onduration number of seconds or fraction of
-     * @param {float} offduration number of seconds or fraction of
-     * @param {{callback:method|function,instance:object}} callback the code to call when the sprite starts flashing and again when it stops
-     * Engine.makeCallback() to create your callback
-     */
-    flashStartafterStopafter(startAfter, stopAfter, onduration, offduration, callback){//instance, callme){
-        if (this.allowoverwrite || this.action != Action.flashStartafterStopafter){
-            this.action = Action.flashStartafterStopafter;
-            this.startafterinterval = startAfter; this.stopafterinterval = stopAfter;
-            this.#oninterval = onduration; this.#offinterval = offduration
-            this.actionTime = 0; this.elapsedTime = 0;
-            this.#hidden = false;
-            this.#mysprite.show();
-            this.#phase = Phase.startafter;
-            this.callback = callback;
-            // if (instance !== undefined && callme !== undefined){
-            //     this.callback = {callback:callme,instance:instance};
-            // }
-        }
-    }
-    /**
-     * shows the sprite after a period of time has passed
-     * @param {float} showAfter number of seconds to wait before showing
-     * @param {{callback:method|function,instance:object}} callback the code to call when the sprite is shown
-     * Engine.makeCallback() to create your callback
-     */
-    showafter(showAfter, callback){//instance, callme){
-        if (this.allowoverwrite || this.action != Action.showafter){
-            this.action = Action.showafter;
-            this.startafterinterval = showAfter;
-            this.actionTime = 0; this.elapsedTime = 0;
-            this.#hidden = true;
-            this.#mysprite.hide();
-            this.#phase = Phase.startafter;
-            this.callback = callback;
-            // if (instance !== undefined && callme !== undefined){
-            //     this.callback = {callback:callme,instance:instance};
-            // }
-        }
-    }
-    /**
-     * Hides the sprite after a period of time has passed
-     * @param {float} hideAfter number of seconds to wait before hiding
-     * @param {{callback:method|function,instance:object}} callback the code to call when sprite is hidden
-     * Engine.makeCallback() to create your callback
-     */
-    hideafter(hideAfter, callback){//instance, callme){
-        if (this.allowoverwrite || this.action != Action.hideafter){
-            this.action = Action.hideafter;
-            this.startafterinterval = hideAfter;
-            this.actionTime = 0; this.elapsedTime = 0;
-            this.#hidden = false;
-            this.#mysprite.show();
-            this.#phase = Phase.startafter;
-            this.callback = callback;
-            // if (instance !== undefined && callme !== undefined){
-            //     this.callback = {callback:callme,instance:instance};
-            // }
-        }
-    }    
-    /**
-     * Shows a sprite after a period of time then kills it after another period of time
-     * @param {float} showAfter time to wait until sprite displayed
-     * @param {float} killAfter time to kill sprite after displaying
-     * @param {{callback:method|function,instance:object}} callback the code to call when the sprite is shown
-     * Engine.makeCallback() to create your callback
-     */
-    showafterKillafter(showAfter, killAfter, callback){//instance, callme){
-        if (this.allowoverwrite || this.action != Action.showafterKillafter){
-            this.action = Action.showafterKillafter;
-            this.startafterinterval = showAfter;
-            this.stopafterinterval = killAfter;
-            this.actionTime = 0; this.elapsedTime = 0;
-            this.#hidden = true;
-            this.#mysprite.hide();
-            this.#phase = Phase.startafter;
-            this.callback = callback;
-            // if (instance !== undefined && callme !== undefined){
-            //     this.callback = {callback:callme,instance:instance};
-            // }
-        }
-    }
-    /**
-     * shows a sprite after a period of time, flashing as it becomes visible
-     * @param {float} showAfter timer period to wait before showing the flashing sprite
-     * @param {float} onduration number of seconds or fraction of
-     * @param {float} offduration number of seconds or fraction of
-     * @param {{callback:method|function,instance:object}} callback the code to call when the sprite starts flashing
-     * Engine.makeCallback() to create your callback
-     * @example
-     */
-    showafterFlash(showAfter, onduration, offduration, callback){//instance, callme){
-        if (this.allowoverwrite || this.action != Action.showafterFlash){
-            this.action = Action.showafterFlash;
-            this.startafterinterval = showAfter;
-            this.#oninterval = onduration; this.#offinterval = offduration
-            this.actionTime = 0; this.elapsedTime = 0;
-            this.#hidden = true;
-            this.#mysprite.hide();
-            this.#phase = Phase.startafter;
-            this.callback = callback;
-            // if (instance !== undefined && callme !== undefined){
-            //     this.callback = {callback:callme,instance:instance};
-            // }
-        }
-    }
-
-
-    /**
-     * kills a sprite after a period of time
-     * @param {float} killtime timer period 
-     * set a callbackFuneral or override the Kill() method of your sprite if you want to know when it's killed
-     */
-    killafter(killtime){//}, callback){//instance, callme){
-        this.action = Action.killafter;
-        this.actionTime = 0; this.elapsedTime = 0;
-        this.stopafterinterval = killtime;
-        // this.callback = callback;
-        // if (instance !== undefined && callme !== undefined){
-        //     this.callback = {callback:callme,instance:instance};
-        // }
-    }
-
-    /**
-     * applies a force to a sprite for a period of time
-     * @param {float} stopAfter timer period to apply the force
-     * @param {vector3} force 
-     * @param {{callback:method|function,instance:object}} callback the code to call when the event occurs use 
-     * Engine.makeCallback() to create your callback
-     * @example
-     * //call the increaseDifficulty method every 20 seconds
-     * Engine.eventM.event(203, Engine.makeCallback(this.increaseDifficulty, this));
-     * to stop calling the method/function use the events remove() method
-     */
-    impulse(stopAfter, force, callback){//instance, callme){
-        if (this.allowoverwrite || this.action != Action.impulse){
-            this.action = Action.impulse;
-            this.stopafterinterval = stopAfter;
-            this.actionTime = 0; this.elapsedTime = 0;
-            this.#impulse = force;
-            this.#phase = Phase.startafter;
-            this.callback = callback;
-            // if (instance !== undefined && callme !== undefined){
-            //     this.callback = {callback:callme,instance:instance};
-            // }
-        }
-    }
-    /**
-     * performs updates for this sprite timer
-     */
-    update(){
-        super.update();
-        if (this.action != Action.none){
-            //new timing system
-            //this.#elapsedTime += Engine.delta;
-            //this.actionTime += Engine.delta;
-            switch (this.action){
-                case Action.killafter:
-                    if (this.elapsedTime >= this.stopafterinterval){
-                        //this.action = Action.none;
-                        //this.action = Action.remove;
-                        this.#mysprite.kill();
-                        this.remove();
-                    } break; 
-                case Action.showafter:
-                    if (this.elapsedTime >= this.startafterinterval){
-                        this.#mysprite.show();
-                        //this.action = Action.none;
-                        //this.action = Action.remove;
-                        Engine.processCallback(this.callback);
-                        this.remove();
-                    } break;
-                case Action.hideafter:
-                    if (this.elapsedTime >= this.startafterinterval){
-                        this.#mysprite.hide();
-                        //this.action = Action.remove;
-                        Engine.processCallback(this.callback);
-                        this.action = Action.none;
-                    } break;                    
-                case Action.showafterFlash:
-                    if (this.elapsedTime >= this.startafterinterval){
-                        this.action = Action.flash;
-                        this.#mysprite.show();
-                        this.#hidden = false;
-                        this.elapsedTime -= this.startafterinterval;
-                        this.actionTime = this.elapsedTime;
-                        this.#sortvisibility();
-                        Engine.processCallback(this.callback);
-                    } break;
-                case Action.showafterKillafter:
-                    switch (this.#phase){
-                        case Phase.startafter:
-                            if (this.elapsedTime >= this.startafterinterval){
-                                //turn on kill phase
-                                this.#phase = Phase.stopafter;
-                                this.elapsedTime -= this.startafterinterval;
-                                this.#mysprite.show();
-                                Engine.processCallback(this.callback);
-                            } break;
-                        case Phase.stopafter:
-                            if (this.elapsedTime >= this.stopafterinterval){
-                                //this.action = Action.none;
-                                //this.action = Action.remove;
-                                this.#mysprite.kill();
-                                this.remove();
-                            } break;
-                    } break;
-                case Action.impulse:
-                    this.#mysprite.Velocity.add(this.#impulse);
-                    if (this.elapsedTime >= this.stopafterinterval){
-                        //this.action = Action.none;
-                        //this.action = Action.remove;
-                        this.remove();
-                        Engine.processCallback(this.callback);
-                    } break;
-                case Action.flashStartafter:
-                    if (this.elapsedTime >= this.startafterinterval){
-                        this.elapsedTime -= this.startafterinterval;
-                        this.actionTime = this.elapsedTime;//added
-                        this.action = Action.flash;
-                        this.#sortvisibility();
-                        Engine.processCallback(this.callback);
-                    }
-                    break;
-                case Action.flashStartafterStopafter:
-                    switch (this.#phase){
-                        case Phase.startafter:
-                            if (this.elapsedTime >= this.startafterinterval){
-                                //turn on continuous flashing
-                                this.elapsedTime -= this.startafterinterval;
-                                this.actionTime = this.elapsedTime;//added
-                                this.#sortvisibility();
-                                Engine.processCallback(this.callback);
-                                this.#phase = Phase.stopafter;
-                            } break;
-                        case Phase.stopafter:
-                            this.#sortvisibility();
-                            if (this.elapsedTime >= this.stopafterinterval){
-                                //this.action = Action.none;
-                                //this.action = Action.remove;
-                                this.#mysprite.show();
-                                this.remove();
-                                Engine.processCallback(this.callback);
-                            } break;
-                    } break;
-                case Action.flashStartafterKillafter:
-                    switch (this.#phase){
-                        case Phase.startafter:
-                            if (this.elapsedTime >= this.startafterinterval){
-                                //turn on continuous flashing
-                                this.#phase = Phase.stopafter;
-                                this.elapsedTime -= this.startafterinterval;
-                                this.actionTime = this.elapsedTime;//added
-                                this.#sortvisibility();
-                                Engine.processCallback(this.callback);
-                            }
-                            break;
-                        case Phase.stopafter:
-                            this.#sortvisibility();
-                            if (this.elapsedTime >= this.stopafterinterval){
-                                //this.action = Action.none;
-                                //this.action = Action.remove;
-                                this.#mysprite.kill();
-                                this.remove();
-                            }
-                            break;
-                    }
-                    break;
-                case Action.flash:
-                    this.#sortvisibility();
-                    break;
-                case Action.flashStopafter:
-                    this.#sortvisibility();
-                    if (this.elapsedTime >= this.stopafterinterval){
-                        //this.action = Action.none;
-                        //this.action = Action.remove;
-                        this.#mysprite.show();
-                        this.remove();
-                        Engine.processCallback(this.callback);
-                    } break;
-                case Action.flashKillafter:
-                    this.#sortvisibility();
-                    if (this.elapsedTime >= this.stopafterinterval){
-                        //this.action = Action.none;
-                        //this.action = Action.remove;
-                        this.#mysprite.kill();
-                        this.remove();
-                    } break;
-            }//switch (_method)
-        }//if (_method != Style.none)
-    }//update()
-
-    /**
-     * determines whether sprite should be shown or no during flashing actions
-     */
-    #sortvisibility(){
-        if (this.#hidden){
-            if (this.actionTime >= this.#offinterval){
-                this.actionTime -= this.#offinterval;
-                this.#mysprite.show();
-                this.#hidden = !this.#hidden;
-            }
-        }  else {
-            if (this.actionTime >= this.#oninterval){
-                this.actionTime -= this.#oninterval;
-                this.#mysprite.hide();
-                this.#hidden = !this.#hidden;
-            }
-        }
-    }//sortvisibility
-}  
 
 /******************************
  * sprite.js by Hurray Banana 2023-2024
@@ -6850,15 +4218,9 @@ class Sprite{
      * @type {History}
      */
     history = null;
-    ///**internal support for executing callback routines (there are currently 4 differenet ones in Sprite) */
-    //#processCallback(handler, data){
-    //    if (handler != null) handler.callback.call(handler.instance, data);
-    //}
-    //all callbacks
     /**method called when the sprite is hidden with 
      *  or settting visible to false, or from flashing 
      * @example this.hide();*/
-    //callbackHide = null;
     #callbackHide = null;
     /** retrieves the current callback (if this has not been set it will be null)
      * it will be in the form of object properties
@@ -7380,14 +4742,14 @@ class Sprite{
     /** gets the x value of the right of the sprite (the x and y values represent the centre of a sprite) 
      * @returns {float}
     */
-    get right() {
+    get kright() {
         return this.centrex + this.#visWdiv2;
     }
     /** sets sprites bottom to be this value y value is adjusted accordingly (the x and y values represent the centre of a sprite) 
      * @example this.right = 200;
      * @param {float} value 
     */
-    set right(value){
+    set kright(value){
         switch (this.align){
             case Align.topLeft:case Align.left:case Align.bottomLeft: this.#position.x = value - this.#visW;return;
             case Align.top:case Align.centre:case Align.bottom: this.#position.x = value - this.#visWdiv2;return;
@@ -7781,1928 +5143,608 @@ class Sprite{
 }
 
 /******************************
- * timer.js by Hurray Banana 2023-2024
+ * spritemanager.js by Hurray Banana 2023-2024
  ******************************/ 
-// NEED TO IMPLEMENT CATMULL-ROM for smooth function
-       
-
-/**
-* @classdesc  States what should happen when a sprite reaches the end of its current track
-*/
-class EndOfTrackAction{
-    /**
-     at end of track pick another track from those associated with the Sprite
-    Great for random boss movement patterns
-    */
-    static random = "random";
-    /**
-     forces the sprite to leave the track and continue in the direction it was last moving
-    Nice to use if you turn gravity on for a sprite once its detached if you use 
-    an OnTrackEnd handler to alter the sprites properties
-    */
-    static detach = "detach";
-    /**
-     start again on the current track
-    Useful for fancy menu like sega 3d ones for name entry
-    */
-    static  wrap = "wrap";
-    /**
-     go backwards along the current track
-    Nice to use for display or target type tracks
-    */
-    static reverse = "reverse";
-    /**
-     kill the sprite at the end of the track
-    Can use for explosion effects in conjuction with a Sprite funeral
-    */
-    static  kill = "kill";
-    /**
-     move on to the start of the next track
-    Use if you want a sprite to follow a specific sequence of tracks.
-    The order is governed by the order you used the Sprite.AddTrack() methods
-    */
-    static next = "next";
-    /**
-     Halt sprite at the end of the track
-    Use if you want a sprite to travel to the end and the stop and do something
-    like launch a bullet at the player (see the yellow circular star force enemies)
-    use in conjuction with OnTrackEnd handler. After firing you can ask the Sprite to
-    follow a second track to move off screen again.
-    */
-    static stop = "stop";
-}
-
-/**
-* @classdesc  States how the sprite should move along the track
-Discrete step is for manual control of a track
-*/
-class TrackStepMode{
-    /**
-     operate using a fixed step 
-    move along a certain number of points during each update
-    */
-    static discreteStep = "discreteStep";
-    /**
-     approximate a time to travel along so many pixels of the track
-    in the same way as sprite velocity works
-    */
-    static pixelsPerSec = "pixelsPerSec";
-}
-
-
-/**
- * @classdesc Responsible for storing the Tracks and manipulating the movement of a Sprite
- * In order to use Tracks with a Sprite you need to make sure you create one normally in your constructor
- * @example this.track = new TrackManager(this);
- */
-class TrackManager{
-    
-    /** Creates a new TrackManager for the Sprite.
-    *
-    * @param {Sprite} s The sprite to associate the trackmanager with
-    * This is created by the Sprite itself if you passed a TrackBank when you create it
-    * @returns {TrackManager}
-    */
-    constructor(s){
-        this.boss = s;
-        this.#tracklist = [];
-        //setup the default timer to be every possible frame
-        this._updateTimer = new Event("TRACKMAN FOR SP" + s.myid.toString().padEnd(5, '0'));
-        this._updateTimer.interval(0);
-        //then need to add to the event manager somehow
-    }
-    /** not used */
-    cleanup(){}
-    /**
-     * Drawing sort of works but I need to implement duplicate and dirty track changes properly so it doesn't overdraw anything
-     * @param {int} trknum the track index of this sprites track to draw
-     * @param {bool} closed if true then the first and last points will be drawn (as if it was a polygon)
-     * @param {{step:int,layer:texture,col:color,weight:int,shape:shape}} style specifies how to draw the track, see examples for details
-     * @example
-     * // skip every other 5 points
-     * // put on glow layer
-     * // make 3 pixels wide
-     * // color full green
-     * let glowstyle = {step:5,layer:Engine.glowlayer(),weight:3,col:[0,255,0]};
-     * // skip every other 5 points
-     * // put on same layer as this sprite
-     * // make 3 pixels wide
-     * // color white
-     * let trackstyle = {step:5,layer:this.layer,weight:3,col:[255,255,255]};
-     * 
-     * //draw current track twice, once on glowlayer, once on sprite layer
-     * this.track.draw(b,this.track.CurrentTrackData.trackDef.closed, tstyle);
-     * this.track.draw(b,this.track.CurrentTrackData.trackDef.closed, trackstyle);
-     */
-    draw(trknum, closed, style){
-        trknum = (trknum === undefined || trknum < 0 || trknum >= this.#tracklist.length) ? 0 : trknum;
-        let tr = this.#tracklist[trknum];
-        if (!tr.isDirty && this.#tracklist.length > 0){
-            //tr.isDirty = true;
-            let step = (style === undefined || style.step === undefined) ? 1 : style.step;
-
-            let layer = (style === undefined || style.layer === undefined) ? Engine.layer(0) : style.layer;
-            layer.push();
-            layer.stroke((style === undefined || style.col === undefined) ? 1 : style.col);
-            layer.strokeWeight((style === undefined || style.weight === undefined) ? 1 : style.weight);
-            layer.noFill();
-            if (style === undefined || style.shape === undefined){
-                layer.beginShape();
-            } else {
-                layer.beginShape(style.shape);
-            }
-
-            let v = this.#tracklist[trknum].trackDef.points
-            let p = 0;
-            while (p < v.length){
-                layer.vertex(v[p].x + tr.offset.x, v[p].y + tr.offset.y);
-                p += step;
-            }
-            if (closed){ layer.endShape(layer.CLOSE);
-            } else {layer.endShape();}
-            layer.pop();  
-        } else {console.log("not drawn " + trknum)};
-    }
-    /** @returns {bool} if set to true then manual track position changes instantly afect the position of the sprite
-    * defaults to true, if this causes problems then set this to false
-    */
-    get instantmove() { return this.#instantmove; }
-    /** 
-     * @param {bool} value if set to true then manual track position changes instantly afect the position of the sprite
-     * defaults to true, if this causes problems then set this to false */
-    set instantmove(value) {this.#instantmove = value; }
-    
-    /**  @type {bool} if set to true then manual track position changes instantly afect the position of the sprite
-    * defaults to true, if this causes problems then set this to false */
-    #instantmove = true;
-    
-    
-    /** @type {Track[]} holds the tracks of this sprite */
-    #tracklist = null;
-
-    
-    /**
-     * @returns {Track[]} gets the sprites tracklist (for manual manipulation by your code if you want to)
-     */
-    get TrackList() { return this.#tracklist; }
-    
-    /**
-     * @type {EndOfTrackAction} what to do when you get to the end of the current track
-    */
-    #endAction = EndOfTrackAction.stop;
-    
-    /**
-     * @type {TrackStepMode} Determines how sprite moves along the track 
-     * defaults to pixelsPerSec to take account of the game clock
-    */
-    stepMode = TrackStepMode.pixelsPerSec;
-    
-    /**
-     * @type {float} The speed in pixels per seconds to move along the track
-    */
-    #pixelsPerSec = 0;
-    
-    /**
-     * @type {float}
-     precalculated value so we just multply game time
-        needs to re-calculated every time speed adjusted
-        or track changes MUST IMPLEMENT THIS
-    */
-    #pixelsPerSecPreCalc;
-    
-    /**
-     * @returns {float} gets the speed at which a sprite should travel along the track in pixels per second
-    */
-    get PixelsPerSec() { return this.#pixelsPerSec; }
-    /**
-     * @param {float} value Sets the speed at which a sprite should travel along the track in pixels per second
-    */
-    set PixelsPerSec(value){
-        if (value <= 0)
-            value = 0;
-        this.#pixelsPerSec = value;
-        this.#SetPreCalc();
-    }
-
-    /**
-     needs to be called when pixelsPerSec changes or track being used changes
-    */
-    #SetPreCalc(){
-        this.#pixelsPerSecPreCalc = this.direction * this.#pixelsPerSec * this.#tracklist[this._trackCurrent].trackDef.pointsOverlength;
-        this.#pointsCurrent = this.#tracklist[this._trackCurrent].trackDef.points.length;
-    }
-    
-    /**
-     @type {float} holds the step distance fractionally so we can move smoothly then integer round
-    */
-    trackFractionalPos = 0;
-    /**
-     @type {{callback:method | function,instance:object}} stores the the delegate routine to call when a sprite meets the end of a track
-    */
-    #callbackEOT = null;
-    /** retrieves the current the callback handler called sprite reaches then end of a track
-     * it will be in the form of object properties
-     * @returns {{callback:method | function,instance:object}}
-     * @example 
-     * // two propeties callback and instance
-     * let callstuff = this.callbackEndOfTrack;
-     * if (callstuff != null) console.log(callstuff.callback, callstuff.instance);
-     */
-    get callbackEndOfTrack(){return this.#callbackEOT;}
-    /**
-     * sets (or changes) the callback handler called sprite reaches then end of a track
-     * @example //value must be an object with 2 properties or use:
-     *  Engine.makeCallback()
-     * @param {{callback:method | function,instance:object}} value 
-     */
-    set callbackEndOfTrack(value){
-        if (value != undefined && value.callback !== undefined && value.instance !== undefined){
-        this.#callbackEOT = value;
-        }
-    }    
-    /**
-    * @type {int} if trackEndAction is set to kill do so after we have moved through this many tracks
-    */
-    _travellingStops = 1;
-    
-    /**
-    @type {int} how many track have I travelled along
-    */
-    _totalTravelled = 0;
-    
-    /**
-     @type {int} the index of the track in this.#tracklist we are currently using
-    */
-    _trackCurrent;
-
-    
-    /**
-     * @returns {int} current trackindex
-     Allows you to manually change the track index at any time
-        Use with caution, you can often achieve the effect you want using
-        the correct means of working with tracks
-    */
-    get TrackCurrent(){ return this._trackCurrent; }
-    /**
-     * @param {int} value trackindex you want
-     *  Allows you to manually change the track index at any time
-        Use with caution, you can often achieve the effect you want using
-        the correct means of working with tracks
-     */
-    set TrackCurrent(value){ this._trackCurrent = value; }
-    
-    /**
-    * @type {int} number of points in the active track
-    */
-    #pointsCurrent;
-    /**
-     * @type {int} number of points in the active track
-     */
-    get pointsCurrent(){return this.#pointsCurrent;}
-    /**
-     * @returns {Track} Retrieves the Track data (not a definition of the currently active track)
-        The track definition is available within the Track object
-    */
-    get CurrentTrackData() { return this.#tracklist[this._trackCurrent]; }
-    
-    /**
-     * @type {int} the element position of the track we are currently looking at
-    */
-    _trackPosition;
-    
-    /**
-     @type {int} how much to move along the track by each update
-    */
-    _trackStep;
-    
-    /**
-     @type {int} holds the previous trackstep when paused
-        ready to be restored
-    */
-    _saveTrackStep;
-    
-    /**
-     @type {int} what direction to move along the track +ve 1 or -ve 1
-    */
-        direction = 1;
-    
-    /**
-     @type {Sprite} holds a reference to parent sprite
-    */
-    boss;
-    
-    /**
-     @type {Timer} holds a timer that determines when the track position should
-        be updated which ensure this is independant of frame rate
-    */
-    _updateTimer; 
-    
-
-    /**
-     * @returns {EndOfTrackAction} gets or sets the action that should be performed when a sprite reaches the end of 
-        a track
-    */
-    get EndAction(){ return this.#endAction; }
-    /**
-     * @returns {EndOfTrackAction} sets the action that should be performed when a sprite reaches the end of 
-        a track
-    */
-    set EndAction(value) { this.#endAction = value; }
-    
-    /**
-     * @returns {int}
-     Gets the number of tracks this sprite has travelled along
-    */
-    get TracksTravelled() {return this._totalTravelled; }
-    
-    /**
-     Set the value for number of tracks travelled
-    this can be used for counting 
-    @param {int} newCount The new setting value you require
-    */
-    TravelledCountSet(newCount){
-        this._totalTravelled = newCount;
-    }
-    //NEEDS RE_WORKING AS THIS NOW ONLY WORKS FOR STEP MOVEMENT
-    
-    /**
-     Stop sprite moving along track
-        Restart track movement using Resume()
-    */
-    Pause(){
-        this._saveTrackStep = this._trackStep;
-        this._trackStep = 0;
-    }
-
-    /**
-     Restart a previously Paused() sprite
-        Don't use this without previously Pausing
-    */
-    Resume(){
-        this._trackStep = this._saveTrackStep;
-    }
-
-    
-    /**
-    Disconnects Sprite from given tracks and sets velocity in last known direction
-    Can go back to track mode by setting MovementMode to autotrack or manualTrack.
-
-    If you don't want velocity just set it to zero after calling Detach()
-    */
-    Detach(){
-        let v = vector3.sub(this.boss.position - this.boss.lasttrackposition);
-        v.normalise();
-        v.mul(this.#pixelsPerSec);
-        this.boss.velocity = v;
-        //this.boss.velocity = vector3.normalised((boss.Position - this.boss.LastTrackPosition)) * this.pixelsPerSec;
-        this.boss.updateMode = UpdateMode.automatic;
-    }
-
-    
-    /** This is a bit broken need a solution based on vertex settings
-     attempts to take value in lastTrackWas and performs the undraw operation
-        @param {int} drawNextTrack if true we will attempt to draw the current track after removing previous
-    */
-    AttemptToAutoUndraw(drawNextTrack){
-        if (this.drawing && this.#autoShowHide)
-        {
-            this.DrawTrackNoMore(this.lastTrackWas);
-            
-            //bodge for now need to record current settings when draw specified
-            if (drawNextTrack) this.DrawTrack(this.lastLineStyle, this.lastNumberOfLinesDrawn, this.#autoShowHide);
-        }
-    }
-
-    
-    /**
-     @returns {float} gets the updated interval for the track update timer
-    */
-    get UpdateInterval() { return this._updateTimer.Interval; }
-
-    
-    /**
-    Removes a track at the given position.
-    The position is the order in which the tracks were added
-    The first track added is at position 0.
-    If the last track removed is being followed by the sprite then it is
-    detached from this track and the end track handler is called if enabled
-    @param {} position The track index for this sprite to remove
-    */
-    Remove(position){
-        if (position > -1 && position < this.#tracklist.length){
-
-            this.#tracklist.splice(position, 1);
-            //attempt to adjust current track if affected by removal
-            if (this._trackCurrent >= position){
-                this._trackCurrent--;
-                if (this._trackCurrent < 0)
-                    this._trackCurrent = 0;
-                //if no track data turn of track update methods
-                if (this.#tracklist.length == 0)
-                    this.boss.updateMode = UpdateMode.automatic;
-            }
-
-        }
-    }
-
-    
-    /**
-    Adds a track from the TrackBank to be used by this Sprite
-    @param {} trackDef The previously generated track definition
-    Make sure you have added Tracks to your TrackBank first
-    */
-    AddTrack(trackDef){
-        if (!(trackDef === null || trackDef === undefined))
-            this.#tracklist.push(new Track(trackDef));
-    }
-
-    
-    /**
-    Adds a track to be used by this Sprite and modifies its starting position 
-    by the amount given
-    @param {TrackDefinition} trackDef the trackdefinition to add
-    @param {vector3} offset A 3d offset to apply to the original tracks positions
-    */
-    AddTrackWithOffset(trackDef, offset){   
-        if (!(trackDef === null || trackDef === undefined)){
-            this.#tracklist.push(new Track(trackDef, offset));
-        }
-    }
-
-    
-    /**
-    Adds a track to a sprite and translates the track to a specified position, 
-    so a single track can be placed with it's start at the position of a sprite if you wish
-    @param {TrackDefinition} trackDef Track definition
-    @param {vector3} startPos The position to start the track
-    Use this for a track shape that will be used for a sprite
-    generated at a specific position (e.g bullet hell tracks)
-    */
-    AddTrackStartAt(trackDef, startPos){
-        if (!(trackDef === null || trackDef === undefined)){
-            this.#tracklist.push(new Track(trackDef, vector3.sub(startPos, trackDef.points[0])));
-        }
-    }
-    
-    /**
-    Specifies how Sprite is to use the tracks allocated to it, This should be used after adding all tracks to a sprite
-    @param {EndOfTrackAction} endaction What to do when sprite reaches the end of the track
-    @param {int} startTrack The index of the tracks given to the Sprite using Add that you wish to start the Sprite on
-    @param {int} step The number of positions along the track you wish to move the Sprite during each update
-    @param {int} direction 1 travel from start to end, -1 travel from end to start
-    @param {int} startposition Track index position to start at, you must check it's in range
-    */
-    TravelWithStep( endaction,  startTrack,  step,  direction,  startposition){
-        this.#endAction = endaction;
-        this._trackCurrent = startTrack;
-        this._trackStep = step;
-        this.direction = direction;
-        this._trackPosition = (startposition == 0 || startposition === undefined) ? this.GetStartPosition : startposition;
-        this.trackFractionalPos = this._trackPosition;
-        this.stepMode = TrackStepMode.discreteStep;
-        this.boss.updateMode = UpdateMode.autotrack;
-        this.boss.position = this.boss.track.positionCurrent;
-    }
-    
-    /**
-     Sets sprite to move along the track at constant speed irrespective of the frame rate
-    @param {EndOfTrackAction} endaction What to do when you reach end of track
-    @param {int} startTrack The track to start at
-    @param {float} speed The speed in pixels per second to move at
-    @param {int} direction 1 for forward, -1 for backward
-    @param {int} startPosition Track index position to start at, you must check it's in range
-    */
-    TravelWithSpeed( endaction,  startTrack,  speed,  direction,  startPosition){
-        this.#pixelsPerSec  = Math.abs(speed);//make sure positive
-        this.stepMode = TrackStepMode.pixelsPerSec;
-        this.#endAction = endaction;
-        this._trackCurrent = startTrack;
-        this.direction = direction;
-        if (startPosition == 0 || startPosition === undefined){
-            this.trackFractionalPos = this._trackPosition = this.GetStartPosition;
-        } else {
-            this.trackFractionalPos = this._trackPosition = startPosition;
-        }
-        this.boss.updateMode = UpdateMode.autotrack;
-        this.boss.position = this.boss.track.positionCurrent;
-        this.#SetPreCalc();
-    }
-    
-    /**
-    @returns {vector3} Gets the current x, y and z position (game co-ordinates) along the current track
-    You shouldn't really need this
-    */
-    get positionCurrent(){
-        if (!this.interpolate){
-            return  vector3.add(this.#tracklist[this._trackCurrent].trackDef.points[this._trackPosition],
-                this.#tracklist[this._trackCurrent].offset);
-        } else {
-            let a = this.trackFractionalPos | 0;
-            if (this.#endAction != EndOfTrackAction.wrap && this.#tracklist.length > 1 && a == this.#pointsCurrent - 1 ){
-                return  vector3.add(this.#tracklist[this._trackCurrent].trackDef.points[a],
-                    this.#tracklist[this._trackCurrent].offset);
-            } else {
-            let b = (a == this.#tracklist[this._trackCurrent].trackDef.points.length - 1) ? 0 : a + 1;
-            let p = this.trackFractionalPos - a;
-            //console.log(a + ":" + b + ":" + p);
-            return vector3.add(vector3.lerp(this.#tracklist[this._trackCurrent].trackDef.points[a],
-                this.#tracklist[this._trackCurrent].trackDef.points[b],
-                p), this.#tracklist[this._trackCurrent].offset);
-            }
-        }
-    }
-    /**
-     * @type {bool} if true then a position between 2 points will be interpolated for fractional movement
-     * default is false so place only at existing track points
-     */
-    interpolate = false;
-    /**
-     Tries to locate a suitable position on the current track which is
-    close to the position specified. If you want to jump from one track to another
-    then you need to move to that track first then try this
-    @param {vector3} position The 2d position to locate a point near
-    @returns {{pos:vector3,trackpos:int}} 
-    */
-    TrackPositionNear(position){
-        let pos = GetAPositionNear(position, this._trackCurrent);
-        //set track position
-        this.trackFractionalPos = pos.trackpos;
-        this._trackPosition = pos.trackpos | 0;
-
-        if (this.#instantmove)
-            this.boss.position = this.boss.track.positionCurrent;
-
-        return pos;
-    }
-
-    
-    /**
-     Tries to locate a suitable position on the current track which is
-    close to the position specified. If you want to jump from one track to another
-    then you need to move to that track first then try this
-    @param {vector3} position The 2d position to locate a point near
-    @param {int} trackNum The track number (its position in the sprites list) that you wish to attach to
-    @returns {{pos:vector3,trackpos:int}}The Physical position along the track and the track position, 
-    the W value holds the track position
-    */
-    GetAPositionNear(position, trackNum){
-        let pos = {pos:vector3.zero,trackpos:0};
-        let tempDistance = 0;
-        //set start value
-        let current = this.#tracklist[trackNum].trackDef.points[0];
-        let shortestDistance = Math.abs(vector3.Distance(current, position));
-        pos.trackpos = 0;
-
-        for (let i = 1; i < this.#tracklist[trackNum].trackDef.points.length; i++)
-        {
-            tempDistance = Math.abs(vector3.distance(this.#tracklist[trackNum].trackDef.points[i], position));
-
-            if (tempDistance < shortestDistance)
-            {
-                shortestDistance = tempDistance;
-                current = this.#tracklist[trackNum].trackDef.points[i];
-                pos.trackpos = i;
-            }
-        }
-        pos.pos.x = current.x;
-        pos.pos.y = current.y;
-        pos.pos.z = current.z;
-        return pos;
-    }
-    
-    
-    /**
-     Tells you if you are at the start of the current track
-    the start depends on direction travelling
-    @return {bool} True means the sprite is at the start</value>
-    */
-    get AtStart() { return (this._trackPosition == this.GetStartPosition); }
-    
-    /**
-     gets a value stating whether you are at the first position
-    along a track
-    @return {bool} True means at first point, false means not</value>
-    */
-    get AtPhysicalStart(){ return (this._trackPosition == 0); }
-    
-    /**
-     gets a value stating whether you are at the last position
-    along a track
-    @return {bool} True means at last point, false means not</value>
-    */
-    get AtPhysicalEnd() { return (this._trackPosition == this.#tracklist[this._trackCurrent].trackDef.points.length - 1); }
-    
-    /**
-     Tells you if you are at the end of the current track
-    @return {bool} True means the sprite is at the end</value>
-    */
-    get AtEnd() { return (this._trackPosition == this.GetEndPosition); }
-    
-    /**
-    Gets the position along the current track
-    You shouldn't really need this
-    @returns {int}
-    */
-    get TrackPosition() { return this._trackPosition; }
-    /**
-     sets the position along the current track
-     * @param {int} value 
-    */
-    set TrackPosition(value) {
-            this.trackFractionalPos = this._trackPosition = value;
-            //CorrectTrack();
-            this.#SetPreCalc();
-        }
-    /**
-    Gets the step rate for the current track, how many positions to skip along
-    The larger the step value the quicker the Sprite will appear to move.
-    Try to create your tracks with lots of positions, this will then give you flexability
-    when trying to decide on the step size
-    @return {float} the higher the track step the faster the sprite will appear to move along the track</value>
-    */
-    get TrackStep() { return this._trackStep; }
-    /**
-    Sets the step rate for the current track, how many positions to skip along
-    The larger the step value the quicker the Sprite will appear to move.
-    Try to create your tracks with lots of positions, this will then give you flexability
-    when trying to decide on the step size
-    @param {float} value the higher the track step the faster the sprite will appear to move along the track</value>
-    */
-    set TrackStep(value) { this._trackStep = value; }
-
-    
-    /**
-     gets the track name of the currently used track
-    @returns {string}
-    */
-    get TrackName() { return this.#tracklist[this._trackCurrent].trackDef.Name; }
-    
-    /**
-    @returns {int} Gets the start index position on the current track based on the direction travelling
-    */
-    get GetStartPosition(){
-        if (this.direction > 0)
-            return 0;
-        else
-            return this.#tracklist[this._trackCurrent].trackDef.points.length - 1;
-    }
-
-    /**
-    @returns {int} gets the end index position on the current track based on the direction travelling
-    */
-    get GetEndPosition(){
-        if (this.direction > 0)
-            return this.#tracklist[this._trackCurrent].trackDef.points.length - 1;
-        else
-            return 0;
-    }
-
-    
-    /** Move forward along the current track */
-    PositionForward(){
-        this.trackFractionalPos += this._trackStep * this.direction;
-        this._trackPosition = this.trackFractionalPos | 0;
-        this.CorrectTrack();
-        if (this.instantmove)
-            this.boss.position = this.boss.track.positionCurrent;
-    }
-
-    
-    /** Move backward along the current track */
-    PositionBackward(){
-        this.trackFractionalPos -= this._trackStep * this.direction;
-        this._trackPosition = this.trackFractionalPos | 0;
-        this.CorrectTrack();
-        if (this.instantmove)
-            this.boss.position = this.boss.track.positionCurrent;
-    }
-
-    
-    /** Moves to the first position on the track */
-    PositionFirst(){
-        this.trackFractionalPos = 0;
-        this._trackPosition = this.trackFractionalPos | 0;
-        if (instantmove)
-            this.boss.position = this.boss.track.positionCurrent;
-    }
-
-    
-    /** moves to the last position on the track*/
-    PositionLast(){
-        this.trackFractionalPos = this.#tracklist[this._trackCurrent].trackDef.points.length - 1;
-        this._trackPosition = this.trackFractionalPos | 0;
-        if (instantmove)
-            this.boss.position = this.boss.track.positionCurrent;
-
-    }
-
-    
-    /** moves to the next track associated with this sprite */
-    TrackNext(){
-        if (this.#tracklist.length != 0)
-        {
-            this._totalTravelled++;
-            this.lastTrackWas = this._trackCurrent;
-
-            this._trackCurrent = (++this._trackCurrent % this.#tracklist.length);
-            //in case we have moved track
-            this.#SetPreCalc();
-            this.AttemptToAutoUndraw(true);
-        }
-        else
-            throw new ArgumentOutOfRangeException("No tracks defined for this sprite");
-    }
-
-    
-    
-    /** @type {int} holds the track index number of the last track prior to changing it */
-    lastTrackWas;
-    
-    /** @type {bool} specifies if a track us currently being drawn */
-    drawing;
-    
-    /** @type {LineData} holds the line style set so when we draw next track automatically we can use the same style */
-    lastLineStyle;
-    
-    /** @type {int} holds the number of lines specified when drawing automatically so we can use the same number automatically */
-    lastNumberOfLinesDrawn;
-    /** @type {bool} if true the trackmanager will ensure tracks are displayed and hidden automatically as they are used by the sprite*/
-    #autoShowHide = false;
-    /** @returns {bool} if true the trackmanager for the sprite will automatically draw and remove tracks as the sprite uses them*/
-    get AutoShowHide(){ return this.#autoShowHide; }
-    /** @param {bool} if true the trackmanager for the sprite will automatically draw and remove tracks as the sprite uses them */
-    set AutoShowHide(value){
-        this.#autoShowHide = value;
-        //force pre-calc to ensure track is being shown properly ???
-        //if (value)
-        //    this.#SetPreCalc();
-    }
-
-    /**
-     attempts to replace a track at the position given with a new track definition
-    @param {TrackDefinition} td track to use
-    @param {int} position position of track to remove
-    */
-    ReplaceTrack(td, position){
-        position = (position === undefined) ? position : 0;
-
-        if (td != null && td.points.length > 0)
-        {
-            if (position >= 0 && position < this.#tracklist.length)
-            {
-                DrawTrackNoMore(position);
-                this.#tracklist[position] = new Track(td);
-            }
-            else
-                this.#tracklist.push(new Track(td));
-        }
-        else
-            throw new ArgumentException("Track definition is either Null or has no points");
-    }
-    
-    /**
-    stops the engine drawing the given track
-    @param {int} trackNumber the track number of this track manager to remove, if not defined current track selected
-    */
-    DrawTrackNoMore( trackNumber){
-        trackNumber = (trackNumber === undefined) ? trackNumber : this._trackCurrent;
-        this.boss.engM.LineRemoveOwners(new OwnerInfo(boss.ID, trackNumber));
-        drawing = false;
-    }
-    
-    /**
-    moves to the previous track associated with this sprite
-    */
-    TrackPrevious(){
-        if (this.#tracklist.length != 0)
-        {
-            this._totalTravelled++;
-            this.lastTrackWas = this._trackCurrent;
-
-            this._trackCurrent--;
-            if (_trackCurrent < 0)
-                this._trackCurrent = this.#tracklist.length - 1;
-            this.#SetPreCalc();
-            this.AttemptToAutoUndraw(true);
-        }
-        else
-            throw new ArgumentOutOfRangeException("No tracks defined for this sprite");
-    }
-
-    
-    /**
-    sets the update interval for track re-positioning
-    @param {float} interval time in seconds before moving to next position on the track
-    */
-    UpdateIntervalSet(interval){
-        this._updateTimer.Interval(interval);
-    }
-
-    
-    /**
-     Corrects any over steps and performs requested action
-    @returns {bool} true if at end of track
-    */
-    CorrectTrack(){
-        let retVal = false;
-        
-        //capture current track number before changing it
-        this.lastTrackWas = this._trackCurrent;
-
-        //int diff = 
-        if (this._trackPosition >= this.#tracklist[this._trackCurrent].trackDef.points.length ||
-            this._trackPosition < 0)
-        {
-            let frac;
-            switch (this.#endAction)
-            {
-                case EndOfTrackAction.detach:
-                    this.Detach();
-                    this.AttemptToAutoUndraw(false);
-                    break;
-                case EndOfTrackAction.kill:
-                    this.trackFractionalPos = this._trackPosition = 0;
-                    this.boss.UpdateAs = UpdateMode.none;
-                    this.boss.Kill();
-                    this.AttemptToAutoUndraw(false);
-                    break;
-                case EndOfTrackAction.next:
-                    this._totalTravelled++;
-
-                    //capture current track number before changing it
-                    //this.lastTrackWas = this._trackCurrent;
-
-                    this._trackCurrent = (++this._trackCurrent % this.#tracklist.length);
-                    //attempt tp get fraction
-                    frac = this.trackFractionalPos - (this.trackFractionalPos |0);
-                    frac = (frac < 0) ? 1 + frac : frac;
-
-                    this.trackFractionalPos = (this.direction < 0 ) ? 1- frac : frac;
-
-                    this.trackFractionalPos += this._trackPosition = this.GetStartPosition;
-                    this._trackPosition = this.trackFractionalPos | 0;
-                    //correction to stop interpolation between distant tracks
-                    //if (this.interpolate) this.trackFractionalPos = this._trackPosition;
-                    //end of new code
-                    this.#SetPreCalc();
-                    retVal = true;
-                    this.AttemptToAutoUndraw(true);
-                    break;
-                case EndOfTrackAction.random:
-                    this._totalTravelled++;
-
-                    this._trackCurrent = ranBetween(0, this.#tracklist.length);
-                    //attempt tp get fraction
-                    frac = this.trackFractionalPos - (this.trackFractionalPos |0);
-                    frac = (frac < 0) ? 1 + frac : frac;
-
-                    this.trackFractionalPos = (this.direction < 0 ) ? 1- frac : frac;
-
-                    this.trackFractionalPos += this._trackPosition = this.GetStartPosition;
-                    
-                    this._trackPosition = this.trackFractionalPos | 0;
-                    //correction to stop interpolation between distant tracks
-                    //if (this.interpolate) this.trackFractionalPos = this._trackPosition;
-                    //end of new code
-                    this.#SetPreCalc();
-                    retVal = true;
-                    this.AttemptToAutoUndraw(true);
-                    break;
-                case EndOfTrackAction.reverse:
-                    this._totalTravelled++;
-
-                    //attempt tp get fraction
-                    frac = this.trackFractionalPos - (this.trackFractionalPos |0);
-                    frac = (frac < 0) ? 1 + frac : frac;
-
-                    this.trackFractionalPos = (this.direction < 0 ) ?  frac : frac - 1;
-                    this.direction *= -1;
-
-                    this.trackFractionalPos += this._trackPosition = this.GetStartPosition;
-                    this._trackPosition = this.trackFractionalPos | 0;
-                    //correction to stop interpolation between distant tracks
-                    //if (this.interpolate) this.trackFractionalPos = this._trackPosition;
-                    //end of new code
-                    this.#SetPreCalc();
-                    retVal = true;
-                    break;
-                case EndOfTrackAction.wrap:
-                    this._totalTravelled++;
-
-                    //this._trackCurrent = (++this._trackCurrent % this.#tracklist.length);
-                    //attempt tp get fraction
-                    frac = this.trackFractionalPos - (this.trackFractionalPos |0);
-                    frac = (frac < 0) ? 1 + frac : frac;
-                    this.trackFractionalPos = (this.direction < 0 ) ? 1- frac : frac;
-                    this.trackFractionalPos += this._trackPosition = this.GetStartPosition;
-
-                    this._trackPosition = this.trackFractionalPos | 0;
-                    this.#SetPreCalc();
-                    retVal = true;
-                    break;
-                case EndOfTrackAction.stop:
-                    this._totalTravelled++;
-                    this.trackFractionalPos = this._trackPosition = GetEndPosition;
-                    TrackStep = 0;
-                    pixelsPerSec = 0;
-                    this.#SetPreCalc();
-                    retVal = true;
-                    break;
-            }
-            //if (OnEndOfTrack != null)
-            //    OnEndOfTrack(boss);
-            Engine.processCallback(this.#callbackEOT);//EndOfTrackCallBack);
-            //if (this.EndOfTrackCallBack != null) EndOfTrackCallBack();
-        }//end of if to check for end
-
-        //check for dirtyness of track when drawing
-        //if it is then we need to remove a track and re-draw it!
-        if (this.#tracklist[this._trackCurrent].isDirty && drawing)
-        {
-            this.AttemptToAutoUndraw(true);
-        }
-        return retVal;
-    }
-
-    
-    /**
-    Perform the update of the Sprite's position using the current track settings
-    This is called by the Sprites Update method there is no need to call this yourself
-    */
-    update(){
-        for(let p = 0 ; p < this.#tracklist.length; p++){
-            this.#tracklist[p].clean();
-        }
-        //for updating purposes
-        let currentPosition = this._trackPosition;
-        //needs timer interval expiration
-        if ((this.stepMode == TrackStepMode.discreteStep) && this._updateTimer.elapsedResetAccrued)
-        {
-            this.trackFractionalPos += this._trackStep * this.direction;
-        }
-        else
-        {
-            //keep track of total point distance
-            this.trackFractionalPos += this.#pixelsPerSecPreCalc * Engine.delta;//EngineManager.enginePeriod;
-        }
-        this._trackPosition = this.trackFractionalPos | 0;
-        //Have we moved position (or changed track)
-        return this.CorrectTrack() || (currentPosition != this._trackPosition);
-    }//Update
-
-    
-    //THIS CAN@T POSSIBLY WORK
-    // /**
-    // works out the number of trackposition between the two track positions given
-    // @param {} start the start position of the track
-    // @param {} end the position to move towards
-    // @param {} numberOfPoints number of points in the track
-    // @param {} direction direction of travel +ve is forwards -ve is backwards
-    // @returns {int} the number of trackpositions between these points
-    // */
-    // static int TrackDistance(int start, int end, int numberOfPoints, float direction){
-    //    if (start != end)
-    //    {
-    //        int distance = 0;
-    //        int step = 1;
-    //        if (direction < 0) step = -1;
-    //        while (start != end)
-    //        {
-    //            start = start + step;
-    //            //check for wrap round track
-    //            if (start < 0) start = numberOfPoints - 1;
-    //            else if (start == numberOfPoints) start = 0;
-//
-    //            distance++;
-    //        }
-    //        return distance;
-    //    }
-    //    else return 0;
-    //}
-}
-/**
- * @classdesc describes a track which comprises a trackdefintion and offset information,
- * allowing the same track to be used for multiple sprites with different offsets
- */
-class Track{
-    /** 
-     * unique id created for every track used?
-    */
-    static trackId = 0;
-    /**
-     * @returns {vector3} The offset to displace the original track positions by
-     * This can be used to make use of the shape of a pre-defined track
-     * but starting at a different position to its original definition
-    */
-    get offset(){ return this.#offset; }
-    /**
-     * @param {vector3} value The offset to displace the original track positions by
-     * This can be used to make use of the shape of a pre-defined track
-     * but starting at a different position to its original definition
-    */
-    set offset(value){
-        //set dirty if value has changed
-        if (value != this.#offset)
-            this.dirtyMe = true;
-        this.#offset = value;
-    }
-
-    /** @type {vector3} holds the offset for this track */
-    #offset = vector3.zero;
-    /** @type {TrackDefinition} holds a reference to the raw track data being used */
-    trackDef;
-    /** @type {bool} specifies whether track should be drawn or not*/
-    visible = false;
-    /** @type {bool} specifies whether the track definition is designated as moving*/
-    moving = false;
-    /** 
-     * Constructs a new track manager track from given track definition with an offset
-     * @param {TrackDefinition} trackDef The track definition to add to the track manager
-     * @param {vector3} offset The 3d displacement to apply to this track, zero if omitted
-    */
-    constructor(trackDef, offset){
-        offset = (offset === undefined) ? vector3.zero : offset;
-        this.trackDef = trackDef;
-        this.#offset = offset;
-    }
-    /** @type {bool} specifed true if the offset has been changed*/
-    #dirtyMe = false;
-
-    /** @returns {bool} gets (resetting in the process) the dirty status of a track */
-    get isDirty() { return this.#dirtyMe;}//return this.trackDef.isdirty || this.isMeDirty; }
-    /** @param {bool} value  sets the dirty */
-    set isDirty(value) { this.#dirtyMe = value;}//return this.trackDef.isdirty || this.isMeDirty; }
-    /** marks the track as not dirty */
-    clean(){this.#dirtyMe = false;}
-    /** @returns {bool} get the dirty status of the track, when reading this is reset*/
-    get isMeDirty(){
-        if (this.#dirtyMe){
-            this.#dirtyMe = false;
-            return true;
-        }
-        return this.#dirtyMe;
-    }
-    /** @param {bool} value set the dirty status of the track, when reading this is reset*/
-    set isMeDirty(value){
-        this.#dirtyMe = value;
-    }
-}
-/**
- * @classdesc holds a collection of points that are used by the track manager
- * to direct sprites along pre-described paths
- */
-class TrackDefinition{
-    /** @type {vector3[]} a collection of points */
-    points = [];
-    /** @type {string} An internal name only used for debugging purposes*/
-    name;
-    /** @type {int}  the length of the track in pixels */
-    length;
-    /** @type {int} pre calculate value giving us the ratio of points to length for velocity calculations during the TrackManager update*/
-    pointsOverlength;
-}
 /** 
-* @classdesc holds information about portions of point based tracks
-*/
-class WayPoint{
-    /** @type {float} the x step in unit terms as proportion of distance*/
-    xstep;
-    /** @type {float} the y step in unit terms as proportion of distance*/
-    ystep;
-    /** @type {float} the z step in unit terms as proportion of distance*/
-    zstep;
-    /** @type {float} the distance (by pythagorus of this WayPoint*/
-    distance;
-    /** @type {vector3} start point*/
-    start;
-    /** @type {vector3} end point*/
-    end;
-    
-    /** 
-    * quick constructor
-    * @param {vector3} start start of waypoint
-    * @param {vector3} end end of wapoint
-    * @param {float} xs stepping for waypoint
-    * @param {float} ys stepping for waypoint
-    * @param {float} zs stepping for waypoint
-    * @param {float} dist distance for this waypoint
+ * @classdesc manages and processes sprites - you should not have to use this directly apart from setting debug output
+ */
+class Spritemanager{
+    /** holds the currently managed sprite references @type {Sprite[]} */
+    #spritelist;
+    /** @returns {Sprite[]} an array os Sprites that you can perform further processing on */
+    get spritelist(){return this.#spritelist;}
+    /** holds the list of sprites that are to be drawn, sorted on z before drawing @type {Sprite[]} */
+    #renderlist;
+    /** holds a list of just those sprites that are collidable, reducing some of the overheads @type {Sprite[]} */
+    #collisionlist;
+    get Clist() {return this.#collisionlist;}
+    /** holds a list of sprites that are primary colliders, reduces collsion checking overheads @type {Sprite[]} */
+    #collisionPlist;
+    get Plist() {return this.#collisionPlist;}
+    /** not used */
+    #layer;
+    /** set the spritemanager to output debug info defaults to false @type {bool}*/
+    debug = false;
+    /**
+     * sets the position to display the sprite information, not in use
+     * @type {vector2} 
+     * @example this.debugposition = new vector2(10,ht - 30);
     */
-    constructor( start,  end,  xs,  ys,  zs,  dist)
-    {
-        this.xstep = xs;
-        this.ystep = ys;
-        this.zstep = zs;
-        this.distance = dist;
-        this.start = start;
-        this.end = end;
+    debugposition = new vector2(10, Engine.viewHeight - 30);
+    /** specifies the colour to render debug info, not in use*/
+    debugcolour = "white";
+    /** specifies a refernce layer to render debug info to*/
+    constructor(/*layer*/){
+        // this.#layer = layer;
+        this.#spritelist = [];
+        this.#collisionlist = [];
+        this.#collisionPlist = [];
+        this.#renderlist = [];
+    }
+    /** holds history draw tally per frame @type {int}  */
+    #historycount;
+    /** holds last number of sprites drawn in the frame @type {int} */
+    #spritedrawn;
+    /** @returns {int} gets the number of sprites being processed */
+    get count(){return this.#spritelist.length;}
+
+    /** adds a sprite for automatic update and drawing processing 
+     * add a call to this method of the sprite manager in your sprites constructor
+     * @example    
+     * constructor(){
+     *      super();
+     *      Engine.spM.add(this);
+     *      //...further constructor code to setup sprite
+    */
+    add(sprite){
+        if (sprite!=undefined){
+            this.#spritelist.push(sprite);
+        } else {
+            let s = new Sprite();
+            this.#spritelist.push(s);
+        }
+        return this.#spritelist[this.#spritelist.len - 1];
+    }
+    /** adds a sprite marked as a collidable to the collision list 
+     * 
+     * @param {Sprite} spr primary collider to add
+    */
+    collisionJoin(spr){
+        if (this.#collisionlist.indexOf(spr) == -1){
+            this.#collisionlist.push(spr);
+        }
+
+    }
+    /** adds a sprite marked as a primary collider to the plist 
+     * 
+     * @param {Sprite} spr primary collider to add
+    */
+    collisionPJoin(spr){
+        if(this.#collisionPlist.indexOf(spr) == -1){
+            this.#collisionPlist.push(spr);
+        }
+    }
+    /** removes given sprite from the primary collision list
+     * @param {Sprite} spr sprite to remove
+     * called by cleanup code, no need to manually call
+     */
+    collisionPLeave(spr){
+        let p = this.#collisionPlist.indexOf(spr);
+        if (p != -1){
+            this.#collisionPlist.splice(p,1);
+        }
+    }
+    /** removes given sprite from the collision list
+     * @param {Sprite} spr sprite to remove
+     * called by cleanup code, no need to manually call
+     */
+    collisionLeave(spr){
+        let p = this.#collisionlist.indexOf(spr);
+        if (p != -1){
+            this.#collisionlist.splice(p,1);
+        }
+    }
+
+    
+    /** performs a collision check for each sprite in the primary collision list
+     * against any sprites in the sprite collision list that match with targets for the primary
+     * calls the callbackCollide nominated method if set
+     */
+    collisioncheck(){
+        for (let p = 0; p < this.#collisionPlist.length; p++){
+            const prim = this.#collisionPlist[p];
+            if (prim.collisionList != null){
+                for (let k = 0; k < this.#collisionlist.length; k++){
+                    const sec = this.#collisionlist[k];
+                    //this k p comparison is stupid the indexes are referring to different
+                    //lists I need another way of exluding checking with self
+                    // if (k != p && sec.alive && this.istargetted(sec, prim.collisionList)){
+                    if (prim !== sec && sec.alive && this.istargetted(sec, prim.collisionList)){
+                        if (prim.intersectBC(sec)){
+                            Engine.processCallback(prim.callbackCollide,sec);
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    /** 
+     * determines if a sprite from the sprite managers collision list has a type
+     * logged in the primary sprites collision types list 
+     * @returns {bool} true if to be checked for collision */
+    istargetted(spr, list){
+        for (let p = 0; p < list.length; p++){
+            if (spr instanceof list[p]){
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /** process the sprites in the lists */
+    update(){
+        if (this.#collisionPlist.length > 0) {this.collisioncheck();}
+
+        this.#renderlist.length = 0;
+        for (let p = 0; p < this.#spritelist.length; p++){
+            this.#spritelist[p].update();
+            if (this.#spritelist[p].visible && !this.#spritelist[p].dead){
+                this.#renderlist.push(this.#spritelist[p]);
+            }
+        }
+        // if (this.#collisionPlist.length > 0) {this.collisioncheck();}
+        this.#bringoutthedead();
+    }
+    //need a system similar to the sprite renderlist for history I think
+    /** performs sprite rendering */
+    draw(){
+        this.#historycount = 0;
+        //draw any history first - first guess
+        //sort history renderlist
+        //this.#renderlist.sort(function(a,b){return a.z < b.z ? -1 : 1;})
+        for (let p = 0; p < this.#spritelist.length; p++){
+            if (this.#spritelist[p].history != null) {
+                this.#historycount += this.#spritelist[p].history.draw();
+            }
+        }
+        //sort renderlist
+        this.#renderlist.sort(function(a,b){return a.z < b.z ? -1 : 1;})
+            
+        this.#spritedrawn = this.#renderlist.length;
+        for (let p = 0; p < this.#renderlist.length; p++){
+            //watch out for any sprites killed since adding to render list
+            //if (!this.#renderlist[p].dead){
+                this.#renderlist[p].draw();
+            //}
+        }
+        if (this.debug){this.debugdisplay();}
+    }
+    /** removes all sprites marked as dead */
+    #bringoutthedead(){
+        let p = this.#spritelist.length - 1;
+        while (p >= 0){//} && p < this.#spritelist.length){
+            if (this.#spritelist[p].dead){
+                this.#spritelist[p].cleanup();
+                this.#spritelist.splice(p,1);
+            } 
+            p--;
+        }
+    }
+    /** returns a string of basic debug information about sprites */
+    get debugdisplay(){
+        return "sprites [" + this.count + "] drawn [" + this.#spritedrawn + "] " + 
+        "history sprites [" + this.#historycount + "]";
+    }
+    /** bins all sprites without calling funerals */
+    removeall(){
+        for (let p = 0; p < this.#spritelist.length; p++){
+            this.#spritelist[p].cleanup();
+        }
+        this.#spritelist = [];
     }
 }
-/**
- * @classdesc provides methods for creating and manipulating tracks
- */
-class TrackHelper{
 
+/******************************
+ * textures.js by Hurray Banana 2023-2024
+ ******************************/ 
+/** @classdesc support to help with textures, loading and manipulating */
+class Tex{
+    /** font used to pre-render textures ready for sprites (alphabet stuff)
+     * change it before calling Engine.init()
+     * default monospace
+     */
+    static prerenderFont = "monospace";
+    /** font size to use for pre-render texture characters - default 24 @type {int} */
+    static prerenderFontsize = 24;
+    /** texture size to use for pre-render texture characters - default 32 @type {int}*/
+    static prerenderFontTextureSize = 32;
+    /** extra sizing for fonts that don't report ascenders and descenders properly.
+     * Use this when pre-rendered character textures get cropped
+     * defaults to 0, try making it 4, 6 etc... until rendering is ok
+     * @type {int}
+     */
+    static prerenderFontTextureSizeExtra = 0;
+    //texture space
+    /** single pixel for scaling for rectangles @type {texture}*/
+    static singlepixel;
+    /** texture with just white pixels 50x50  @type {texture}*/
+    static rect50by50;
+    /** 8x8 pixel triangle white outline with black triangle  @type {texture}*/
+    static triangle;
+    /** white circle   @type {texture}*/
+    static circle4by4;
+    /** white circle   @type {texture}*/
+    static circle8by8;
+    /** white circle   @type {texture}*/
+    static circle16by16;
+    /** white circle   @type {texture}*/
+    static circle32by32;
+    /** T target can be used for visualisations  @type {texture}*/
+    static target;
+    /** holds alphaset as textures @type {texture[]}*/
+    static txAlpha = [];
+    /** holds alphaset as textures with a border @type {texture[]}*/
+    static txAlphaBordered = [];
+    /** set of textures generated for each of the characters */
+    static alphaset = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz !\"£$%^&*()[]{}-+=,.:;?><¬";
     /** 
-     * Calculates the speed required to traverse a specified track in the timeperiod given
-     * @param {TrackDefinition} track The track to traverse
-     * @param {float} timePeriod The time you want to take moving along the track
+     * generates a stock alphabet as a set of sprite textures
+    */
+    static genAlphaset(){
+        //push();
+        //get metrics
+        // textFont(Tex.prerenderFont);
+        // textSize(Tex.prerenderFontsize);
+        // Tex.prerenderFontTextureSize = textAscent() + textDescent();
+        // pop();
+        Tex.txAlpha = new Array(Tex.alphaset.length);
+        Tex.txAlphaBordered = new Array(Tex.alphaset.length);
+        for (let p =0; p < Tex.alphaset.length; p++){
+            Tex.txAlpha[p] = this.makeLetter(Tex.alphaset[p]);
+            Tex.txAlphaBordered[p] = this.makeLetter(Tex.alphaset[p],true);
+        }
+    }
+    /**
+     * takes the first character in string and returns appropriate texture, will return a ¬ if doesn't exist
+     * @param {string} ch character to obtain texture of
+     * @param {bool} border if false or undefined will return normal character texture if true will get a bordered version
+     * @returns {texture} requested texture if exists or a not texture
+     */
+    static getAlphachar(ch, border){
+        let p = Tex.alphaset.indexOf(ch[0]);
+        if (p == -1) p = Tex.alphaset.length - 1;
+        return (border === undefined || !border) ? Tex.txAlpha[p] : Tex.txAlphaBordered[p];
+    }
+    /**
+     * returns the indexed texture from the alphaset, if outside range will return a ¬
+     * @param {string} ch character to obtain texture of
+     * @param {bool} border if true will get a bordered version
+     * @returns {texture} texture requested if possible
+     */
+    static getAlphaindex(idx, border){
+        if (p < 0 || p >= Tex.alphaset.length) p = Tex.alphaset.length - 1;
+        return (border === undefined || !border) ? Tex.txAlpha[p] : Tex.txAlphaBordered[p];
+    }
+    /** slope tiles 16x16 
+     * contains the following basic slopes
+     * 0,0 0,4 0,8 0,12 0,16
+     * 4,0 4,4 4,8 4,12 4,16
+     * 8,0 8,4 8,8 8,12 8,16
+     * 12,0 12,4 12,8 12,12 12,16
+     * 16,0 16,4 16,8 16,12
+     * used for testing purposes - for slope interactions when complete
+    */
+    static slopes;
+    /** holds rectangles portions for the slopes */
+    static #slopePorts;
+    /** holds slope textures from testing */
+    static tsSlopes;
+    /** returns a Tile object for the given slope*/
+    static getslopetile(left, right){
+        left >>= 2;
+        right >>= 2;
+        //finish this
+    }
+    /**
+     * hashes an RGB colour value for texture name in texture cache
+     * @param {colour} colour 
+     * @returns hashed colour
+     */
+    static colTonum(colour){
+        return colour[0]*1024 + colour[1]*256 + colour[2];
+    }
+    /** get a coloured pixel for making sprites which when scaled can make any sized rectangle 
+     * @param {colour} tintcolour 
+     * @returns {texture}
+    */
+    static getColouredPixel(tintcolour){
+        let colHash = Tex.colTonum(tintcolour);
+        let tex = Tex.tintcache.get(Tex.singlepixel.__hbname + colHash) ;
+        if (tex === undefined){
+            tex = createGraphics(1, 1);
+            tex.pixelDensity(1);
+            tex.fill(tintcolour);
+            tex.noStroke();
+            tex.rect(0,0,1,1);
+            tex.__hbname = Tex.singlepixel.__hbname;
+            tex.__hbtint = colHash;
+            Tex.tintcache.set(tex.__hbname + tex.__hbtint, tex);
+        }
+        return tex;
+    }    
+    //NEED TO TAKE ONBOARD THE ALPHA (as this is part of the tint)
+    /** takes a texture and produces a tinted version     
+     * tintcolour should be a rgb array 
+     * @param {texture} texture texture/image to copy
+     * @param {color} tintcolour to apply to the texture
+     * @param {float} alpha alpha value to apply to the tint 0 transparent 1 fully opaque
+     * @param {string} compositor if supplied overrides the default composite operation "destination-atop" with your own has to be valid operation
+     * @returns {texture} the coloured texture requested
+     @example [255,0,0] - rgb array full red, no green, no blue
+     DO NOT USE IN A GAME LOOP THESE SHOULD BE CREATED BEFORE GAME STARTS, as this may take time
+     if texture in that colour has been requested before then the cached version will be selected
+    */
+     static getTintedCopy(texture, tintcolour, alpha, compositor){
+        compositor = (compositor === undefined) ? "destination-atop" : compositor;
+        let colHash = Tex.colTonum(tintcolour);
+        let tex = Tex.tintcache.get(texture.__hbname + colHash) ;
+        if (tex === undefined){
+            if (alpha === undefined){alpha = 1;}
+            tex = createGraphics(texture.width, texture.height);
+            tex.pixelDensity(1);
+            tex.drawingContext.globalAlpha = alpha;
+            tex.fill(tintcolour);
+            tex.noStroke();
+            tex.rect(0,0,tex.width,tex.height);
+            tex.drawingContext.globalCompositeOperation = compositor;// "destination-atop";
+            tex.drawingContext.globalAlpha = 1;
+            tex.image(texture,0,0);
+            tex.__hbname = texture.__hbname;
+            tex.__hbtint = colHash;
+            Tex.tintcache.set(tex.__hbname + tex.__hbtint, tex);
+        }
+        return tex;
+    }      
+    /** holds all the cached tinted textures used for quick look up rather than keep generating*/
+    static tintcache = new Map();
+    /** holds all the cached textures */
+    static texturecache = new Map();
+    /** simple counter so cache can keep track and avoid duplicates */
+    static texnum = 0;
+    /** holds the image load requests as these happen asynchronously */
+    static loadQ = [];
+    /**
+     * let the engine know how many images you are loading 
+     * @param {int} number number of images to be loaded in this session
+     * use this if you are loading a lot and need to hold up further processing until they have loaded
+     * use Tex.loadcomplete to let you know if this has happend or not
+     */
+    static beginload(number){
+        Tex.loadcount = 0;
+        Tex.loadnumbner = number
+    }
+    /**
+     * gets true if loadnumber matches requested number set with beginload
+     * @returns {bool}
+     */
+    static get loadcomplete() { return Tex.loadcount == Tex.loadnumbner;}
+    /**
+     *  load and log a particular image/texture
+     * @param {string} fileNpath 
+     * @param {function} texture this is easier to do as an anonymous function see example provided here
+     * @example
+     * //assuming txtiles has been declared globally somewhere (eg. in sketch)  
+     * //anonymous function accepts parameter img, stores reference in txtiles
+     * Tex.loadToTexture("./tiles.png", (img)=>{txtiles=img;});
+     */
+    static loadToTexture(fileNpath, callback){
+        let tex = Tex.texturecache.get(fileNpath);
+        if (tex === undefined && !this.loadQ.includes(fileNpath)){
+            Tex.loadQ.push(fileNpath);
+            loadImage(fileNpath, (img)=>{
+                let t = img; 
+                t.__hbtint = this.colTonum([255,255,255])
+                t.__hbname = fileNpath;
+                //remove from q
+                Tex.texturecache.set(t.__hbname + t.__hbtint, t);
+                Tex.loadQ.splice(Tex.loadQ.indexOf(fileNpath),1);
+                Tex.loadcount++;
+                callback(t);
+                }
+            );
+        } else {console.log("attempt to load texture "+fileNpath+" again");}
+    }
+    //do not use stupid thing
+    // static waitloading(){
+    //     while (this.loadQ.length > 0);
+    // }
+    /** creates all the textures ready for use */
+    static createTextures(){
+        Tex.singlepixel = Tex.setupTexture(1,1);
+        Tex.singlepixel.background(255);
+
+        Tex.rect50by50 = Tex.setupTexture(50,50);
+        Tex.rect50by50.background(255);
+        
+        Tex.target = Tex.makeLetter("T",true);
+        Tex.genAlphaset();
+        // triangle
+        Tex.triangle = Tex.setupTexture(16,16);
+        Tex.triangle.triangle(0,15,8,0,15,15);
+        //circles
+        Tex.circle4by4 = Tex.setupTexture(4,4);
+        Tex.circle4by4.ellipse(2,2,2);
+
+        Tex.circle8by8 = Tex.setupTexture(8,8);
+        Tex.circle8by8.ellipse(4,4,4);
+
+        Tex.circle16by16 = Tex.setupTexture(16,16);
+        Tex.circle16by16.ellipse(8,8,8);
+
+        Tex.circle32by32 = Tex.setupTexture(32,32);
+        Tex.circle32by32.ellipse(16,16,16);
+        Tex.slopes = Tex.#createSlopes(16);
+    }
+    /** generates the alphabetic character textures */
+    static makeLetter(t, border){
+        // test for rendermetrics
+        push();
+        textFont(Tex.prerenderFont);
+        textSize(Tex.prerenderFontsize);
+        let b = textAscent();
+        let c = textDescent();
+        Tex.prerenderFontTextureSize = b + c + Tex.prerenderFontTextureSizeExtra;
+        pop();
+        let tx = Tex.setupTexture(Tex.prerenderFontTextureSize,Tex.prerenderFontTextureSize);
+        // tx.textFont("monospace");
+        tx.textFont(Tex.prerenderFont);
+        tx.textSize(Tex.prerenderFontsize);
+
+        //
+        tx.stroke(255);
+        tx.strokeWeight(2);
+        tx.noFill();
+        if (border !== undefined)
+            tx.rect(2,2,Tex.prerenderFontTextureSize-4,Tex.prerenderFontTextureSize-4,4,4,4,4);
+        tx.fill(255);
+        tx.textAlign(CENTER, CENTER);
+        tx.text(t,Tex.prerenderFontTextureSize/2,Tex.prerenderFontTextureSize/2);  
+        return tx;
+    }
+    /** generic routine to create a texture with the width and height requested
+     * will add it to the texture cache
      * 
-     * @returns {float} The speed required in pixels per second
-    */
-    static SpeedForTime(track, timePeriod){
-        return track.length / timePeriod;
+     */
+
+    /**
+     * generic routine to create a texture with the width and height requested
+     * will add it to the texture cache
+     * @param {int} width number of pixels wide
+     * @param {int} height number of pixels high
+     * @returns {texture} texture to be drawn and written to
+     */
+    static setupTexture(width, height){
+        let t = createGraphics(width, height);
+        t.pixelDensity(1);
+        t.clear();
+        t.fill(255);
+        t.noStroke();
+        t.noSmooth();      
+        t.__hbname = "tx" + Tex.texnum++;
+        t.__hbtint = this.colTonum([255,255,255])
+        this.texturecache.set(t.__hbname + t.__hbtint, t);
+        return t;  
     }
-
-    /** 
-     * Takes an existing track definition and copies it creating a new track
-     * @param {TrackDefinition} existingTrack The existing track to clone
-     * @param {string} newTrackName The debug name of the new track
-     * @returns {TrackDefinition}The newly cloned track definition
-    */
-    static Clone(existingTrack, newTrackName){
-        let newTrack = new TrackDefinition();
-        newTrack.closed = existingTrack.closed;
-        let p = 0;
-        while (p < existingTrack.points.length)
-            newTrack.points.push(existingTrack.points[p++].clone);
-        TrackHelper.Getlength(newTrack);
-
-        return newTrack;
-    }
-
-    /** 
-     * Determines the length of the track in pixels and also pre-calculates
-     * the ratio points/length for update calculations
-     * @param {TrackDefinition} newTrack track definition to approximate the length of
-    */
-    static Getlength(newTrack){
-        let vec;
-        newTrack.length = 0;
-        for (let j = 0; j < newTrack.points.length - 1; j++){
-            vec = vector3.sub(newTrack.points[j + 1], newTrack.points[j]);
-            newTrack.length += vec.length;
-        }
-        newTrack.pointsOverlength = newTrack.points.length / newTrack.length;
-    }
-
-    /** 
-     * NOT IMPLEMENTED YET defines a track from an image supplied in a texture.
-     * The image MUST NOT use Anti-Aliasing
-     * @param {image} texture The texture containg a track
-     * @param {Rectangle} region the portion of the texture to find the track in
-     * @param {string} newTrackName the name to give the generated track
-     * @returns {TrackDefinition} the newly created track
-    */
-    static FromTexture(texture, region,newTrackName){
-        return null;
-    }
-
-    /** 
-     * Creates a track with only the points specified
-     * @param {string} newTrackName The debug name to give to the track
-     * @param {vector3[]} points The List vector3 of the points you want
-     * @returns {TrackDefinition} the newly created track
-     * Use this to move a sprite to fixed positions
-    */
-    static Rawpoints(newTrackName, points){
-        let newTrack = new TrackDefinition();
-        newTrack.points = points;
-        newTrack.name = newTrackName;
-        TrackHelper.Getlength(newTrack);
-        return newTrack;
-    }
-
-    /** 
-     * Creates a smoothed off track based on the points given.
-     * As this is a Beizer curve the points at the ends as control points bounding the curve
-     * @param {string} newTrackName The debug name to give the track
-     * @param {int} numberOfpoints The number of points to give the track
-     * @param {vector3[]} points The List vector3 of the points you want to create the track from
-     * @returns {TrackDefinition} the newly created track
-    */
-    static Smooth(newTrackName,  numberOfpoints, points){
-        let newTrack = new TrackDefinition();
-        newTrack.name = newTrackName;
-        let i = 0;
-        let step = 1 / numberOfpoints;
-        let mu = 0;
-        for (i = 0; i < numberOfpoints; i++){
-            newTrack.points.push(Bezier(points, points.length - 1, mu));
-            mu += step;
-        }
-        TrackHelper.Getlength(newTrack);
-        return newTrack;
-    }
-
-    /** 
-     * Generates a new smooth track from the specified track, 
-     * @param {TrackDefinition} existingTrack The track you want to use
-     *  for the control points of the smoother
-     * @param {int} numberOfpoints The number of points to use on the track
-     * @param {string} newTrackName The debug name to give the new track
-     * @returns {TrackDefinition}  the newly created track
-     * Be sure not to use tracks with too many points, only use those that were added using Rawpoints
-    */
-    static CloneSmooth(existingTrack, numberOfpoints, newTrackName){
-        let newTrack = new TrackDefinition();
-        newTrack.name = newTrackName;
-        let i = 0;
-        let step = 1 / numberOfpoints;
-        let mu = 0;
-        for (let i = 0; i < numberOfpoints; i++){
-            newTrack.points.push(Bezier(existingTrack.points, existingTrack.points.length - 1, mu));
-            mu += step;
-        }
-        TrackHelper.Getlength(newTrack);
-        return newTrack;
-    }
-
-    /** 
-     * Creates a smooth track than joins to its start from the points given using Catmull-Rom interpolatio
-     * @param {String} newTrackName The name of the track created
-     * @param {int} pointsPerStep How many points to smoothly generate between each point in the original list
-     * @param {[]vector3} basepoints the list of points that the curve will go through
-     * @returns {TrackDefinition}  
-    */
-    static CatmullRomClosed( newTrackName, pointsPerStep, basepoints){
-
-        //TODO GOT TO GET START POSITION CORRECT (STARTS AT 2ND POINT)
-        let newTrack = new TrackDefinition();
-        newTrack.name = newTrackName;
-        //append first 3 points so we can close the loop with control points
-        basepoints.Insert(0, basepoints[basepoints.length - 1]);
-        basepoints.push(basepoints[1]);
-        basepoints.push(basepoints[2]);
-        //basepoints.push(basepoints[2]);
-
-        for (let i = 1; i < basepoints.length - 2; i++){
-                part = InterpolateCR(pointsPerStep,
-                                    basepoints[i - 1],
-                                    basepoints[i],
-                                    basepoints[i + 1],
-                                    basepoints[i + 2]);
-            newTrack.points.push(part);
-        }
-        newTrack.points = newTrack.points.flat();
-
-        //add the first point in at the end
-        //newTrack.points.push(newTrack.points[0]);
-
-        //add the first point in at the end
-        //remove the 3 extra points added
-        basepoints.RemoveRange(basepoints.length - 2, 2);
-        basepoints.RemoveAt(0);
-        TrackHelper.Getlength(newTrack);
-        return newTrack;
-    }
-        // WAITING FOR CATMULL ROM
-        //** 
-        //* creates a position along a CatmullRom interpolation
-        //* @param {*} v1 
-        //* @param {*} v2 
-        //* @param {*} v3 
-        //* @param {*} v4 
-        //* @param {*} amount what position along spline
-        //* @returns {vector3}
-        //*/
-        //static vector3 CR3D(ref vector3 v1, ref vector3 v2, ref vector3 v3, ref vector3 v4, float amount)
-        //{
-        //    vector3 result =  vector3.zero;
-        //    result.x = MathHelper.CatmullRom(v1.x, v2.x, v3.x, v4.x, amount);
-        //    result.y = MathHelper.CatmullRom(v1.y, v2.y, v3.y, v4.y, amount);
-        //    result.z = MathHelper.CatmullRom(v1.z, v2.z, v3.z, v4.z, amount);
-        //    return result;
-        //}
-//
-        //** 
-        //* creates a smooth Catmull-Rom line along the points given
-        //* @param {string} newTrackName The name to give to the new track
-        //* @param {[]vector3} pointsPerStep How many points to smoothly generate between each point in the original list
-        //* @param {*} basepoints The list of control points we want to go through
-        //* @returns {TrackDefinition}  A new track with nice smooth paths
-        //*/
-        // static TrackDefinition CatmullRomOpen(String newTrackName, int pointsPerStep, List<vector3> basepoints)
-        //{
-        //    let newTrack = new TrackDefinition();
-        //    newTrack.name = newTrackName;
-        //    //needs work to get the correct steps to even out across all points
-        //    //this will not be correct to start with unless factors work out
-        //    //int steps = numberOfpoints / basepoints.length;
-//
-        //    //create extra start and end as control points
-        //    vector3 startPoint = new vector3();
-        //    vector3 endPoint = new vector3();
-        //    startPoint = basepoints[0] - (basepoints[0] - basepoints[1]);
-        //    endPoint = basepoints[basepoints.length - 1] + (basepoints[basepoints.length - 1] - basepoints[basepoints.length - 2]);
-        //    //add new start and end but remember to remove afterwork
-        //    basepoints.Insert(0, startPoint);
-        //    basepoints.push(endPoint);
-//
-        //    for (let i = 1; i < basepoints.length - 2; i++)
-        //    {
-        //        List<vector3> part = InterpolateCR(pointsPerStep,
-        //                                basepoints[i - 1],
-        //                                basepoints[i],
-        //                                basepoints[i + 1],
-        //                                basepoints[i + 2]);
-        //        newTrack.points.AddRange(part);
-        //    }
-//
-//
-        //    //remove last and first points - the ones we added
-        //    basepoints.RemoveAt(basepoints.length - 1);
-        //    basepoints.RemoveAt(0);
-        //    TrackHelper.Getlength(newTrack);
-        //    return newTrack;
-        //}
-
-        //** 
-        //* generates points between four outlying control points
-        //* @param {*} detail 
-        //* @param {*} v1 
-        //* @param {*} v2 
-        //* @param {*} v3 
-        //* @param {*} v4 
-        //* @returns {vector3[]}
-        //*/
-        //static List<vector3> InterpolateCR(int detail, vector3 v1, vector3 v2, vector3 v3, vector3 v4)
-        //{
-        //    List<vector3> list = new List<vector3>();
-        //    for (let i = 0; i < detail; i++)
-        //    {
-        //        list.push(CR3D(ref v1,ref v2,ref v3,ref v4, (float)i/(float)detail));
-        //    }
-        //    list.push(v3);
-        //    return list;
-        //}
-
-        //** 
-        //* Produces a generalised beizer curve using the points given as control points
-        //* @param {*} p control points
-        //* @param {*} n number of points
-        //* @param {*} mu mu is position along the curve 0 is start, 1 is end
-        //* @returns {vector3} Returns point on curve
-        //*/
-        //static vector3 Bezier(List<vector3> p, int n, float mu)
-        //{
-        //    int k, kn, nn, nkn;
-        //    float blend, muk, munk;
-        //    vector3 b =  vector3.zero;
-//
-        //    muk = 1;
-        //    munk = (float)Math.Pow((double)(1 - mu), (double)n);
-//
-        //    for (k = 0; k <= n; k++)
-        //    {
-        //        nn = n;
-        //        kn = k;
-        //        nkn = n - k;
-        //        blend = muk * munk;
-        //        muk *= mu;
-        //        munk /= (1 - mu);
-        //        while (nn >= 1)
-        //        {
-        //            blend *= nn;
-        //            nn--;
-        //            if (kn > 1)
-        //            {
-        //                blend /= kn;
-        //                kn--;
-        //            }
-        //            if (nkn > 1)
-        //            {
-        //                blend /= nkn;
-        //                nkn--;
-        //            }
-        //        }
-        //        b.x += p[k].x * blend;
-        //        b.y += p[k].y * blend;
-        //        b.z += p[k].z * blend;
-        //    }
-//
-        //    return (b);
-        //}
-
-
-
-    /** 
-     * Creates a track based on a sequence of points, you 
-     * set them the same for a level track
-     * @param {string} newTrackName The debug name of the track to create
-     * @param {int} numberOfpoints How many points you want the entire track to contain
-     * (they are distributed along the entire track length, the more points the more flexability you have with 
-     * speeds travelling along the path
-     * @param {[]vector3]} points a list of points defining the fixed position along the track
-     * @returns {TrackDefinition}  the newly created track you can use this to make specific paths for sprites to follow
-    */
-    static points(newTrackName, numberOfpoints, points){
-        let newTrack = new TrackDefinition();
-        newTrack.name = newTrackName;
-        // a new point for holding the points as they are created
-        let newPoint = vector3.zero;
-
-        let totalDistance = 0;
-        let distThisSpan = 0;//holds distance for current space
-        span = [];//holds distance for each span
-        for (let j = 0; j < points.length - 1; j++){
-            //work out the length of each line using pythagorus
-            let xd = points[j + 1].x - points[j].x;
-            let yd = points[j + 1].y - points[j].y;
-            let zd = points[j + 1].z - points[j].z;
-            distThisSpan = Math.sqrt(xd * xd + yd * yd + zd * zd);
-            span.push(new WayPoint(points[j], points[j + 1],
-                xd, yd, zd, distThisSpan));
-            totalDistance += distThisSpan;
-        }
-
-        let sectionDistance = 0;
-        let step = (totalDistance / numberOfpoints);
-        let percent = 0;
-        let section = 0;
-        for (let pos = 0; pos < numberOfpoints - 1; pos++){
-            //calculate co-ordinates from this section
-            percent = sectionDistance / span[section].distance;
-            newPoint = vector3.zero;
-            newPoint.x = span[section].start.x + span[section].xstep * percent;
-            newPoint.y = span[section].start.y + span[section].ystep * percent;
-            newPoint.z = span[section].start.z + span[section].zstep * percent;
-            newTrack.points.push(newPoint);
-            //travelDistance += step;
-            sectionDistance += step;
-            //skip to next section if we have out run this one
-            while (sectionDistance > span[section].distance)
-            {
-                sectionDistance -= span[section].distance;
-                section++;
+ 
+    /**
+     * generates a transparent texture with pixels set by a binary string array (white pixels equate 1 from the string array)
+     * 
+     * this can be used to generate tinted textures using getTintedCopy()
+     * 
+     * @param {string[]} each string in array represents a row of horizontal pixels, from top to bottom in binary (0/1), each string should contain the same number of bits
+     * @param {int} scalex number of pixels each bit represents horizontally, if ommitted assumes 1 pixel per bit
+     * @param {int} scaley number of pixels vertically each string represents, if ommitted assumes 1 row per string
+     * @returns {texture} texture to be drawn and written to
+     * @example 
+     * let tank = [
+     *      "0001000",
+     *      "0001000",
+     *      "1101011",
+     *      "1111111",
+     *      "1111111",
+     *      "1100011",
+     *      "1100011",
+     *      ];
+     * // use 4 pixels for each bit supplied horizontally and vertically
+     * tex28x28 = Tex.bitarrayTotexture(tank, 4, 4);
+     */
+    static bitarrayTotexture(bits, scalex, scaley){
+        scalex = (scalex === undefined)? 1 : scalex;
+        scaley = (scaley === undefined)? 1 : scaley;
+        let h = bits.length;
+        let w = Tex.longestString(bits);
+        let t = Tex.setupTexture(w *scalex, h * scaley);
+        for (let y = 0; y < h; y++){
+            for (let x = 0; x < w; x++){
+                if (bits[y][x] == "1"){
+                    t.rect(x * scalex, y * scaley, scalex, scaley);
+                }
             }
+        }        
+        return t;
+    }
 
+    /** used by bitarray system to work out some metrics around bits, packs out shorter bit patterns
+     * @param {string[]} arr 
+     * @returns {int} longest string in the array
+     */
+    static longestString(arr){
+        let b = arr[0].length;
+        for (let p = 1; p < arr.length; p++){
+            b = arr[p].length > b ? arr[p].length : b;
         }
-        //generate last point
-        percent = sectionDistance / span[section].distance;
-        newPoint = new vector3();
-        newPoint.x = span[section].start.x + span[section].xstep * percent;
-        newPoint.y = span[section].start.y + span[section].ystep * percent;
-        newPoint.z = span[section].start.z + span[section].zstep * percent;
-        newTrack.points.push(newPoint);
-        TrackHelper.Getlength(newTrack);
-        return newTrack;
-    }//AddTrackFrompoints(int numberOfpoints, List<vector3> points)
-
-
-    /** 
-     * Generates a track with a number of points overriding the z value
-     * @param {string} newTrackName The debug name of the track
-     * @param {int} numberOfpoints How many points you want the entire track to contain
-     * (they are distributed along the entire track length, the more points the more flexability you have with 
-     * speeds travelling along the path
-     * @param {[]vector3} points The points which define the track
-     * @param {float} forcedZ The z value to set all the points to
-     * @returns {TrackDefinition}  the newly created track
+        //auto pad to right with 0
+        for (let p = 0; p < arr.length; p++){
+            if (arr[p].length < b){
+                arr[p] = arr[p].padEnd(b,"0");
+            }  
+        }
+        return b;
+    }
+    /** slope tiles 16x16 
+     * contains the following basic slopes
+     * 0,0 0,4 0,8 0,12 0,16
+     * 4,0 4,4 4,8 4,12 4,16
+     * 8,0 8,4 8,8 8,12 8,16
+     * 12,0 12,4 12,8 12,12 12,16
+     * 16,0 16,4 16,8 16,12
     */
-    static pointsForceZ(newTrackName, numberOfpoints, points, forcedZ){
-
-        let newTrack = new TrackDefinition();
-        newTrack.name = newTrackName;
-        // a new point for holding the points as they are created
-        newPoint = vector3.zero;
-
-        //let zStep = (frontZ - backZ) / numberOfpoints;
-        let totalDistance = 0;
-        let distThisSpan = 0;//holds distance for current space
-        let span = [];//holds distance for each span
-        for (let j = 0; j < points.length - 1; j++){
-            //work out the length of each line using pythagorus
-            let xd = points[j + 1].x - points[j].x;
-            let yd = points[j + 1].y - points[j].y;
-            distThisSpan = Math.sqrt(xd * xd + yd * yd);
-            span.push(new WayPoint(points[j], points[j + 1],
-                xd, yd, 0, distThisSpan));
-            totalDistance += distThisSpan;
-        }
-
-        //let travelDistance = 0;
-        let sectionDistance = 0;
-        let step = (totalDistance / numberOfpoints);
-        let percent = 0;
-        let section = 0;
-        for (let pos = 0; pos < numberOfpoints - 1; pos++){
-            //calculate co-ordinates from this section
-            percent = sectionDistance / span[section].distance;
-            newPoint = new vector3();
-            newPoint.x = span[section].start.x + span[section].xstep * percent;
-            newPoint.y = span[section].start.y + span[section].ystep * percent;
-            newPoint.z = forcedZ;
-            newTrack.points.push(newPoint);
-            //travelDistance += step;
-            sectionDistance += step;
-            //skip to next section if we have out run this one
-            while (sectionDistance > span[section].distance)
-            {
-                sectionDistance -= span[section].distance;
-                section++;
+    /** generates slope quarters for given square tile size */
+    static #createSlopes(size){
+        //each tile 16x16 going to define 5x5 array of tiles (some space for dumping other tiles in later on)
+        const t = Tex.setupTexture(256,256);
+        Tex.tsSlopes = [];
+        let q = (size/4) | 0;
+        
+        for (let y = 0; y < 5; y++){
+            for (let x = 0; x < 5; x++){
+                Tex.#trap(t, x * size, y * size, q * y , q * x, size);
+                let n = new Tile(t,  new Rectangle(x * size, y * size, size, size));
+                n.setHorizontalmap(q * y, q * x);
+                //let data = {};
+                //data.port = new Rectangle(x * size, y * size, size, size);
+                //data.tex = t;
+                //data.l = q * y;
+                //data.r = q * x;
+                Tex.tsSlopes.push(n);
+                //Engine.tsSlopes.push(data);
             }
-
         }
-        //generate last point
-        percent = sectionDistance / span[section].distance;
-        newPoint = new vector3();
-        newPoint.x = span[section].start.x + span[section].xstep * percent;
-        newPoint.y = span[section].start.y + span[section].ystep * percent;
-        newPoint.z = forcedZ;
-        newTrack.points.push(newPoint);
-
-        TrackHelper.Getlength(newTrack);
-        return newTrack;
+        return t;
     }
+    /** draw a vertical trapezium in a 16x16 area */
+    static #trap(t, x, y, l, r, w){
+        //draw triangle
+        t.fill(120);
+        if (l != r){
+            let x1 = x;
+            let y1 = y + l;
 
-    /** 
-     * creates a sinewave with a rotating z component 
-     * this will allow ever changing circular Z values that can be used for scaling effects
-     * or just to add nice parallax effects
-     * @param {string} trackName The debug name to give the track
-     * @param {int} numberOfpoints How many points to place in the final track
-     * @param {float} start The right hand X position of the sine wave
-     * @param {float} end The left hand X position of the sine wave
-     * @param {float} waveAmplitude The amplitude (the vertical size) of the wave
-     * @param {float} waveFrequency The number of cycles of the sine wave you want
-     * @param {float} waveStartAngle The phase (angle) to start sine wave at in radians - 
-     * use MathHelper.ToRadians(45) to specify value in degrees
-     * @param {float} waveDirection specify either 1 or -1
-     * @param {float} centreHeight The central height of the wave form
-     * @param {float} helixAmplitude The amplitude of the Z value (depth movement front to back)
-     * @param {float} helixPhaseOffset altering this effects where the track is furthest away. Leave as 0 unless you want to experiment
-     * @param {float} helixRadialDirection specify either 1 or -1
-     * @returns {TrackDefinition}  the newly created track
-     * @example
-     * let t = TrackHelper.AddHelixTrack("helix", 400, 830, -30, 80, 2, 0, 1, 300, 80, 0, 1);
-    */
-        static Helix(trackName, numberOfpoints, start, end, waveAmplitude,
-                                waveFrequency, waveStartAngle, waveDirection, centreHeight,
-                                helixAmplitude, helixPhaseOffset, helixRadialDirection){
-        //will hold the track we are creating
-        let newTrack = new TrackDefinition();
-        newTrack.name = trackName;
-        // a new point for holding the points as they are created
-        let newPoint = vector3.zero;
+            let x2 = x + w;
+            let y2 = y + r;
 
-        if (numberOfpoints > 65535) numberOfpoints = 65535;
+            let x3 = x + ((l > r) ? w:0);
+            let y3 =  y + ((l > r) ? l:r);
 
-        let radStep = (Math.PI * 2 * waveFrequency / (numberOfpoints - 1) * waveDirection);
-        let helixStep = (Math.PI * 2 * waveFrequency / (numberOfpoints - 1) * helixRadialDirection);
-        let helixrad = waveStartAngle + helixPhaseOffset;
-
-        let rad = waveStartAngle;
-
-        let x = start;
-        let xStep = (end - start) / (numberOfpoints - 1);
-
-        for (let j = 0; j < numberOfpoints - 1; j++){
-            newPoint = new vector3();
-            newPoint.x = x;
-            newPoint.y = (waveAmplitude * Math.sin(rad) + centreHeight);
-            newPoint.z = (helixAmplitude * Math.cos(helixrad));
-            x += xStep;
-            rad += radStep;
-            helixrad += helixStep;
-            newTrack.points.push(newPoint);
+            t.triangle(x1,y1, x2,y2, x3, y3);
         }
-        //add last point
-        newPoint = new vector3();
-        newPoint.x = x;
-        newPoint.y = (waveAmplitude * Math.sin(rad) + centreHeight);
-        newPoint.z = (helixAmplitude * Math.cos(helixrad));
-        newTrack.points.push(newPoint);
-
-        TrackHelper.Getlength(newTrack);
-        return newTrack;
-    }
-
-    /** 
-     * Creates a simple sineWave shape
-     * Use AddHelixTrack if you want something that varies the Z position along the track
-     * @param {string} newTrackName The name to give the track
-     * @param {int} numberOfpoints How many points to place in the final track
-     * @param {float} start The right hand X position of the sine wave
-     * @param {float} end The left hand X position of the sine wave
-     * @param {float} waveAmplitude The amplitude (the vertical size) of the wave
-     * @param {float} waveFrequency The number of cycles of the sine wave you want, 
-     * you can use 0.5f to generate half a sine wave
-     * @param {float} centreHeight The central height of the wave form
-     * @param {float} depth the Z position of the sine wave track
-     * @returns {TrackDefinition}  the newly created track
-     * @example
-     * let t = TrackHelper.AddSineWaveTrack("Sine", 100, 800, 0, 200, 0.25f, 300,100);
-    */
-    static SineWaveSimple(newTrackName, numberOfpoints,
-        start,
-        end,
-        waveAmplitude,
-        waveFrequency,
-        centreHeight,
-        depth){
-        //will hold the track we are creating
-        let newTrack = new TrackDefinition();
-        newTrack.name = newTrackName;
-        // a new point for holding the points as they are created
-        let newPoint = vector3.zero;
-
-        if (numberOfpoints > 65535) numberOfpoints = 65535;
-
-        let radStep = (Math.PI * 2 * waveFrequency / (numberOfpoints - 1));
-        let rad = 0;
-
-        let x = start;
-        let xStep = (end - start) / (numberOfpoints - 1);
-
-        //            ReDim myTrack(numpoints)
-        for (let j = 0; j < numberOfpoints - 1; j++){
-            newPoint = new vector3();
-            newPoint.x = x;
-            newPoint.y = (waveAmplitude * Math.sin(rad) + centreHeight);
-            newPoint.z = depth;
-            x += xStep;
-            rad += radStep;
-            newTrack.points.push(newPoint);
+        let height = (l>r) ? l : r;
+        if (height<w){
+            t.rect(x,y+height, w, w-height);
         }
-        //add last point
-        newPoint = new vector3();
-        newPoint.x = x;
-        newPoint.y = (waveAmplitude * Math.sin(rad) + centreHeight);
-        newPoint.z = depth;
-        newTrack.points.push(newPoint);
-
-        TrackHelper.Getlength(newTrack);
-        return newTrack;
-
-    }//AddSineWaveTrack(int numberOfpoints, start, end, waveAmplitude, waveFrequency, centreHeight, depth)
-
-
-    /** 
-     * moves a track in the X, y and z positions specified
-     * @param {TrackDefinition} existingTrack The track definition to translate
-     * @param {float} x the amount in the x direction to move the track
-     * @param {float} y the amount in the y direction to move the track
-     * @param {float} z the amount in the z direction to move the track
-    */
-    static Translate(existingTrack,  x,  y,  z){
-        TrackHelper.Translate(existingTrack, new vector3(x, y, z));
-    }
-    /** 
-     * moves a track in the x, y and z positions specified in the vector3 value, adjust all positions in the track
-     * @param {TrackDefinition} existingTrack The track definition to translate
-     * @param {vector3} translation A vector3 value containing the x, y and z movements for track
-    */
-    static Translate(existingTrack, translation){
-        let p = 0;
-
-        while (p < existingTrack.points.length){
-            existingTrack.points[p] += translation;
-            p++;
-        }
-    }
-    /** 
-     * scales a specific track around the origin given
-     * @param {TrackDefinition} existingTrack The track definition to rotate
-     * @param {vector3} origin The rotational centre
-     * @param {float} x The scale factor for x axis
-     * @param {float} y The scale factor for y axis
-     * @param {float} z The scale factor for z axis
-    */
-    static  Scale(existingTrack, origin,  x,  y,  z){
-        let p = 0;
-        let rotMatrix = Matrix.CreateTranslation(-origin) *
-                            Matrix.CreateScale(new vector3(x, y, z)) *
-                            Matrix.CreateTranslation(origin);
-
-        while (p < existingTrack.points.length){
-            existingTrack.points[p] = vector3.Transform(existingTrack.points[p], rotMatrix);
-            p++;
-        }
-    }
-    /** 
-     * Rotates the supplied track around an arbitrary point, by the angles given
-     * @param {TrackDefinition} existingTrack The track definition to rotate
-     * @param {vector3} origin The rotational centre
-     * @param {float} angleX The rotation in degrees around the X axis
-     * @param {float} angleY The rotation in degrees around the Y axis
-     * @param {float} angleZ The rotation in degrees around the Z axis
-     * You should ideally rotate around each axis separately
-    */
-    static Rotate(existingTrack, origin,  angleX,  angleY,  angleZ){
-        let p = 0;
-        let rotMatrix = Matrix.CreateTranslation(-origin) *
-                            Matrix.CreateRotationX(MathHelper.ToRadians(angleZ)) *
-                            Matrix.CreateRotationY(MathHelper.ToRadians(angleY)) *
-                            Matrix.CreateRotationZ(MathHelper.ToRadians(angleX)) *
-                            Matrix.CreateTranslation(origin);
-
-        while (p < existingTrack.points.length){
-            existingTrack.points[p] = vector3.Transform(existingTrack.points[p], rotMatrix);
-            p++;
-        }
-        existingTrack.Dirty();
-    }//TrackRotate
-
-    /** 
-     * Rotates a track around a central position by the given angles specifed
-     * @param {TrackDefinition} existingTrack The name of the track to rotate
-     * @param {vector3} origin the centre of rotation
-     * @param {vector3} angles the x, y and z axis rotation amounts specified as a vector3
-     * You should ideally rotate around each axis separately
-    */
-    static Rotate(existingTrack, origin, angles){
-        let p = 0;
-        let rotMatrix = Matrix.CreateTranslation(-origin) *
-                            Matrix.CreateRotationX(MathHelper.ToRadians(angles.z)) *
-                            Matrix.CreateRotationZ(MathHelper.ToRadians(angles.y)) *
-                            Matrix.CreateRotationY(MathHelper.ToRadians(angles.x)) *
-                            Matrix.CreateTranslation(origin);
-
-        while (p < existingTrack.points.length){
-            existingTrack.points[p] = vector3.Transform(existingTrack.points[p], rotMatrix);
-            p++;
-        }
-    }//TrackRotate
-
-    /** 
-     * Creates a sine Wave shape wpecifying some more complex parameters
-     * Use AddHelixTrack if you want something that varies the Z position along the track
-     * @param {string} newTrackName The debug name of the track
-     * @param {int} numberOfpoints How many points to place in the final track
-     * @param {float} start The right hand X position of the sine wave
-     * @param {float} end The left hand X position of the sine wave
-     * @param {float} waveAmplitude The amplitude (the vertical size) of the wave
-     * @param {float} waveFrequency The number of cycles of the sine wave you want, 
-     * you can use 0.5f to generate half a sine wave
-     * @param {float} waveStartAngle The phase (angle) to start sine wave at in radians - 
-     * use MathHelper.ToRadians(45) to specify value in degrees
-     * @param {float} waveDirection specify either 1 or -1
-     * @param {float} centreHeight The central height of the wave form
-     * @param {float} depth the Z position of the sine wave track
-     * @returns {TrackDefinition}  the newly created track
-     * @example
-     * let t = TrackHelper.AddSineWaveTrack("sine", 300, 400, 0, 100, 2, Math.PI / 2, 1, 400,100);
-    */
-    static SineWaveComplex( newTrackName,  numberOfpoints,  start,  end,  waveAmplitude,  waveFrequency,
-                                    waveStartAngle,  waveDirection,  centreHeight,  depth){
-        let newTrack = new TrackDefinition();
-        newTrack.name = newTrackName;
-        let newPoint = vector3.zero;
-
-        if (numberOfpoints > 65535) numberOfpoints = 65535;
-
-        let radStep = (Math.PI * 2 * waveFrequency / (numberOfpoints - 1) * waveDirection);
-        let rad = waveStartAngle;
-
-        let x = start;
-        let xStep = (end - start) / (numberOfpoints - 1);
-
-        //            ReDim myTrack(numpoints)
-        for (let j = 0; j < numberOfpoints - 1; j++){
-            newPoint = new vector3();
-            newPoint.x = x;
-            newPoint.y = (waveAmplitude * Math.sin(rad) + centreHeight);
-            newPoint.z = depth;
-            x += xStep;
-            rad += radStep;
-            newTrack.points.push(newPoint);
-        }
-        //add last point
-        newPoint = new vector3();
-        newPoint.x = x;
-        newPoint.y = (waveAmplitude * Math.sin(rad) + centreHeight);
-        newPoint.z = depth;
-        newTrack.points.push(newPoint);
-
-        TrackHelper.Getlength(newTrack);
-        return newTrack;
-
-    }
-
-    /** 
-     * Create a track which is circular, if you want to lean the circle over use the Rotate helpers
-     * @param {string} trackName The debug name to give the track
-     * @param {int} numberOfpoints the number of positions on the track required
-     * @param {vector3} centre The centre position of the circle
-     * @param {float} radius the radius of the track
-     * @returns {TrackDefinition}
-    */
-    static Circle( trackName,  numberOfpoints,  centre,  radius){ return TrackHelper.Ellipse(trackName, numberOfpoints, centre, radius, radius); }
-
-    /** 
-     * Creates an elliptical track
-     * @param {string} newTrackName The debug name of the track
-     * @param {int} numberOfpoints the number of points to create
-     * @param {vector3} centre the centre of the ellipse
-     * @param {float} radiusX the horizontal radius
-     * @param {float} radiusY the vertical radius
-     * @returns {TrackDefinition}
-    */
-    static Ellipse(newTrackName, numberOfpoints, centre,  radiusX,  radiusY){
-        //will hold the track we are creating
-        let newTrack = new TrackDefinition();
-        newTrack.name = newTrackName;
-        // a new point for holding the points as they are created
-        let newPoint = vector3.zero;
-
-        if (numberOfpoints > 65535) numberOfpoints = 65535;
-
-        let arcStep = 2 * Math.PI / numberOfpoints;
-        let rad = 0;
-        for (let j = 0; j < numberOfpoints - 1; j++){
-            newPoint = new vector3();
-            newPoint.x = (radiusX * Math.cos(rad) + centre.x);
-            newPoint.y = (radiusY * Math.sin(rad) + centre.y);
-            newPoint.z = centre.z;
-            rad += arcStep;
-            newTrack.points.push(newPoint);
-        }
-        //add last point
-        newPoint = new vector3();
-        newPoint.x = (radiusX * Math.cos(rad) + centre.x);
-        newPoint.y = (radiusY * Math.sin(rad) + centre.y);
-        newPoint.z = centre.z;
-        newTrack.points.push(newPoint);
-
-        TrackHelper.Getlength(newTrack);
-        return newTrack;
-    }
-
-    /** 
-     * Creates a spiral shape
-     * @param {string} newTrackName The debug name of the track
-     * @param {int} numberOfpoints number of points required along the track
-     * @param {vector3} centre The centre of the spiral
-     * @param {float} radiusX the horizontal radius
-     * @param {float} radiusY the vertical radius
-     * @param {float} smallestRadius the smallest value wanted for either radius. 
-     * the rate at which the radii shrink is determined by this and number of revolutions
-     * @param {float} revolutions number of revolutions you want, 
-     * this can be a fractional value 1.5f would be a spiral with 1 and half turns
-     * @param {float} startZ The starting Z value (depth into the screen)
-     * @param {float} endZ The ending z value (depth into the screen)
-     * @returns {TrackDefinition}
-    */
-    static Spiral(newTrackName,numberOfpoints,centre,radiusX,radiusY,smallestRadius,revolutions,startZ,endZ){
-        //will hold the track we are creating
-        let newTrack = new TrackDefinition();
-        newTrack.name = newTrackName;
-        // a new point for holding the points as they are created
-        let newPoint = vector3.zero;
-
-        if (numberOfpoints > 65535) numberOfpoints = 65535;
-
-        let arcStep = revolutions * 2 * Math.PI / numberOfpoints;
-        let rad = 0;
-        let shrinkX = (radiusX - smallestRadius) / numberOfpoints;
-        let shrinkY = (radiusY - smallestRadius) / numberOfpoints;
-        let dz = (endZ - startZ) / numberOfpoints;
-        let sz = startZ;
-        for (let j = 0; j < numberOfpoints - 1; j++){
-            newPoint = new vector3();
-            newPoint.x = (radiusX * Math.cos(rad) + centre.x);
-            newPoint.y = (radiusY * Math.sin(rad) + centre.y);
-            newPoint.z = sz;
-            rad += arcStep;
-            newTrack.points.push(newPoint);
-            radiusX -= shrinkX;
-            radiusY -= shrinkY;
-            sz += dz;
-        }
-        //add last point
-        newPoint = new vector3();
-        newPoint.x = (radiusX * Math.cos(rad) + centre.x);
-        newPoint.y = (radiusY * Math.sin(rad) + centre.y);
-        newPoint.z = centre.z;
-        newTrack.points.push(newPoint);
-
-        TrackHelper.Getlength(newTrack);
-        return newTrack;
-    }
-
-    /** 
-     * Creates a new track which is made up of the points from all the tracks specified int the 
-     * array tracks, starting with the first track and adding points from each subsequent one
-     * @param {string} newTrackName The name of the track created
-     * @param {[]TrackDefinition} tracks an array of tracks to join
-     * @returns {TrackDefinition}  a new track definition containing the points of all the tracks given
-    */
-    static Join(newTrackName, tracks){
-        if (tracks.length > 0){
-            let newTrack = new TrackDefinition();
-            for (let i = 0; i < tracks.length; i++)
-                newTrack.points.push(tracks[i].points);
-
-            newTrack.points = newTrack.points.flat();
-            TrackHelper.Getlength(newTrack);
-            return newTrack;
-        }
-        else
-            return null;
     }    
 }
-
-//NEED ADDRANGE helper for point lists - push then x = x.flat();
 /******************************
  * tilemap.js by Hurray Banana 2023-2024
  ******************************/ 
@@ -12222,5 +8264,3978 @@ class spriteTile extends Sprite{
             this.layer.text(this.tile,this.centrex + this.indexinfo.xoff, this.centrey + this.indexinfo.yoff);
             this.layer.pop();
         }
+    }
+}
+/******************************
+ * timer.js by Hurray Banana 2023-2024
+ ******************************/ 
+/**
+ * @classdesc
+ * provides central timing update support for both
+ * stock events (Event) and sprite specific events (Timer)
+ */
+class EventManager{
+    /** list of actively managed Events */
+    #timers = null;
+    /** initialises the event manager */
+    constructor(){
+        this.#timers = [];
+    }
+
+    /**
+     * adds given timer to be managed
+     * @param {Timer|Event} timer 
+     */
+    add(timer){
+        this.#timers.push(timer);
+    }
+    /**
+     * Removes a specific timer from the eventmanager
+     * @param {Timer|Event} timer 
+     */
+    remove(timer){
+        for (let p = 0; p < this.#timers.length; p++){
+            if (this.#timers[p] == timer){
+                this.#timers[p].remove();
+            }
+        }
+    }
+    /**
+     * removes all timers except for the given one, this may need to be active after some mode as ended
+     * @param {Timer|Event} timer 
+     */
+    removeallBut(timer){
+        //write this to remove all the timers and just make a new array, not finished yet
+        if (Array.isArray(timer)){
+
+        } else {
+            for (let p = 0; p < this.#timers.length; p++){
+                if (this.#timers[p] != timer){
+                    this.#timers[p].remove();
+                }
+            }            
+        }
+    }
+    /** performs the update of all managed timers and events */
+    update(){
+        for (let p = 0; p < this.#timers.length; p++){
+            const t = this.#timers[p];
+            t.update();
+        }
+        //remove stuff
+        let p = this.#timers.length - 1;
+        while (p >= 0){
+            if (this.#timers[p].action == EventAction.remove){
+                this.#timers[p].cleanup();
+                this.#timers.splice(p,1);
+            } 
+            p--;
+        }
+    }
+    /**gets a concise list of all actively managed timers and events
+     * @returns {string[]} an array of timer data
+     */
+    get activeLite(){
+        let a = [];
+        for (let p = 0; p < this.#timers.length; p++){
+            const t = this.#timers[p];
+            a.push(t.name + " [" + t.action + "]");
+        }
+        return a;
+    }
+    /**gets a list of all actively managed timers and events including details of elapsed time and intervals set
+     * @returns {string[]} an array of timer data
+     */
+    get activeLiteData(){
+        let a = [];
+        for (let p = 0; p < this.#timers.length; p++){
+            const t = this.#timers[p];
+            
+            a.push(t.name + " [" + t.action + "] " +
+            "lapse[" + this.twodp(t.elapsedTime) + "] " +
+            "int[" + 
+             (t.startafterinterval !== undefined ? this.twodp(t.startafterinterval) : "--") + ":" +
+             (t.stopafterinterval !== undefined ? this.twodp(t.stopafterinterval) : "--" ) + "]");
+        }
+        return a;
+    }
+    /**
+     * Specific version of fixing a float to 2dp with 0 front padding, used by the event debugger
+     * @param {float} val 
+     * @returns {string} a padded string
+     */
+    twodp(val){
+        val = (val * 100) | 0;
+        let x = ("" + val).length;
+        val /= 100;
+        let t =  val.toString();
+        return t.padEnd(x+1,"0");
+    }
+}
+
+/**
+ * @classdesc Basic Event/Timer actions
+ */
+class EventAction{
+    static remove = "remove";
+    /**no timing action */
+    static none = "none";
+    /**acts as a timer, for setting time intervals (like button repeats)
+     * 
+     * has to be checked using elapsed
+     * @example 
+     */
+    static interval = "timer";
+    /** calls a function/method after time period has elapsed */
+    static eventonce = "eventonce";
+    /** calls a function/method periodically*/
+    static event = "event";
+    /**and event that fires periodically and stops after a given period of time */
+    static eventStopafter = "eventStopafter";
+}
+/**
+ * @classdesc base functionality for general timing events
+ */
+class Event{
+    /**
+     * 
+     * @param {string} name debug display for event
+     */
+    constructor(name){
+        if (name instanceof Sprite)  name = "spr:" + name.myid;
+        this.name = (name !== undefined) ? name: "-";
+        this.#action = Action.none;
+
+        Engine.eventM.add(this);
+        //NEED TO ADD TO EVENTMANAGER FOR AUTO UPDATING
+    }
+    /** performs any cleanup for the time, you might need this if you create a custom event or timer that 
+     * consumes resources that it needs to de-reference. Create an overloaded method in your inherited class
+     * It will be called automatically when the Event/Timer is removed
+     */
+    cleanup(){
+        //shouldn't need (there in case future change)
+    }
+    /** requests removeall of this event */
+    remove(){
+        this.cleanup();
+        this.action = EventAction.remove;
+    }
+    /**
+     * debugging name for displaying timers
+     * @type {string}
+     */
+    name;
+    /** holds time elapsed during the current interval @type {float} */
+    #elapsedTime;
+    /**
+     * gets the timer period that elapsed for this Event/Timer so far
+     * @returns {float}
+     */
+    get elapsedTime(){return this.#elapsedTime;}
+    /**
+     * sets the elpasedTime for the Event/Timer you should'nt need to use this unless you to set a specific starting point rather then
+     * zeroing which reset() does
+     * @param {float} value 
+     */
+    set elapsedTime(value){this.#elapsedTime = value;}
+    //** true if the elapsed time is greater than the set interval */
+    get elapsed(){return this.#elapsedTime >= this.#startafterinterval;}
+    /** returns true if the timer interval has elapsed and then resets it to zero
+     * use elapsedResetAccrued if you want to accurately take account of fractional time span accruel
+     * returns false if the timer interval has not elapsed
+     * 
+     * Use this with timers to control auto fire or key delay, these are particularly useful
+     * for your own custom timers that you update yourself
+     * @example
+     * //setup a custom timer in the sprites constructor for auto fire/shoot interval restriction
+     * this.shoottimer = new Timer(this)
+     * this.shoottimer.interval(0.25);
+     * 
+     * //in an update method add this sort of code to check for keypress and timer elapsed
+     * if (keyIsDown(this.kshoot) && this.shoottimer.elapsedReset){
+     *      this.shoot();
+     * }
+     * @returns {bool} has it elapsed or not
+     */
+    get elapsedReset(){
+        if (this.#elapsedTime >= this.#startafterinterval){
+            this.#elapsedTime = 0;
+            return true;
+        } else {return false;}
+    }
+    /**
+     * Checks the timer to see if it has elapsed, if it has then the interval time is substracted from the elapsed time
+     * this factors in time differences between updates and . Use elpasedReset if you just want the elapsed time to zero (key delays)
+     * @returns {bool} has it elapsed or not
+     */
+    get elapsedResetAccrued(){
+        if (this.#elapsedTime >= this.#startafterinterval){
+            this.#elapsedTime -= this.#startafterinterval;
+        return true;
+        } else {return false;}
+    }
+    /** resets thecurrent timer (if active) */
+    reset(){this.#elapsedTime = 0;}
+
+    /** holds the interval for either the start of a timing process or the activation of a timer or event @type {float}*/
+    #startafterinterval;
+    /**
+     * gets the basic interval of a timer or the start phase interval or a timer
+     * @returns {float}
+     */
+    get startafterinterval(){return this.#startafterinterval;}
+    /**
+     * sets the basic interval of a timer or the start phase interval or a timer
+     * @param {float} value
+     */
+    set startafterinterval(value){this.#startafterinterval = value;}
+    /** holds the action stopping interval @type {float} */
+    #stopafterinterval;
+    /**
+     * gets the interval for an action stopping
+     * @returns {float}
+     */
+    get stopafterinterval(){return this.#stopafterinterval;}
+    /**
+     * sets the interval for an action stopping
+     * @param {float} value
+     */
+    set stopafterinterval(value){return this.#stopafterinterval = value;}
+
+    /** holds an event interval used mainly in visibility testing @type {float}*/
+    #actionTime;
+    /**
+     * internal timing information for checking visiblility
+     * @returns {float}
+     */
+    get actionTime(){return this.#actionTime;}
+    /**
+     * internal timing information for checking visiblility, do not modify
+     * @returns {float}
+     */
+    set actionTime(value){this.#actionTime = value;}
+    /** holds the current action of the event/timer @type {EventAction}*/
+    #action;
+    /**
+     * gets the active mode of the event/timer
+     * @returns {EventAction}
+     */
+    get action(){return this.#action;}
+    /**
+     * sets the event/timers action mode, this is set when you pick how the timer should operate, do not change directly
+     * @param {EventAction} value 
+     */
+    set action(value){this.#action = value;}
+    /**
+     * true if a timer is active 
+     * @returns {bool} 
+     * */
+    get active(){return this.#action != EventAction.none;}
+    /** holds the callback executed when the event/timer meets its interval @type {callback:method|function,instance:object}*/
+    #callback = null;
+    /** retrieves the current callback (if this has not been set it will be null)
+     * it will be in the form of object properties
+     * @example 
+     * // two propeties callback and instance
+     * let callstuff = this.timer.callback;
+     * if (callstuff != null) console.log(callstuff.callback, callstuff.instance);
+     * @returns {{callback:method|function,instance:object}}
+     */
+    get callback(){return this.#callback;}
+    /** sets (or changes) the callback handler called when animation states reach an end point
+     * value must be an object with 2 properties
+     * @example 
+     * // animationchanged is a method of your inherited sprite class
+     * this.callback = {callback:this.myactions,instance:this};
+     * // or use the Engine.makeCallback() method
+     * this.callback = Engine.makeCallback(this.myactions, this);
+     */
+    set callback(value){
+      if (value != undefined && value.callback !== undefined && value.instance !== undefined){
+        this.#callback = value;
+      }
+    }
+    /** 
+     * If a event/timer is set repeatidly it will continually reset. In my cases this would be undeserable
+     * but in certain circumstances such as mouse over effects that use a timer to revert an animation frame, you might want to keep 
+     * restarting the timer while the mouse is over the sprite. it removes the need for more complex logic to deal with this case
+     * gets the status of timer overwrites, default is false, rejecting multiple setting of timers
+     * @returns {bool}*/
+    get allowOverwrite(){return this.#allowoverwrite;}
+    /**
+     * sets the response to identical timer settings for active timers, true means allow it to be overwritten (effectively reset), flase means
+     * reject
+     * @param {bool} value 
+     */
+    set allowOverwrite(value){this.#allowoverwrite = value;}
+    #allowoverwrite = false;
+    /** 
+     * allows the resetting of a timer (time starts again)
+     * 
+     * this might be desirable if you are doing a mouse over effect, where a rendering resets to not over
+     * view after 0.2 seconds, but you keep restarting the timer while you are over the sprite
+     * default behaviour is false (ignore duplicates)
+     */
+    overwriteEnable(){this.#allowoverwrite=true;}
+    /** 
+     * turns off overwrite of duplicate timers  
+     * default behaviour is false (ignore duplicates)
+    */
+    overwriteDisable(){this.#allowoverwrite=false;}
+    /**
+     * Sets the time interval for the Event, you only need to do this if you are creating a timer for your own purposes such a key delay timer
+     * which you used ElapsedReset to check for the interval elapsing.
+     * 
+     * If you want to call a method or function after a time interval then use timer.eventonce()
+     * @param {float} time 
+     */
+    interval(time){
+        this.#action = Action.interval;
+        this.actionTime = 0; this.elapsedTime = 0;
+        this.startafterinterval = time;
+    }
+    /**
+     * Delays calling a method or function until after a period of time
+     * @param {float} callAfter time to wait before calling method/function
+     * @param {{callback:method|function,instance:object}} callback the code to call when the event occurs use 
+     * Engine.makeCallback() to create your callback
+     * @example
+     * //call the startgame method after 3 seconds
+     * Engine.eventM.eventonce(3, Engine.makeCallback(this.startgame, this));
+     */
+    eventonce(callAfter, callback){//} instance, callme){
+        if (this.#allowoverwrite || this.#action != Action.callback){
+            this.#action = Action.eventonce;
+            this.startafterinterval = callAfter;
+            this.actionTime = 0; this.elapsedTime = 0;
+            //this.#phase = Phase.startafter;
+            this.#callback = callback;
+            // if (instance !== undefined && callme !== undefined){
+            //     this.#callback = {callback:callme,instance:instance};
+            // }
+        }
+    }
+    /**
+     * creates a periodic timer which continually calls a given method/function
+     * @param {float} interval time to wait before calling method/function
+     * @param {{callback:method|function,instance:object}} callback the code to call when the event occurs use 
+     * Engine.makeCallback() to create your callback
+     * @example
+     * //call the increaseDifficulty method every 20 seconds
+     * Engine.eventM.event(203, Engine.makeCallback(this.increaseDifficulty, this));
+     * to stop calling the method/function use the events remove() method
+     */
+    event(interval, callback){//instance, callme){
+        if (this.#allowoverwrite || this.#action != Action.event){
+            this.#action = Action.event;
+            this.startafterinterval = interval;
+            this.actionTime = 0; this.elapsedTime = 0;
+            //this.#phase = Phase.startafter;
+            
+            this.#callback = callback;
+            // if (instance !== undefined && callme !== undefined){
+            //     this.#callback = {callback:callme,instance:instance};
+            // }
+        }
+    }
+    /**
+     * creates a periodic timer which continually calls a given method/function until a specified time is reached
+     * @param {float} interval time to wait before calling method/function
+     * @param {float} stopAfter period of time to wait before stopping the event
+     * @param {{callback:method|function,instance:object}} callback the code to call when the event occurs use 
+     * Engine.makeCallback() to create your callback
+     * @example
+     * //call the spawnEnemy method every 1second for 20 seconds
+     * Engine.eventM.eventStopafter(1,20, Engine.makeCallback(this.spawnEnemy, this));
+     * to stop calling the method/function use the events remove() method
+     * to stop calling the method/function use the events remove() method
+     */
+    eventStopafter(interval, stopAfter, callback){//instance, callme){
+        if (this.#allowoverwrite || this.#action != Action.eventStopafter){
+            this.#action = Action.eventStopafter;
+            this.startafterinterval = interval;
+            this.#stopafterinterval = stopAfter;
+            this.actionTime = 0; this.elapsedTime = 0;
+            //this.#phase = Phase.startafter;
+            this.#callback = callback;
+            // if (instance !== undefined && callme !== undefined){
+            //     this.#callback = {callback:callme,instance:instance};
+            // }
+        }
+    }    
+    /** updates timer checking for action responses */
+    update(){
+        if (this.action != Action.none){
+            //new timing system
+            this.#elapsedTime += Engine.delta;
+            this.actionTime += Engine.delta;
+            switch (this.action){
+                case Action.interval: break;
+                case Action.eventonce:
+                    if (this.#elapsedTime >= this.startafterinterval){
+                        //this.action = Action.none;
+                        //this.action = Action.remove;
+                        Engine.processCallback(this.callback);
+                        this.remove();
+                    } break;
+                case Action.event:
+                    if (this.#elapsedTime >= this.startafterinterval){
+                        this.#elapsedTime -= this.startafterinterval;
+                        Engine.processCallback(this.callback);
+                    } break;
+                case Action.eventStopafter:
+                    if (this.actionTime > this.#stopafterinterval){
+                        //this.action = Action.none;
+                        //this.action = Action.remove;
+                        this.remove();
+                    } else {
+                        if (this.#elapsedTime >= this.startafterinterval){
+                            this.#elapsedTime -= this.startafterinterval;
+                            Engine.processCallback(this.callback);
+                            } 
+                    } break;
+            }//switch (_method)
+        }//if (_method != Style.none)
+    }//update(delta)
+}
+/** 
+ * @classdesc Determines what phase timer sub system is in (used internally) */
+class Phase{
+    /** waiting for flashing to start*/
+    static startafter = "startafter";
+    /** waiting for flashing to stop*/
+    static stopafter = "stopafter";
+    /** waiting to kill sprite*/
+    //static killafter = "killafter";
+}
+/** 
+ * @classdesc specifies sprite actions for timer operations */
+class Action extends EventAction{
+    /**kills the sprite after time elapsed */
+    static killafter = "killafter";
+    /**flashes continuously */
+    static flash = "flash";
+    ///**no timing action */
+    //static none = "none";
+    ///**acts as a timer, for setting time intervals (like button repeats)
+    // * 
+    // * has to be checked using elapsed
+    // * @example 
+    // */
+    //static interval = "timer";
+    ///** calls a function/method after time period has elapsed */
+    //static eventonce = "eventonce";
+    ///** calls a function/method periodically*/
+    //static event = "event";
+    ///**and event that fires periodically and stops after a given period of time */
+    //static eventStopafter = "eventStopafter";
+    /** flashes until the stopAfter period has elapsed then stays on screen*/
+    static flashStopafter = "flashStopafter";
+    /**starts flashing after a period of time then continues flasing */
+    static flashStartafter = "flashStartafter";
+    /**flashes until the stop period then is killed */
+    static flashKillafter = "flashKillafter";
+    /**starts flashing after a period of time then stops staying on screen */
+    static flashStartafterStopafter = "flashStartafterStopafter";
+    /** starts flashing after a period of time then is killed after the kill time
+     * 
+     * this is useful for time limited pickups (or bombs) where the flashing can be used to indicate time is nearly up
+     */
+    static flashStartafterKillafter = "flashStartafterKillafter";
+    /**makes a sprite invisible and then shows it after the time period elapses */
+    static showafter = "showafter";
+    /**makes a sprite visible and then hides it after the time period elapses */
+    static hideafter = "hideafter";
+    /**apply a velocity for a period of time */
+    static impulse = "impulsestopafter";
+}
+/** 
+ * @classdesc implements sprite specific timers (you can only have one)
+ * If you need more sprite specific ones, create another timer, 
+ * but make sure you create and update method that calls the timers update method
+ * 
+ * I may refactor this to be part of a eventmanager class so all timer subsystems will use a common structure
+ */
+class Timer extends Event{
+    /** holds reference to the sprite being manipulated by the timer @type {Sprite} */
+    #mysprite
+    /** holds time interval for on time during flashing @type {float}*/
+    #oninterval;
+    /** holds time interval for off time during flashing  @type {float}*/
+    #offinterval;
+    /** holds visibility state of the sprite @type {bool}*/
+    #hidden;
+    /** holds phase of timing for multi step actions @type {Phase} */
+    #phase;
+    /** holds force to apply during impulse timers @type {vector3} */
+    #impulse;
+    /**
+     * get the current phase of timer action, you can use this during callbacks
+     * @returns {Phase}
+     */
+    get phase(){return this.#phase;}
+
+    /**
+     * Constructs and new sprite timer
+     * @param {Sprite} sprite the sprite associated with the sprite timers
+     */
+    constructor(sprite){
+        super("spr:" + sprite.myid);
+        this.#mysprite = sprite;
+        //this.action = Action.none;
+    }
+    /** 
+     * removes sprite reference when timer removed, override this if you create an inherited timer that adds more resources */
+    cleanup(){
+        super.cleanup();
+        this.#mysprite = null;
+    }
+    /**
+     * disable the timer, choose whether to display or hide the sprite 
+     * @param {bool} display if true sprite will be shown, false if not (important if you have been flashing a sprite)
+    */
+    off(display){
+        this.action = Action.none;
+        if (display === undefined || display)
+            this.#mysprite.show();
+        else
+            this.#mysprite.hide();
+    }
+    /**
+     * flashes the sprite on and off, duration in seconds (or fraction of)
+     * @param {float} onduration number of seconds or fraction of
+     * @param {float} offduration number of seconds or fraction of
+     * slightly longer on than off looks best
+     */
+    flash(onduration, offduration){
+        if (this.allowoverwrite || this.action != Action.flash){
+            this.action = Action.flash;
+            this.#oninterval = onduration; this.#offinterval = offduration
+            this.actionTime = 0; this.elapsedTime = 0;
+            this.#hidden = false;
+        }
+    }
+    /**
+     * flashes and sprite and then stops flashing after a period of time
+     * @param {float} stopAfter time to stop flashing in seconds
+     * @param {float} onduration number of seconds or fraction of
+     * @param {float} offduration number of seconds or fraction of
+     * @param {{callback:method|function,instance:object}} callback the code to call when the sprite stops flashing
+     * Engine.makeCallback() to create your callback
+     */
+    flashStopafter(stopAfter, onduration, offduration, callback){//instance, callme){
+        if (this.allowoverwrite || this.action != Action.flashStopafter){
+            this.action = Action.flashStopafter;
+            this.stopafterinterval = stopAfter;
+            this.#oninterval = onduration; this.#offinterval = offduration
+            this.actionTime = 0; this.elapsedTime = 0;
+            this.#hidden = false;
+            this.#phase = Phase.stopafter;
+            
+            this.callback = callback;
+            // if (instance !== undefined && callme !== undefined){
+            //     this.#callback = {callback:callme,instance:instance};
+            // }
+        }
+    }
+    /**
+     * flashes a sprite and then kills it after a period of time
+     * @param {float} killAfter seconds after which sprite should be killed off
+     * @param {float} onduration number of seconds or fraction of
+     * @param {float} offduration number of seconds or fraction of
+     */
+    flashKillafter(killAfter, onduration, offduration){//}, callback){//instance, callme){
+        if (this.allowoverwrite || this.action != Action.flashKillafter){
+            this.action = Action.flashKillafter;
+            this.stopafterinterval = killAfter;
+            this.#oninterval = onduration; this.#offinterval = offduration
+            this.actionTime = 0; this.elapsedTime = 0;
+            this.#hidden = false;
+            this.#phase = Phase.stopafter;
+            this.#mysprite.show();
+            
+            this.callback = callback;
+            // if (instance !== undefined && callme !== undefined){
+            //     this.callback = {callback:callme,instance:instance};
+            // }
+        }        
+    }
+    /**
+     * a sprite to start flashing after a certain period of time
+     * @param {float} startAfter how long before flashing starts
+     * @param {float} onduration number of seconds or fraction of
+     * @param {float} offduration number of seconds or fraction of
+     * @param {{callback:method|function,instance:object}} callback the code to call when the sprite starts flashing
+     * Engine.makeCallback() to create your callback
+     */
+    flashStartafter(startAfter, onduration, offduration, callback){//instance, callme){
+        if (this.allowoverwrite || this.action != Action.flashStartafter){
+            this.action = Action.flashStartafter;
+            this.startafterinterval = startAfter;
+            this.#oninterval = onduration; this.#offinterval = offduration
+            this.actionTime = 0; this.elapsedTime = 0;
+            this.#hidden = false;
+            this.#mysprite.show();
+            this.#phase = Phase.startafter;
+            this.callback = callback;
+            // if (instance !== undefined && callme !== undefined){
+            //     this.callback = {callback:callme,instance:instance};
+            // }
+        }
+    }
+    /**
+     * Flashes a sprite after a certain period of time and then kills it after another time period has ended
+     * @param {float} killAfter seconds after which sprite should be killed off
+     * @param {float} startAfter how long before flashing starts
+     * @param {float} onduration number of seconds or fraction of
+     * @param {float} offduration number of seconds or fraction of
+     * @param {{callback:method|function,instance:object}} callback the code to call when the sprite starts flashing
+     * Engine.makeCallback() to create your callback
+     */
+    flashStartafterKillafter(startAfter, killAfter, onduration, offduration, callback){//instance, callme){
+        if (this.allowoverwrite || this.action != Action.flashStartafterKillafter){
+            this.action = Action.flashStartafterKillafter;
+            this.startafterinterval = startAfter; this.stopafterinterval = killAfter;
+            this.#oninterval = onduration; this.#offinterval = offduration
+            this.actionTime = 0; this.elapsedTime = 0;
+            this.#hidden = false;
+            this.#mysprite.show();
+            this.#phase = Phase.startafter;
+            this.callback = callback;
+            // if (instance !== undefined && callme !== undefined){
+            //     this.callback = {callback:callme,instance:instance};
+            // }
+        }
+    }
+    /**
+     * a visible sprite starts to flash after a period of time, it then stops flashing after a further period of time
+     * @param {float} startAfter period of time to start flasher
+     * @param {float} stopAfter period of time for flashing to continue before it stops
+     * @param {float} onduration number of seconds or fraction of
+     * @param {float} offduration number of seconds or fraction of
+     * @param {{callback:method|function,instance:object}} callback the code to call when the sprite starts flashing and again when it stops
+     * Engine.makeCallback() to create your callback
+     */
+    flashStartafterStopafter(startAfter, stopAfter, onduration, offduration, callback){//instance, callme){
+        if (this.allowoverwrite || this.action != Action.flashStartafterStopafter){
+            this.action = Action.flashStartafterStopafter;
+            this.startafterinterval = startAfter; this.stopafterinterval = stopAfter;
+            this.#oninterval = onduration; this.#offinterval = offduration
+            this.actionTime = 0; this.elapsedTime = 0;
+            this.#hidden = false;
+            this.#mysprite.show();
+            this.#phase = Phase.startafter;
+            this.callback = callback;
+            // if (instance !== undefined && callme !== undefined){
+            //     this.callback = {callback:callme,instance:instance};
+            // }
+        }
+    }
+    /**
+     * shows the sprite after a period of time has passed
+     * @param {float} showAfter number of seconds to wait before showing
+     * @param {{callback:method|function,instance:object}} callback the code to call when the sprite is shown
+     * Engine.makeCallback() to create your callback
+     */
+    showafter(showAfter, callback){//instance, callme){
+        if (this.allowoverwrite || this.action != Action.showafter){
+            this.action = Action.showafter;
+            this.startafterinterval = showAfter;
+            this.actionTime = 0; this.elapsedTime = 0;
+            this.#hidden = true;
+            this.#mysprite.hide();
+            this.#phase = Phase.startafter;
+            this.callback = callback;
+            // if (instance !== undefined && callme !== undefined){
+            //     this.callback = {callback:callme,instance:instance};
+            // }
+        }
+    }
+    /**
+     * Hides the sprite after a period of time has passed
+     * @param {float} hideAfter number of seconds to wait before hiding
+     * @param {{callback:method|function,instance:object}} callback the code to call when sprite is hidden
+     * Engine.makeCallback() to create your callback
+     */
+    hideafter(hideAfter, callback){//instance, callme){
+        if (this.allowoverwrite || this.action != Action.hideafter){
+            this.action = Action.hideafter;
+            this.startafterinterval = hideAfter;
+            this.actionTime = 0; this.elapsedTime = 0;
+            this.#hidden = false;
+            this.#mysprite.show();
+            this.#phase = Phase.startafter;
+            this.callback = callback;
+            // if (instance !== undefined && callme !== undefined){
+            //     this.callback = {callback:callme,instance:instance};
+            // }
+        }
+    }    
+    /**
+     * Shows a sprite after a period of time then kills it after another period of time
+     * @param {float} showAfter time to wait until sprite displayed
+     * @param {float} killAfter time to kill sprite after displaying
+     * @param {{callback:method|function,instance:object}} callback the code to call when the sprite is shown
+     * Engine.makeCallback() to create your callback
+     */
+    showafterKillafter(showAfter, killAfter, callback){//instance, callme){
+        if (this.allowoverwrite || this.action != Action.showafterKillafter){
+            this.action = Action.showafterKillafter;
+            this.startafterinterval = showAfter;
+            this.stopafterinterval = killAfter;
+            this.actionTime = 0; this.elapsedTime = 0;
+            this.#hidden = true;
+            this.#mysprite.hide();
+            this.#phase = Phase.startafter;
+            this.callback = callback;
+            // if (instance !== undefined && callme !== undefined){
+            //     this.callback = {callback:callme,instance:instance};
+            // }
+        }
+    }
+    /**
+     * shows a sprite after a period of time, flashing as it becomes visible
+     * @param {float} showAfter timer period to wait before showing the flashing sprite
+     * @param {float} onduration number of seconds or fraction of
+     * @param {float} offduration number of seconds or fraction of
+     * @param {{callback:method|function,instance:object}} callback the code to call when the sprite starts flashing
+     * Engine.makeCallback() to create your callback
+     * @example
+     */
+    showafterFlash(showAfter, onduration, offduration, callback){//instance, callme){
+        if (this.allowoverwrite || this.action != Action.showafterFlash){
+            this.action = Action.showafterFlash;
+            this.startafterinterval = showAfter;
+            this.#oninterval = onduration; this.#offinterval = offduration
+            this.actionTime = 0; this.elapsedTime = 0;
+            this.#hidden = true;
+            this.#mysprite.hide();
+            this.#phase = Phase.startafter;
+            this.callback = callback;
+            // if (instance !== undefined && callme !== undefined){
+            //     this.callback = {callback:callme,instance:instance};
+            // }
+        }
+    }
+
+
+    /**
+     * kills a sprite after a period of time
+     * @param {float} killtime timer period 
+     * set a callbackFuneral or override the Kill() method of your sprite if you want to know when it's killed
+     */
+    killafter(killtime){//}, callback){//instance, callme){
+        this.action = Action.killafter;
+        this.actionTime = 0; this.elapsedTime = 0;
+        this.stopafterinterval = killtime;
+        // this.callback = callback;
+        // if (instance !== undefined && callme !== undefined){
+        //     this.callback = {callback:callme,instance:instance};
+        // }
+    }
+
+    /**
+     * applies a force to a sprite for a period of time
+     * @param {float} stopAfter timer period to apply the force
+     * @param {vector3} force 
+     * @param {{callback:method|function,instance:object}} callback the code to call when the event occurs use 
+     * Engine.makeCallback() to create your callback
+     * @example
+     * //call the increaseDifficulty method every 20 seconds
+     * Engine.eventM.event(203, Engine.makeCallback(this.increaseDifficulty, this));
+     * to stop calling the method/function use the events remove() method
+     */
+    impulse(stopAfter, force, callback){//instance, callme){
+        if (this.allowoverwrite || this.action != Action.impulse){
+            this.action = Action.impulse;
+            this.stopafterinterval = stopAfter;
+            this.actionTime = 0; this.elapsedTime = 0;
+            this.#impulse = force;
+            this.#phase = Phase.startafter;
+            this.callback = callback;
+            // if (instance !== undefined && callme !== undefined){
+            //     this.callback = {callback:callme,instance:instance};
+            // }
+        }
+    }
+    /**
+     * performs updates for this sprite timer
+     */
+    update(){
+        super.update();
+        if (this.action != Action.none){
+            //new timing system
+            //this.#elapsedTime += Engine.delta;
+            //this.actionTime += Engine.delta;
+            switch (this.action){
+                case Action.killafter:
+                    if (this.elapsedTime >= this.stopafterinterval){
+                        //this.action = Action.none;
+                        //this.action = Action.remove;
+                        this.#mysprite.kill();
+                        this.remove();
+                    } break; 
+                case Action.showafter:
+                    if (this.elapsedTime >= this.startafterinterval){
+                        this.#mysprite.show();
+                        //this.action = Action.none;
+                        //this.action = Action.remove;
+                        Engine.processCallback(this.callback);
+                        this.remove();
+                    } break;
+                case Action.hideafter:
+                    if (this.elapsedTime >= this.startafterinterval){
+                        this.#mysprite.hide();
+                        //this.action = Action.remove;
+                        Engine.processCallback(this.callback);
+                        this.action = Action.none;
+                    } break;                    
+                case Action.showafterFlash:
+                    if (this.elapsedTime >= this.startafterinterval){
+                        this.action = Action.flash;
+                        this.#mysprite.show();
+                        this.#hidden = false;
+                        this.elapsedTime -= this.startafterinterval;
+                        this.actionTime = this.elapsedTime;
+                        this.#sortvisibility();
+                        Engine.processCallback(this.callback);
+                    } break;
+                case Action.showafterKillafter:
+                    switch (this.#phase){
+                        case Phase.startafter:
+                            if (this.elapsedTime >= this.startafterinterval){
+                                //turn on kill phase
+                                this.#phase = Phase.stopafter;
+                                this.elapsedTime -= this.startafterinterval;
+                                this.#mysprite.show();
+                                Engine.processCallback(this.callback);
+                            } break;
+                        case Phase.stopafter:
+                            if (this.elapsedTime >= this.stopafterinterval){
+                                //this.action = Action.none;
+                                //this.action = Action.remove;
+                                this.#mysprite.kill();
+                                this.remove();
+                            } break;
+                    } break;
+                case Action.impulse:
+                    this.#mysprite.Velocity.add(this.#impulse);
+                    if (this.elapsedTime >= this.stopafterinterval){
+                        //this.action = Action.none;
+                        //this.action = Action.remove;
+                        this.remove();
+                        Engine.processCallback(this.callback);
+                    } break;
+                case Action.flashStartafter:
+                    if (this.elapsedTime >= this.startafterinterval){
+                        this.elapsedTime -= this.startafterinterval;
+                        this.actionTime = this.elapsedTime;//added
+                        this.action = Action.flash;
+                        this.#sortvisibility();
+                        Engine.processCallback(this.callback);
+                    }
+                    break;
+                case Action.flashStartafterStopafter:
+                    switch (this.#phase){
+                        case Phase.startafter:
+                            if (this.elapsedTime >= this.startafterinterval){
+                                //turn on continuous flashing
+                                this.elapsedTime -= this.startafterinterval;
+                                this.actionTime = this.elapsedTime;//added
+                                this.#sortvisibility();
+                                Engine.processCallback(this.callback);
+                                this.#phase = Phase.stopafter;
+                            } break;
+                        case Phase.stopafter:
+                            this.#sortvisibility();
+                            if (this.elapsedTime >= this.stopafterinterval){
+                                //this.action = Action.none;
+                                //this.action = Action.remove;
+                                this.#mysprite.show();
+                                this.remove();
+                                Engine.processCallback(this.callback);
+                            } break;
+                    } break;
+                case Action.flashStartafterKillafter:
+                    switch (this.#phase){
+                        case Phase.startafter:
+                            if (this.elapsedTime >= this.startafterinterval){
+                                //turn on continuous flashing
+                                this.#phase = Phase.stopafter;
+                                this.elapsedTime -= this.startafterinterval;
+                                this.actionTime = this.elapsedTime;//added
+                                this.#sortvisibility();
+                                Engine.processCallback(this.callback);
+                            }
+                            break;
+                        case Phase.stopafter:
+                            this.#sortvisibility();
+                            if (this.elapsedTime >= this.stopafterinterval){
+                                //this.action = Action.none;
+                                //this.action = Action.remove;
+                                this.#mysprite.kill();
+                                this.remove();
+                            }
+                            break;
+                    }
+                    break;
+                case Action.flash:
+                    this.#sortvisibility();
+                    break;
+                case Action.flashStopafter:
+                    this.#sortvisibility();
+                    if (this.elapsedTime >= this.stopafterinterval){
+                        //this.action = Action.none;
+                        //this.action = Action.remove;
+                        this.#mysprite.show();
+                        this.remove();
+                        Engine.processCallback(this.callback);
+                    } break;
+                case Action.flashKillafter:
+                    this.#sortvisibility();
+                    if (this.elapsedTime >= this.stopafterinterval){
+                        //this.action = Action.none;
+                        //this.action = Action.remove;
+                        this.#mysprite.kill();
+                        this.remove();
+                    } break;
+            }//switch (_method)
+        }//if (_method != Style.none)
+    }//update()
+
+    /**
+     * determines whether sprite should be shown or no during flashing actions
+     */
+    #sortvisibility(){
+        if (this.#hidden){
+            if (this.actionTime >= this.#offinterval){
+                this.actionTime -= this.#offinterval;
+                this.#mysprite.show();
+                this.#hidden = !this.#hidden;
+            }
+        }  else {
+            if (this.actionTime >= this.#oninterval){
+                this.actionTime -= this.#oninterval;
+                this.#mysprite.hide();
+                this.#hidden = !this.#hidden;
+            }
+        }
+    }//sortvisibility
+}  
+
+/******************************
+ * timer.js by Hurray Banana 2023-2024
+ ******************************/ 
+// NEED TO IMPLEMENT CATMULL-ROM for smooth function
+       
+
+/**
+* @classdesc  States what should happen when a sprite reaches the end of its current track
+*/
+class EndOfTrackAction{
+    /**
+     at end of track pick another track from those associated with the Sprite
+    Great for random boss movement patterns
+    */
+    static random = "random";
+    /**
+     forces the sprite to leave the track and continue in the direction it was last moving
+    Nice to use if you turn gravity on for a sprite once its detached if you use 
+    an OnTrackEnd handler to alter the sprites properties
+    */
+    static detach = "detach";
+    /**
+     start again on the current track
+    Useful for fancy menu like sega 3d ones for name entry
+    */
+    static  wrap = "wrap";
+    /**
+     go backwards along the current track
+    Nice to use for display or target type tracks
+    */
+    static reverse = "reverse";
+    /**
+     kill the sprite at the end of the track
+    Can use for explosion effects in conjuction with a Sprite funeral
+    */
+    static  kill = "kill";
+    /**
+     move on to the start of the next track
+    Use if you want a sprite to follow a specific sequence of tracks.
+    The order is governed by the order you used the Sprite.AddTrack() methods
+    */
+    static next = "next";
+    /**
+     Halt sprite at the end of the track
+    Use if you want a sprite to travel to the end and the stop and do something
+    like launch a bullet at the player (see the yellow circular star force enemies)
+    use in conjuction with OnTrackEnd handler. After firing you can ask the Sprite to
+    follow a second track to move off screen again.
+    */
+    static stop = "stop";
+}
+
+/**
+* @classdesc  States how the sprite should move along the track
+Discrete step is for manual control of a track
+*/
+class TrackStepMode{
+    /**
+     operate using a fixed step 
+    move along a certain number of points during each update
+    */
+    static discreteStep = "discreteStep";
+    /**
+     approximate a time to travel along so many pixels of the track
+    in the same way as sprite velocity works
+    */
+    static pixelsPerSec = "pixelsPerSec";
+}
+
+
+/**
+ * @classdesc Responsible for storing the Tracks and manipulating the movement of a Sprite
+ * In order to use Tracks with a Sprite you need to make sure you create one normally in your constructor
+ * @example this.track = new TrackManager(this);
+ */
+class TrackManager{
+    
+    /** Creates a new TrackManager for the Sprite.
+    *
+    * @param {Sprite} s The sprite to associate the trackmanager with
+    * This is created by the Sprite itself if you passed a TrackBank when you create it
+    * @returns {TrackManager}
+    */
+    constructor(s){
+        this.boss = s;
+        this.#tracklist = [];
+        //setup the default timer to be every possible frame
+        this._updateTimer = new Event("TRACKMAN FOR SP" + s.myid.toString().padEnd(5, '0'));
+        this._updateTimer.interval(0);
+        //then need to add to the event manager somehow
+    }
+    /** not used */
+    cleanup(){}
+    /**
+     * Drawing sort of works but I need to implement duplicate and dirty track changes properly so it doesn't overdraw anything
+     * @param {int} trknum the track index of this sprites track to draw
+     * @param {bool} closed if true then the first and last points will be drawn (as if it was a polygon)
+     * @param {{step:int,layer:texture,col:color,weight:int,shape:shape}} style specifies how to draw the track, see examples for details
+     * @example
+     * // skip every other 5 points
+     * // put on glow layer
+     * // make 3 pixels wide
+     * // color full green
+     * let glowstyle = {step:5,layer:Engine.glowlayer(),weight:3,col:[0,255,0]};
+     * // skip every other 5 points
+     * // put on same layer as this sprite
+     * // make 3 pixels wide
+     * // color white
+     * let trackstyle = {step:5,layer:this.layer,weight:3,col:[255,255,255]};
+     * 
+     * //draw current track twice, once on glowlayer, once on sprite layer
+     * this.track.draw(b,this.track.CurrentTrackData.trackDef.closed, tstyle);
+     * this.track.draw(b,this.track.CurrentTrackData.trackDef.closed, trackstyle);
+     */
+    draw(trknum, closed, style){
+        trknum = (trknum === undefined || trknum < 0 || trknum >= this.#tracklist.length) ? 0 : trknum;
+        let tr = this.#tracklist[trknum];
+        if (!tr.isDirty && this.#tracklist.length > 0){
+            //tr.isDirty = true;
+            let step = (style === undefined || style.step === undefined) ? 1 : style.step;
+
+            let layer = (style === undefined || style.layer === undefined) ? Engine.layer(0) : style.layer;
+            layer.push();
+            layer.stroke((style === undefined || style.col === undefined) ? 1 : style.col);
+            layer.strokeWeight((style === undefined || style.weight === undefined) ? 1 : style.weight);
+            layer.noFill();
+            if (style === undefined || style.shape === undefined){
+                layer.beginShape();
+            } else {
+                layer.beginShape(style.shape);
+            }
+
+            let v = this.#tracklist[trknum].trackDef.points
+            let p = 0;
+            while (p < v.length){
+                layer.vertex(v[p].x + tr.offset.x, v[p].y + tr.offset.y);
+                p += step;
+            }
+            if (closed){ layer.endShape(layer.CLOSE);
+            } else {layer.endShape();}
+            layer.pop();  
+        } else {console.log("not drawn " + trknum)};
+    }
+    /** @returns {bool} if set to true then manual track position changes instantly afect the position of the sprite
+    * defaults to true, if this causes problems then set this to false
+    */
+    get instantmove() { return this.#instantmove; }
+    /** 
+     * @param {bool} value if set to true then manual track position changes instantly afect the position of the sprite
+     * defaults to true, if this causes problems then set this to false */
+    set instantmove(value) {this.#instantmove = value; }
+    
+    /**  @type {bool} if set to true then manual track position changes instantly afect the position of the sprite
+    * defaults to true, if this causes problems then set this to false */
+    #instantmove = true;
+    
+    
+    /** @type {Track[]} holds the tracks of this sprite */
+    #tracklist = null;
+
+    
+    /**
+     * @returns {Track[]} gets the sprites tracklist (for manual manipulation by your code if you want to)
+     */
+    get TrackList() { return this.#tracklist; }
+    
+    /**
+     * @type {EndOfTrackAction} what to do when you get to the end of the current track
+    */
+    #endAction = EndOfTrackAction.stop;
+    
+    /**
+     * @type {TrackStepMode} Determines how sprite moves along the track 
+     * defaults to pixelsPerSec to take account of the game clock
+    */
+    stepMode = TrackStepMode.pixelsPerSec;
+    
+    /**
+     * @type {float} The speed in pixels per seconds to move along the track
+    */
+    #pixelsPerSec = 0;
+    
+    /**
+     * @type {float}
+     precalculated value so we just multply game time
+        needs to re-calculated every time speed adjusted
+        or track changes MUST IMPLEMENT THIS
+    */
+    #pixelsPerSecPreCalc;
+    
+    /**
+     * @returns {float} gets the speed at which a sprite should travel along the track in pixels per second
+    */
+    get PixelsPerSec() { return this.#pixelsPerSec; }
+    /**
+     * @param {float} value Sets the speed at which a sprite should travel along the track in pixels per second
+    */
+    set PixelsPerSec(value){
+        if (value <= 0)
+            value = 0;
+        this.#pixelsPerSec = value;
+        this.#SetPreCalc();
+    }
+
+    /**
+     needs to be called when pixelsPerSec changes or track being used changes
+    */
+    #SetPreCalc(){
+        this.#pixelsPerSecPreCalc = this.direction * this.#pixelsPerSec * this.#tracklist[this._trackCurrent].trackDef.pointsOverlength;
+        this.#pointsCurrent = this.#tracklist[this._trackCurrent].trackDef.points.length;
+    }
+    
+    /**
+     @type {float} holds the step distance fractionally so we can move smoothly then integer round
+    */
+    trackFractionalPos = 0;
+    /**
+     @type {{callback:method | function,instance:object}} stores the the delegate routine to call when a sprite meets the end of a track
+    */
+    #callbackEOT = null;
+    /** retrieves the current the callback handler called sprite reaches then end of a track
+     * it will be in the form of object properties
+     * @returns {{callback:method | function,instance:object}}
+     * @example 
+     * // two propeties callback and instance
+     * let callstuff = this.callbackEndOfTrack;
+     * if (callstuff != null) console.log(callstuff.callback, callstuff.instance);
+     */
+    get callbackEndOfTrack(){return this.#callbackEOT;}
+    /**
+     * sets (or changes) the callback handler called sprite reaches then end of a track
+     * @example //value must be an object with 2 properties or use:
+     *  Engine.makeCallback()
+     * @param {{callback:method | function,instance:object}} value 
+     */
+    set callbackEndOfTrack(value){
+        if (value != undefined && value.callback !== undefined && value.instance !== undefined){
+        this.#callbackEOT = value;
+        }
+    }    
+    /**
+    * @type {int} if trackEndAction is set to kill do so after we have moved through this many tracks
+    */
+    _travellingStops = 1;
+    
+    /**
+    @type {int} how many track have I travelled along
+    */
+    _totalTravelled = 0;
+    
+    /**
+     @type {int} the index of the track in this.#tracklist we are currently using
+    */
+    _trackCurrent;
+
+    
+    /**
+     * @returns {int} current trackindex
+     Allows you to manually change the track index at any time
+        Use with caution, you can often achieve the effect you want using
+        the correct means of working with tracks
+    */
+    get TrackCurrent(){ return this._trackCurrent; }
+    /**
+     * @param {int} value trackindex you want
+     *  Allows you to manually change the track index at any time
+        Use with caution, you can often achieve the effect you want using
+        the correct means of working with tracks
+     */
+    set TrackCurrent(value){ this._trackCurrent = value; }
+    
+    /**
+    * @type {int} number of points in the active track
+    */
+    #pointsCurrent;
+    /**
+     * @type {int} number of points in the active track
+     */
+    get pointsCurrent(){return this.#pointsCurrent;}
+    /**
+     * @returns {Track} Retrieves the Track data (not a definition of the currently active track)
+        The track definition is available within the Track object
+    */
+    get CurrentTrackData() { return this.#tracklist[this._trackCurrent]; }
+    
+    /**
+     * @type {int} the element position of the track we are currently looking at
+    */
+    _trackPosition;
+    
+    /**
+     @type {int} how much to move along the track by each update
+    */
+    _trackStep;
+    
+    /**
+     @type {int} holds the previous trackstep when paused
+        ready to be restored
+    */
+    _saveTrackStep;
+    
+    /**
+     @type {int} what direction to move along the track +ve 1 or -ve 1
+    */
+        direction = 1;
+    
+    /**
+     @type {Sprite} holds a reference to parent sprite
+    */
+    boss;
+    
+    /**
+     @type {Timer} holds a timer that determines when the track position should
+        be updated which ensure this is independant of frame rate
+    */
+    _updateTimer; 
+    
+
+    /**
+     * @returns {EndOfTrackAction} gets or sets the action that should be performed when a sprite reaches the end of 
+        a track
+    */
+    get EndAction(){ return this.#endAction; }
+    /**
+     * @returns {EndOfTrackAction} sets the action that should be performed when a sprite reaches the end of 
+        a track
+    */
+    set EndAction(value) { this.#endAction = value; }
+    
+    /**
+     * @returns {int}
+     Gets the number of tracks this sprite has travelled along
+    */
+    get TracksTravelled() {return this._totalTravelled; }
+    
+    /**
+     Set the value for number of tracks travelled
+    this can be used for counting 
+    @param {int} newCount The new setting value you require
+    */
+    TravelledCountSet(newCount){
+        this._totalTravelled = newCount;
+    }
+    //NEEDS RE_WORKING AS THIS NOW ONLY WORKS FOR STEP MOVEMENT
+    
+    /**
+     Stop sprite moving along track
+        Restart track movement using Resume()
+    */
+    Pause(){
+        this._saveTrackStep = this._trackStep;
+        this._trackStep = 0;
+    }
+
+    /**
+     Restart a previously Paused() sprite
+        Don't use this without previously Pausing
+    */
+    Resume(){
+        this._trackStep = this._saveTrackStep;
+    }
+
+    
+    /**
+    Disconnects Sprite from given tracks and sets velocity in last known direction
+    Can go back to track mode by setting MovementMode to autotrack or manualTrack.
+
+    If you don't want velocity just set it to zero after calling Detach()
+    */
+    Detach(){
+        let v = vector3.sub(this.boss.position - this.boss.lasttrackposition);
+        v.normalise();
+        v.mul(this.#pixelsPerSec);
+        this.boss.velocity = v;
+        //this.boss.velocity = vector3.normalised((boss.Position - this.boss.LastTrackPosition)) * this.pixelsPerSec;
+        this.boss.updateMode = UpdateMode.automatic;
+    }
+
+    
+    /** This is a bit broken need a solution based on vertex settings
+     attempts to take value in lastTrackWas and performs the undraw operation
+        @param {int} drawNextTrack if true we will attempt to draw the current track after removing previous
+    */
+    AttemptToAutoUndraw(drawNextTrack){
+        if (this.drawing && this.#autoShowHide)
+        {
+            this.DrawTrackNoMore(this.lastTrackWas);
+            
+            //bodge for now need to record current settings when draw specified
+            if (drawNextTrack) this.DrawTrack(this.lastLineStyle, this.lastNumberOfLinesDrawn, this.#autoShowHide);
+        }
+    }
+
+    
+    /**
+     @returns {float} gets the updated interval for the track update timer
+    */
+    get UpdateInterval() { return this._updateTimer.Interval; }
+
+    
+    /**
+    Removes a track at the given position.
+    The position is the order in which the tracks were added
+    The first track added is at position 0.
+    If the last track removed is being followed by the sprite then it is
+    detached from this track and the end track handler is called if enabled
+    @param {} position The track index for this sprite to remove
+    */
+    Remove(position){
+        if (position > -1 && position < this.#tracklist.length){
+
+            this.#tracklist.splice(position, 1);
+            //attempt to adjust current track if affected by removal
+            if (this._trackCurrent >= position){
+                this._trackCurrent--;
+                if (this._trackCurrent < 0)
+                    this._trackCurrent = 0;
+                //if no track data turn of track update methods
+                if (this.#tracklist.length == 0)
+                    this.boss.updateMode = UpdateMode.automatic;
+            }
+
+        }
+    }
+
+    
+    /**
+    Adds a track from the TrackBank to be used by this Sprite
+    @param {} trackDef The previously generated track definition
+    Make sure you have added Tracks to your TrackBank first
+    */
+    AddTrack(trackDef){
+        if (!(trackDef === null || trackDef === undefined))
+            this.#tracklist.push(new Track(trackDef));
+    }
+
+    
+    /**
+    Adds a track to be used by this Sprite and modifies its starting position 
+    by the amount given
+    @param {TrackDefinition} trackDef the trackdefinition to add
+    @param {vector3} offset A 3d offset to apply to the original tracks positions
+    */
+    AddTrackWithOffset(trackDef, offset){   
+        if (!(trackDef === null || trackDef === undefined)){
+            this.#tracklist.push(new Track(trackDef, offset));
+        }
+    }
+
+    
+    /**
+    Adds a track to a sprite and translates the track to a specified position, 
+    so a single track can be placed with it's start at the position of a sprite if you wish
+    @param {TrackDefinition} trackDef Track definition
+    @param {vector3} startPos The position to start the track
+    Use this for a track shape that will be used for a sprite
+    generated at a specific position (e.g bullet hell tracks)
+    */
+    AddTrackStartAt(trackDef, startPos){
+        if (!(trackDef === null || trackDef === undefined)){
+            this.#tracklist.push(new Track(trackDef, vector3.sub(startPos, trackDef.points[0])));
+        }
+    }
+    
+    /**
+    Specifies how Sprite is to use the tracks allocated to it, This should be used after adding all tracks to a sprite
+    @param {EndOfTrackAction} endaction What to do when sprite reaches the end of the track
+    @param {int} startTrack The index of the tracks given to the Sprite using Add that you wish to start the Sprite on
+    @param {int} step The number of positions along the track you wish to move the Sprite during each update
+    @param {int} direction 1 travel from start to end, -1 travel from end to start
+    @param {int} startposition Track index position to start at, you must check it's in range
+    */
+    TravelWithStep( endaction,  startTrack,  step,  direction,  startposition){
+        this.#endAction = endaction;
+        this._trackCurrent = startTrack;
+        this._trackStep = step;
+        this.direction = direction;
+        this._trackPosition = (startposition == 0 || startposition === undefined) ? this.GetStartPosition : startposition;
+        this.trackFractionalPos = this._trackPosition;
+        this.stepMode = TrackStepMode.discreteStep;
+        this.boss.updateMode = UpdateMode.autotrack;
+        this.boss.position = this.boss.track.positionCurrent;
+    }
+    
+    /**
+     Sets sprite to move along the track at constant speed irrespective of the frame rate
+    @param {EndOfTrackAction} endaction What to do when you reach end of track
+    @param {int} startTrack The track to start at
+    @param {float} speed The speed in pixels per second to move at
+    @param {int} direction 1 for forward, -1 for backward
+    @param {int} startPosition Track index position to start at, you must check it's in range
+    */
+    TravelWithSpeed( endaction,  startTrack,  speed,  direction,  startPosition){
+        this.#pixelsPerSec  = Math.abs(speed);//make sure positive
+        this.stepMode = TrackStepMode.pixelsPerSec;
+        this.#endAction = endaction;
+        this._trackCurrent = startTrack;
+        this.direction = direction;
+        if (startPosition == 0 || startPosition === undefined){
+            this.trackFractionalPos = this._trackPosition = this.GetStartPosition;
+        } else {
+            this.trackFractionalPos = this._trackPosition = startPosition;
+        }
+        this.boss.updateMode = UpdateMode.autotrack;
+        this.boss.position = this.boss.track.positionCurrent;
+        this.#SetPreCalc();
+    }
+    
+    /**
+    @returns {vector3} Gets the current x, y and z position (game co-ordinates) along the current track
+    You shouldn't really need this
+    */
+    get positionCurrent(){
+        if (!this.interpolate){
+            return  vector3.add(this.#tracklist[this._trackCurrent].trackDef.points[this._trackPosition],
+                this.#tracklist[this._trackCurrent].offset);
+        } else {
+            let a = this.trackFractionalPos | 0;
+            if (this.#endAction != EndOfTrackAction.wrap && this.#tracklist.length > 1 && a == this.#pointsCurrent - 1 ){
+                return  vector3.add(this.#tracklist[this._trackCurrent].trackDef.points[a],
+                    this.#tracklist[this._trackCurrent].offset);
+            } else {
+            let b = (a == this.#tracklist[this._trackCurrent].trackDef.points.length - 1) ? 0 : a + 1;
+            let p = this.trackFractionalPos - a;
+            //console.log(a + ":" + b + ":" + p);
+            return vector3.add(vector3.lerp(this.#tracklist[this._trackCurrent].trackDef.points[a],
+                this.#tracklist[this._trackCurrent].trackDef.points[b],
+                p), this.#tracklist[this._trackCurrent].offset);
+            }
+        }
+    }
+    /**
+     * @type {bool} if true then a position between 2 points will be interpolated for fractional movement
+     * default is false so place only at existing track points
+     */
+    interpolate = false;
+    /**
+     Tries to locate a suitable position on the current track which is
+    close to the position specified. If you want to jump from one track to another
+    then you need to move to that track first then try this
+    @param {vector3} position The 2d position to locate a point near
+    @returns {{pos:vector3,trackpos:int}} 
+    */
+    TrackPositionNear(position){
+        let pos = GetAPositionNear(position, this._trackCurrent);
+        //set track position
+        this.trackFractionalPos = pos.trackpos;
+        this._trackPosition = pos.trackpos | 0;
+
+        if (this.#instantmove)
+            this.boss.position = this.boss.track.positionCurrent;
+
+        return pos;
+    }
+
+    
+    /**
+     Tries to locate a suitable position on the current track which is
+    close to the position specified. If you want to jump from one track to another
+    then you need to move to that track first then try this
+    @param {vector3} position The 2d position to locate a point near
+    @param {int} trackNum The track number (its position in the sprites list) that you wish to attach to
+    @returns {{pos:vector3,trackpos:int}}The Physical position along the track and the track position, 
+    the W value holds the track position
+    */
+    GetAPositionNear(position, trackNum){
+        let pos = {pos:vector3.zero,trackpos:0};
+        let tempDistance = 0;
+        //set start value
+        let current = this.#tracklist[trackNum].trackDef.points[0];
+        let shortestDistance = Math.abs(vector3.Distance(current, position));
+        pos.trackpos = 0;
+
+        for (let i = 1; i < this.#tracklist[trackNum].trackDef.points.length; i++)
+        {
+            tempDistance = Math.abs(vector3.distance(this.#tracklist[trackNum].trackDef.points[i], position));
+
+            if (tempDistance < shortestDistance)
+            {
+                shortestDistance = tempDistance;
+                current = this.#tracklist[trackNum].trackDef.points[i];
+                pos.trackpos = i;
+            }
+        }
+        pos.pos.x = current.x;
+        pos.pos.y = current.y;
+        pos.pos.z = current.z;
+        return pos;
+    }
+    
+    
+    /**
+     Tells you if you are at the start of the current track
+    the start depends on direction travelling
+    @return {bool} True means the sprite is at the start</value>
+    */
+    get AtStart() { return (this._trackPosition == this.GetStartPosition); }
+    
+    /**
+     gets a value stating whether you are at the first position
+    along a track
+    @return {bool} True means at first point, false means not</value>
+    */
+    get AtPhysicalStart(){ return (this._trackPosition == 0); }
+    
+    /**
+     gets a value stating whether you are at the last position
+    along a track
+    @return {bool} True means at last point, false means not</value>
+    */
+    get AtPhysicalEnd() { return (this._trackPosition == this.#tracklist[this._trackCurrent].trackDef.points.length - 1); }
+    
+    /**
+     Tells you if you are at the end of the current track
+    @return {bool} True means the sprite is at the end</value>
+    */
+    get AtEnd() { return (this._trackPosition == this.GetEndPosition); }
+    
+    /**
+    Gets the position along the current track
+    You shouldn't really need this
+    @returns {int}
+    */
+    get TrackPosition() { return this._trackPosition; }
+    /**
+     sets the position along the current track
+     * @param {int} value 
+    */
+    set TrackPosition(value) {
+            this.trackFractionalPos = this._trackPosition = value;
+            //CorrectTrack();
+            this.#SetPreCalc();
+        }
+    /**
+    Gets the step rate for the current track, how many positions to skip along
+    The larger the step value the quicker the Sprite will appear to move.
+    Try to create your tracks with lots of positions, this will then give you flexability
+    when trying to decide on the step size
+    @return {float} the higher the track step the faster the sprite will appear to move along the track</value>
+    */
+    get TrackStep() { return this._trackStep; }
+    /**
+    Sets the step rate for the current track, how many positions to skip along
+    The larger the step value the quicker the Sprite will appear to move.
+    Try to create your tracks with lots of positions, this will then give you flexability
+    when trying to decide on the step size
+    @param {float} value the higher the track step the faster the sprite will appear to move along the track</value>
+    */
+    set TrackStep(value) { this._trackStep = value; }
+
+    
+    /**
+     gets the track name of the currently used track
+    @returns {string}
+    */
+    get TrackName() { return this.#tracklist[this._trackCurrent].trackDef.Name; }
+    
+    /**
+    @returns {int} Gets the start index position on the current track based on the direction travelling
+    */
+    get GetStartPosition(){
+        if (this.direction > 0)
+            return 0;
+        else
+            return this.#tracklist[this._trackCurrent].trackDef.points.length - 1;
+    }
+
+    /**
+    @returns {int} gets the end index position on the current track based on the direction travelling
+    */
+    get GetEndPosition(){
+        if (this.direction > 0)
+            return this.#tracklist[this._trackCurrent].trackDef.points.length - 1;
+        else
+            return 0;
+    }
+
+    
+    /** Move forward along the current track */
+    PositionForward(){
+        this.trackFractionalPos += this._trackStep * this.direction;
+        this._trackPosition = this.trackFractionalPos | 0;
+        this.CorrectTrack();
+        if (this.instantmove)
+            this.boss.position = this.boss.track.positionCurrent;
+    }
+
+    
+    /** Move backward along the current track */
+    PositionBackward(){
+        this.trackFractionalPos -= this._trackStep * this.direction;
+        this._trackPosition = this.trackFractionalPos | 0;
+        this.CorrectTrack();
+        if (this.instantmove)
+            this.boss.position = this.boss.track.positionCurrent;
+    }
+
+    
+    /** Moves to the first position on the track */
+    PositionFirst(){
+        this.trackFractionalPos = 0;
+        this._trackPosition = this.trackFractionalPos | 0;
+        if (instantmove)
+            this.boss.position = this.boss.track.positionCurrent;
+    }
+
+    
+    /** moves to the last position on the track*/
+    PositionLast(){
+        this.trackFractionalPos = this.#tracklist[this._trackCurrent].trackDef.points.length - 1;
+        this._trackPosition = this.trackFractionalPos | 0;
+        if (instantmove)
+            this.boss.position = this.boss.track.positionCurrent;
+
+    }
+
+    
+    /** moves to the next track associated with this sprite */
+    TrackNext(){
+        if (this.#tracklist.length != 0)
+        {
+            this._totalTravelled++;
+            this.lastTrackWas = this._trackCurrent;
+
+            this._trackCurrent = (++this._trackCurrent % this.#tracklist.length);
+            //in case we have moved track
+            this.#SetPreCalc();
+            this.AttemptToAutoUndraw(true);
+        }
+        else
+            throw new ArgumentOutOfRangeException("No tracks defined for this sprite");
+    }
+
+    
+    
+    /** @type {int} holds the track index number of the last track prior to changing it */
+    lastTrackWas;
+    
+    /** @type {bool} specifies if a track us currently being drawn */
+    drawing;
+    
+    /** @type {LineData} holds the line style set so when we draw next track automatically we can use the same style */
+    lastLineStyle;
+    
+    /** @type {int} holds the number of lines specified when drawing automatically so we can use the same number automatically */
+    lastNumberOfLinesDrawn;
+    /** @type {bool} if true the trackmanager will ensure tracks are displayed and hidden automatically as they are used by the sprite*/
+    #autoShowHide = false;
+    /** @returns {bool} if true the trackmanager for the sprite will automatically draw and remove tracks as the sprite uses them*/
+    get AutoShowHide(){ return this.#autoShowHide; }
+    /** @param {bool} if true the trackmanager for the sprite will automatically draw and remove tracks as the sprite uses them */
+    set AutoShowHide(value){
+        this.#autoShowHide = value;
+        //force pre-calc to ensure track is being shown properly ???
+        //if (value)
+        //    this.#SetPreCalc();
+    }
+
+    /**
+     attempts to replace a track at the position given with a new track definition
+    @param {TrackDefinition} td track to use
+    @param {int} position position of track to remove
+    */
+    ReplaceTrack(td, position){
+        position = (position === undefined) ? position : 0;
+
+        if (td != null && td.points.length > 0)
+        {
+            if (position >= 0 && position < this.#tracklist.length)
+            {
+                DrawTrackNoMore(position);
+                this.#tracklist[position] = new Track(td);
+            }
+            else
+                this.#tracklist.push(new Track(td));
+        }
+        else
+            throw new ArgumentException("Track definition is either Null or has no points");
+    }
+    
+    /**
+    stops the engine drawing the given track
+    @param {int} trackNumber the track number of this track manager to remove, if not defined current track selected
+    */
+    DrawTrackNoMore( trackNumber){
+        trackNumber = (trackNumber === undefined) ? trackNumber : this._trackCurrent;
+        this.boss.engM.LineRemoveOwners(new OwnerInfo(boss.ID, trackNumber));
+        drawing = false;
+    }
+    
+    /**
+    moves to the previous track associated with this sprite
+    */
+    TrackPrevious(){
+        if (this.#tracklist.length != 0)
+        {
+            this._totalTravelled++;
+            this.lastTrackWas = this._trackCurrent;
+
+            this._trackCurrent--;
+            if (_trackCurrent < 0)
+                this._trackCurrent = this.#tracklist.length - 1;
+            this.#SetPreCalc();
+            this.AttemptToAutoUndraw(true);
+        }
+        else
+            throw new ArgumentOutOfRangeException("No tracks defined for this sprite");
+    }
+
+    
+    /**
+    sets the update interval for track re-positioning
+    @param {float} interval time in seconds before moving to next position on the track
+    */
+    UpdateIntervalSet(interval){
+        this._updateTimer.Interval(interval);
+    }
+
+    
+    /**
+     Corrects any over steps and performs requested action
+    @returns {bool} true if at end of track
+    */
+    CorrectTrack(){
+        let retVal = false;
+        
+        //capture current track number before changing it
+        this.lastTrackWas = this._trackCurrent;
+
+        //int diff = 
+        if (this._trackPosition >= this.#tracklist[this._trackCurrent].trackDef.points.length ||
+            this._trackPosition < 0)
+        {
+            let frac;
+            switch (this.#endAction)
+            {
+                case EndOfTrackAction.detach:
+                    this.Detach();
+                    this.AttemptToAutoUndraw(false);
+                    break;
+                case EndOfTrackAction.kill:
+                    this.trackFractionalPos = this._trackPosition = 0;
+                    this.boss.UpdateAs = UpdateMode.none;
+                    this.boss.Kill();
+                    this.AttemptToAutoUndraw(false);
+                    break;
+                case EndOfTrackAction.next:
+                    this._totalTravelled++;
+
+                    //capture current track number before changing it
+                    //this.lastTrackWas = this._trackCurrent;
+
+                    this._trackCurrent = (++this._trackCurrent % this.#tracklist.length);
+                    //attempt tp get fraction
+                    frac = this.trackFractionalPos - (this.trackFractionalPos |0);
+                    frac = (frac < 0) ? 1 + frac : frac;
+
+                    this.trackFractionalPos = (this.direction < 0 ) ? 1- frac : frac;
+
+                    this.trackFractionalPos += this._trackPosition = this.GetStartPosition;
+                    this._trackPosition = this.trackFractionalPos | 0;
+                    //correction to stop interpolation between distant tracks
+                    //if (this.interpolate) this.trackFractionalPos = this._trackPosition;
+                    //end of new code
+                    this.#SetPreCalc();
+                    retVal = true;
+                    this.AttemptToAutoUndraw(true);
+                    break;
+                case EndOfTrackAction.random:
+                    this._totalTravelled++;
+
+                    this._trackCurrent = ranBetween(0, this.#tracklist.length);
+                    //attempt tp get fraction
+                    frac = this.trackFractionalPos - (this.trackFractionalPos |0);
+                    frac = (frac < 0) ? 1 + frac : frac;
+
+                    this.trackFractionalPos = (this.direction < 0 ) ? 1- frac : frac;
+
+                    this.trackFractionalPos += this._trackPosition = this.GetStartPosition;
+                    
+                    this._trackPosition = this.trackFractionalPos | 0;
+                    //correction to stop interpolation between distant tracks
+                    //if (this.interpolate) this.trackFractionalPos = this._trackPosition;
+                    //end of new code
+                    this.#SetPreCalc();
+                    retVal = true;
+                    this.AttemptToAutoUndraw(true);
+                    break;
+                case EndOfTrackAction.reverse:
+                    this._totalTravelled++;
+
+                    //attempt tp get fraction
+                    frac = this.trackFractionalPos - (this.trackFractionalPos |0);
+                    frac = (frac < 0) ? 1 + frac : frac;
+
+                    this.trackFractionalPos = (this.direction < 0 ) ?  frac : frac - 1;
+                    this.direction *= -1;
+
+                    this.trackFractionalPos += this._trackPosition = this.GetStartPosition;
+                    this._trackPosition = this.trackFractionalPos | 0;
+                    //correction to stop interpolation between distant tracks
+                    //if (this.interpolate) this.trackFractionalPos = this._trackPosition;
+                    //end of new code
+                    this.#SetPreCalc();
+                    retVal = true;
+                    break;
+                case EndOfTrackAction.wrap:
+                    this._totalTravelled++;
+
+                    //this._trackCurrent = (++this._trackCurrent % this.#tracklist.length);
+                    //attempt tp get fraction
+                    frac = this.trackFractionalPos - (this.trackFractionalPos |0);
+                    frac = (frac < 0) ? 1 + frac : frac;
+                    this.trackFractionalPos = (this.direction < 0 ) ? 1- frac : frac;
+                    this.trackFractionalPos += this._trackPosition = this.GetStartPosition;
+
+                    this._trackPosition = this.trackFractionalPos | 0;
+                    this.#SetPreCalc();
+                    retVal = true;
+                    break;
+                case EndOfTrackAction.stop:
+                    this._totalTravelled++;
+                    this.trackFractionalPos = this._trackPosition = GetEndPosition;
+                    TrackStep = 0;
+                    pixelsPerSec = 0;
+                    this.#SetPreCalc();
+                    retVal = true;
+                    break;
+            }
+            //if (OnEndOfTrack != null)
+            //    OnEndOfTrack(boss);
+            Engine.processCallback(this.#callbackEOT);//EndOfTrackCallBack);
+            //if (this.EndOfTrackCallBack != null) EndOfTrackCallBack();
+        }//end of if to check for end
+
+        //check for dirtyness of track when drawing
+        //if it is then we need to remove a track and re-draw it!
+        if (this.#tracklist[this._trackCurrent].isDirty && drawing)
+        {
+            this.AttemptToAutoUndraw(true);
+        }
+        return retVal;
+    }
+
+    
+    /**
+    Perform the update of the Sprite's position using the current track settings
+    This is called by the Sprites Update method there is no need to call this yourself
+    */
+    update(){
+        for(let p = 0 ; p < this.#tracklist.length; p++){
+            this.#tracklist[p].clean();
+        }
+        //for updating purposes
+        let currentPosition = this._trackPosition;
+        //needs timer interval expiration
+        if ((this.stepMode == TrackStepMode.discreteStep) && this._updateTimer.elapsedResetAccrued)
+        {
+            this.trackFractionalPos += this._trackStep * this.direction;
+        }
+        else
+        {
+            //keep track of total point distance
+            this.trackFractionalPos += this.#pixelsPerSecPreCalc * Engine.delta;//EngineManager.enginePeriod;
+        }
+        this._trackPosition = this.trackFractionalPos | 0;
+        //Have we moved position (or changed track)
+        return this.CorrectTrack() || (currentPosition != this._trackPosition);
+    }//Update
+
+    
+    //THIS CAN@T POSSIBLY WORK
+    // /**
+    // works out the number of trackposition between the two track positions given
+    // @param {} start the start position of the track
+    // @param {} end the position to move towards
+    // @param {} numberOfPoints number of points in the track
+    // @param {} direction direction of travel +ve is forwards -ve is backwards
+    // @returns {int} the number of trackpositions between these points
+    // */
+    // static int TrackDistance(int start, int end, int numberOfPoints, float direction){
+    //    if (start != end)
+    //    {
+    //        int distance = 0;
+    //        int step = 1;
+    //        if (direction < 0) step = -1;
+    //        while (start != end)
+    //        {
+    //            start = start + step;
+    //            //check for wrap round track
+    //            if (start < 0) start = numberOfPoints - 1;
+    //            else if (start == numberOfPoints) start = 0;
+//
+    //            distance++;
+    //        }
+    //        return distance;
+    //    }
+    //    else return 0;
+    //}
+}
+/**
+ * @classdesc describes a track which comprises a trackdefintion and offset information,
+ * allowing the same track to be used for multiple sprites with different offsets
+ */
+class Track{
+    /** 
+     * unique id created for every track used?
+    */
+    static trackId = 0;
+    /**
+     * @returns {vector3} The offset to displace the original track positions by
+     * This can be used to make use of the shape of a pre-defined track
+     * but starting at a different position to its original definition
+    */
+    get offset(){ return this.#offset; }
+    /**
+     * @param {vector3} value The offset to displace the original track positions by
+     * This can be used to make use of the shape of a pre-defined track
+     * but starting at a different position to its original definition
+    */
+    set offset(value){
+        //set dirty if value has changed
+        if (value != this.#offset)
+            this.dirtyMe = true;
+        this.#offset = value;
+    }
+
+    /** @type {vector3} holds the offset for this track */
+    #offset = vector3.zero;
+    /** @type {TrackDefinition} holds a reference to the raw track data being used */
+    trackDef;
+    /** @type {bool} specifies whether track should be drawn or not*/
+    visible = false;
+    /** @type {bool} specifies whether the track definition is designated as moving*/
+    moving = false;
+    /** 
+     * Constructs a new track manager track from given track definition with an offset
+     * @param {TrackDefinition} trackDef The track definition to add to the track manager
+     * @param {vector3} offset The 3d displacement to apply to this track, zero if omitted
+    */
+    constructor(trackDef, offset){
+        offset = (offset === undefined) ? vector3.zero : offset;
+        this.trackDef = trackDef;
+        this.#offset = offset;
+    }
+    /** @type {bool} specifed true if the offset has been changed*/
+    #dirtyMe = false;
+
+    /** @returns {bool} gets (resetting in the process) the dirty status of a track */
+    get isDirty() { return this.#dirtyMe;}//return this.trackDef.isdirty || this.isMeDirty; }
+    /** @param {bool} value  sets the dirty */
+    set isDirty(value) { this.#dirtyMe = value;}//return this.trackDef.isdirty || this.isMeDirty; }
+    /** marks the track as not dirty */
+    clean(){this.#dirtyMe = false;}
+    /** @returns {bool} get the dirty status of the track, when reading this is reset*/
+    get isMeDirty(){
+        if (this.#dirtyMe){
+            this.#dirtyMe = false;
+            return true;
+        }
+        return this.#dirtyMe;
+    }
+    /** @param {bool} value set the dirty status of the track, when reading this is reset*/
+    set isMeDirty(value){
+        this.#dirtyMe = value;
+    }
+}
+/**
+ * @classdesc holds a collection of points that are used by the track manager
+ * to direct sprites along pre-described paths
+ */
+class TrackDefinition{
+    /** @type {vector3[]} a collection of points */
+    points = [];
+    /** @type {string} An internal name only used for debugging purposes*/
+    name;
+    /** @type {int}  the length of the track in pixels */
+    length;
+    /** @type {int} pre calculate value giving us the ratio of points to length for velocity calculations during the TrackManager update*/
+    pointsOverlength;
+}
+/** 
+* @classdesc holds information about portions of point based tracks
+*/
+class WayPoint{
+    /** @type {float} the x step in unit terms as proportion of distance*/
+    xstep;
+    /** @type {float} the y step in unit terms as proportion of distance*/
+    ystep;
+    /** @type {float} the z step in unit terms as proportion of distance*/
+    zstep;
+    /** @type {float} the distance (by pythagorus of this WayPoint*/
+    distance;
+    /** @type {vector3} start point*/
+    start;
+    /** @type {vector3} end point*/
+    end;
+    
+    /** 
+    * quick constructor
+    * @param {vector3} start start of waypoint
+    * @param {vector3} end end of wapoint
+    * @param {float} xs stepping for waypoint
+    * @param {float} ys stepping for waypoint
+    * @param {float} zs stepping for waypoint
+    * @param {float} dist distance for this waypoint
+    */
+    constructor( start,  end,  xs,  ys,  zs,  dist)
+    {
+        this.xstep = xs;
+        this.ystep = ys;
+        this.zstep = zs;
+        this.distance = dist;
+        this.start = start;
+        this.end = end;
+    }
+}
+/**
+ * @classdesc provides methods for creating and manipulating tracks
+ */
+class TrackHelper{
+
+    /** 
+     * Calculates the speed required to traverse a specified track in the timeperiod given
+     * @param {TrackDefinition} track The track to traverse
+     * @param {float} timePeriod The time you want to take moving along the track
+     * 
+     * @returns {float} The speed required in pixels per second
+    */
+    static SpeedForTime(track, timePeriod){
+        return track.length / timePeriod;
+    }
+
+    /** 
+     * Takes an existing track definition and copies it creating a new track
+     * @param {TrackDefinition} existingTrack The existing track to clone
+     * @param {string} newTrackName The debug name of the new track
+     * @returns {TrackDefinition}The newly cloned track definition
+    */
+    static Clone(existingTrack, newTrackName){
+        let newTrack = new TrackDefinition();
+        newTrack.closed = existingTrack.closed;
+        let p = 0;
+        while (p < existingTrack.points.length)
+            newTrack.points.push(existingTrack.points[p++].clone);
+        TrackHelper.Getlength(newTrack);
+
+        return newTrack;
+    }
+
+    /** 
+     * Determines the length of the track in pixels and also pre-calculates
+     * the ratio points/length for update calculations
+     * @param {TrackDefinition} newTrack track definition to approximate the length of
+    */
+    static Getlength(newTrack){
+        let vec;
+        newTrack.length = 0;
+        for (let j = 0; j < newTrack.points.length - 1; j++){
+            vec = vector3.sub(newTrack.points[j + 1], newTrack.points[j]);
+            newTrack.length += vec.length;
+        }
+        newTrack.pointsOverlength = newTrack.points.length / newTrack.length;
+    }
+
+    /** 
+     * NOT IMPLEMENTED YET defines a track from an image supplied in a texture.
+     * The image MUST NOT use Anti-Aliasing
+     * @param {image} texture The texture containg a track
+     * @param {Rectangle} region the portion of the texture to find the track in
+     * @param {string} newTrackName the name to give the generated track
+     * @returns {TrackDefinition} the newly created track
+    */
+    static FromTexture(texture, region,newTrackName){
+        return null;
+    }
+
+    /** 
+     * Creates a track with only the points specified
+     * @param {string} newTrackName The debug name to give to the track
+     * @param {vector3[]} points The List vector3 of the points you want
+     * @returns {TrackDefinition} the newly created track
+     * Use this to move a sprite to fixed positions
+    */
+    static Rawpoints(newTrackName, points){
+        let newTrack = new TrackDefinition();
+        newTrack.points = points;
+        newTrack.name = newTrackName;
+        TrackHelper.Getlength(newTrack);
+        return newTrack;
+    }
+
+    /** 
+     * Creates a smoothed off track based on the points given.
+     * As this is a Beizer curve the points at the ends as control points bounding the curve
+     * @param {string} newTrackName The debug name to give the track
+     * @param {int} numberOfpoints The number of points to give the track
+     * @param {vector3[]} points The List vector3 of the points you want to create the track from
+     * @returns {TrackDefinition} the newly created track
+    */
+    static Smooth(newTrackName,  numberOfpoints, points){
+        let newTrack = new TrackDefinition();
+        newTrack.name = newTrackName;
+        let i = 0;
+        let step = 1 / numberOfpoints;
+        let mu = 0;
+        for (i = 0; i < numberOfpoints; i++){
+            newTrack.points.push(Bezier(points, points.length - 1, mu));
+            mu += step;
+        }
+        TrackHelper.Getlength(newTrack);
+        return newTrack;
+    }
+
+    /** 
+     * Generates a new smooth track from the specified track, 
+     * @param {TrackDefinition} existingTrack The track you want to use
+     *  for the control points of the smoother
+     * @param {int} numberOfpoints The number of points to use on the track
+     * @param {string} newTrackName The debug name to give the new track
+     * @returns {TrackDefinition}  the newly created track
+     * Be sure not to use tracks with too many points, only use those that were added using Rawpoints
+    */
+    static CloneSmooth(existingTrack, numberOfpoints, newTrackName){
+        let newTrack = new TrackDefinition();
+        newTrack.name = newTrackName;
+        let i = 0;
+        let step = 1 / numberOfpoints;
+        let mu = 0;
+        for (let i = 0; i < numberOfpoints; i++){
+            newTrack.points.push(Bezier(existingTrack.points, existingTrack.points.length - 1, mu));
+            mu += step;
+        }
+        TrackHelper.Getlength(newTrack);
+        return newTrack;
+    }
+
+    /** 
+     * Creates a smooth track than joins to its start from the points given using Catmull-Rom interpolatio
+     * @param {String} newTrackName The name of the track created
+     * @param {int} pointsPerStep How many points to smoothly generate between each point in the original list
+     * @param {[]vector3} basepoints the list of points that the curve will go through
+     * @returns {TrackDefinition}  
+    */
+    static CatmullRomClosed( newTrackName, pointsPerStep, basepoints){
+
+        //TODO GOT TO GET START POSITION CORRECT (STARTS AT 2ND POINT)
+        let newTrack = new TrackDefinition();
+        newTrack.name = newTrackName;
+        //append first 3 points so we can close the loop with control points
+        basepoints.Insert(0, basepoints[basepoints.length - 1]);
+        basepoints.push(basepoints[1]);
+        basepoints.push(basepoints[2]);
+        //basepoints.push(basepoints[2]);
+
+        for (let i = 1; i < basepoints.length - 2; i++){
+                part = InterpolateCR(pointsPerStep,
+                                    basepoints[i - 1],
+                                    basepoints[i],
+                                    basepoints[i + 1],
+                                    basepoints[i + 2]);
+            newTrack.points.push(part);
+        }
+        newTrack.points = newTrack.points.flat();
+
+        //add the first point in at the end
+        //newTrack.points.push(newTrack.points[0]);
+
+        //add the first point in at the end
+        //remove the 3 extra points added
+        basepoints.RemoveRange(basepoints.length - 2, 2);
+        basepoints.RemoveAt(0);
+        TrackHelper.Getlength(newTrack);
+        return newTrack;
+    }
+        // WAITING FOR CATMULL ROM
+        //** 
+        //* creates a position along a CatmullRom interpolation
+        //* @param {*} v1 
+        //* @param {*} v2 
+        //* @param {*} v3 
+        //* @param {*} v4 
+        //* @param {*} amount what position along spline
+        //* @returns {vector3}
+        //*/
+        //static vector3 CR3D(ref vector3 v1, ref vector3 v2, ref vector3 v3, ref vector3 v4, float amount)
+        //{
+        //    vector3 result =  vector3.zero;
+        //    result.x = MathHelper.CatmullRom(v1.x, v2.x, v3.x, v4.x, amount);
+        //    result.y = MathHelper.CatmullRom(v1.y, v2.y, v3.y, v4.y, amount);
+        //    result.z = MathHelper.CatmullRom(v1.z, v2.z, v3.z, v4.z, amount);
+        //    return result;
+        //}
+//
+        //** 
+        //* creates a smooth Catmull-Rom line along the points given
+        //* @param {string} newTrackName The name to give to the new track
+        //* @param {[]vector3} pointsPerStep How many points to smoothly generate between each point in the original list
+        //* @param {*} basepoints The list of control points we want to go through
+        //* @returns {TrackDefinition}  A new track with nice smooth paths
+        //*/
+        // static TrackDefinition CatmullRomOpen(String newTrackName, int pointsPerStep, List<vector3> basepoints)
+        //{
+        //    let newTrack = new TrackDefinition();
+        //    newTrack.name = newTrackName;
+        //    //needs work to get the correct steps to even out across all points
+        //    //this will not be correct to start with unless factors work out
+        //    //int steps = numberOfpoints / basepoints.length;
+//
+        //    //create extra start and end as control points
+        //    vector3 startPoint = new vector3();
+        //    vector3 endPoint = new vector3();
+        //    startPoint = basepoints[0] - (basepoints[0] - basepoints[1]);
+        //    endPoint = basepoints[basepoints.length - 1] + (basepoints[basepoints.length - 1] - basepoints[basepoints.length - 2]);
+        //    //add new start and end but remember to remove afterwork
+        //    basepoints.Insert(0, startPoint);
+        //    basepoints.push(endPoint);
+//
+        //    for (let i = 1; i < basepoints.length - 2; i++)
+        //    {
+        //        List<vector3> part = InterpolateCR(pointsPerStep,
+        //                                basepoints[i - 1],
+        //                                basepoints[i],
+        //                                basepoints[i + 1],
+        //                                basepoints[i + 2]);
+        //        newTrack.points.AddRange(part);
+        //    }
+//
+//
+        //    //remove last and first points - the ones we added
+        //    basepoints.RemoveAt(basepoints.length - 1);
+        //    basepoints.RemoveAt(0);
+        //    TrackHelper.Getlength(newTrack);
+        //    return newTrack;
+        //}
+
+        //** 
+        //* generates points between four outlying control points
+        //* @param {*} detail 
+        //* @param {*} v1 
+        //* @param {*} v2 
+        //* @param {*} v3 
+        //* @param {*} v4 
+        //* @returns {vector3[]}
+        //*/
+        //static List<vector3> InterpolateCR(int detail, vector3 v1, vector3 v2, vector3 v3, vector3 v4)
+        //{
+        //    List<vector3> list = new List<vector3>();
+        //    for (let i = 0; i < detail; i++)
+        //    {
+        //        list.push(CR3D(ref v1,ref v2,ref v3,ref v4, (float)i/(float)detail));
+        //    }
+        //    list.push(v3);
+        //    return list;
+        //}
+
+        //** 
+        //* Produces a generalised beizer curve using the points given as control points
+        //* @param {*} p control points
+        //* @param {*} n number of points
+        //* @param {*} mu mu is position along the curve 0 is start, 1 is end
+        //* @returns {vector3} Returns point on curve
+        //*/
+        //static vector3 Bezier(List<vector3> p, int n, float mu)
+        //{
+        //    int k, kn, nn, nkn;
+        //    float blend, muk, munk;
+        //    vector3 b =  vector3.zero;
+//
+        //    muk = 1;
+        //    munk = (float)Math.Pow((double)(1 - mu), (double)n);
+//
+        //    for (k = 0; k <= n; k++)
+        //    {
+        //        nn = n;
+        //        kn = k;
+        //        nkn = n - k;
+        //        blend = muk * munk;
+        //        muk *= mu;
+        //        munk /= (1 - mu);
+        //        while (nn >= 1)
+        //        {
+        //            blend *= nn;
+        //            nn--;
+        //            if (kn > 1)
+        //            {
+        //                blend /= kn;
+        //                kn--;
+        //            }
+        //            if (nkn > 1)
+        //            {
+        //                blend /= nkn;
+        //                nkn--;
+        //            }
+        //        }
+        //        b.x += p[k].x * blend;
+        //        b.y += p[k].y * blend;
+        //        b.z += p[k].z * blend;
+        //    }
+//
+        //    return (b);
+        //}
+
+
+
+    /** 
+     * Creates a track based on a sequence of points, you 
+     * set them the same for a level track
+     * @param {string} newTrackName The debug name of the track to create
+     * @param {int} numberOfpoints How many points you want the entire track to contain
+     * (they are distributed along the entire track length, the more points the more flexability you have with 
+     * speeds travelling along the path
+     * @param {[]vector3]} points a list of points defining the fixed position along the track
+     * @returns {TrackDefinition}  the newly created track you can use this to make specific paths for sprites to follow
+    */
+    static points(newTrackName, numberOfpoints, points){
+        let newTrack = new TrackDefinition();
+        newTrack.name = newTrackName;
+        // a new point for holding the points as they are created
+        let newPoint = vector3.zero;
+
+        let totalDistance = 0;
+        let distThisSpan = 0;//holds distance for current space
+        span = [];//holds distance for each span
+        for (let j = 0; j < points.length - 1; j++){
+            //work out the length of each line using pythagorus
+            let xd = points[j + 1].x - points[j].x;
+            let yd = points[j + 1].y - points[j].y;
+            let zd = points[j + 1].z - points[j].z;
+            distThisSpan = Math.sqrt(xd * xd + yd * yd + zd * zd);
+            span.push(new WayPoint(points[j], points[j + 1],
+                xd, yd, zd, distThisSpan));
+            totalDistance += distThisSpan;
+        }
+
+        let sectionDistance = 0;
+        let step = (totalDistance / numberOfpoints);
+        let percent = 0;
+        let section = 0;
+        for (let pos = 0; pos < numberOfpoints - 1; pos++){
+            //calculate co-ordinates from this section
+            percent = sectionDistance / span[section].distance;
+            newPoint = vector3.zero;
+            newPoint.x = span[section].start.x + span[section].xstep * percent;
+            newPoint.y = span[section].start.y + span[section].ystep * percent;
+            newPoint.z = span[section].start.z + span[section].zstep * percent;
+            newTrack.points.push(newPoint);
+            //travelDistance += step;
+            sectionDistance += step;
+            //skip to next section if we have out run this one
+            while (sectionDistance > span[section].distance)
+            {
+                sectionDistance -= span[section].distance;
+                section++;
+            }
+
+        }
+        //generate last point
+        percent = sectionDistance / span[section].distance;
+        newPoint = new vector3();
+        newPoint.x = span[section].start.x + span[section].xstep * percent;
+        newPoint.y = span[section].start.y + span[section].ystep * percent;
+        newPoint.z = span[section].start.z + span[section].zstep * percent;
+        newTrack.points.push(newPoint);
+        TrackHelper.Getlength(newTrack);
+        return newTrack;
+    }//AddTrackFrompoints(int numberOfpoints, List<vector3> points)
+
+
+    /** 
+     * Generates a track with a number of points overriding the z value
+     * @param {string} newTrackName The debug name of the track
+     * @param {int} numberOfpoints How many points you want the entire track to contain
+     * (they are distributed along the entire track length, the more points the more flexability you have with 
+     * speeds travelling along the path
+     * @param {[]vector3} points The points which define the track
+     * @param {float} forcedZ The z value to set all the points to
+     * @returns {TrackDefinition}  the newly created track
+    */
+    static pointsForceZ(newTrackName, numberOfpoints, points, forcedZ){
+
+        let newTrack = new TrackDefinition();
+        newTrack.name = newTrackName;
+        // a new point for holding the points as they are created
+        newPoint = vector3.zero;
+
+        //let zStep = (frontZ - backZ) / numberOfpoints;
+        let totalDistance = 0;
+        let distThisSpan = 0;//holds distance for current space
+        let span = [];//holds distance for each span
+        for (let j = 0; j < points.length - 1; j++){
+            //work out the length of each line using pythagorus
+            let xd = points[j + 1].x - points[j].x;
+            let yd = points[j + 1].y - points[j].y;
+            distThisSpan = Math.sqrt(xd * xd + yd * yd);
+            span.push(new WayPoint(points[j], points[j + 1],
+                xd, yd, 0, distThisSpan));
+            totalDistance += distThisSpan;
+        }
+
+        //let travelDistance = 0;
+        let sectionDistance = 0;
+        let step = (totalDistance / numberOfpoints);
+        let percent = 0;
+        let section = 0;
+        for (let pos = 0; pos < numberOfpoints - 1; pos++){
+            //calculate co-ordinates from this section
+            percent = sectionDistance / span[section].distance;
+            newPoint = new vector3();
+            newPoint.x = span[section].start.x + span[section].xstep * percent;
+            newPoint.y = span[section].start.y + span[section].ystep * percent;
+            newPoint.z = forcedZ;
+            newTrack.points.push(newPoint);
+            //travelDistance += step;
+            sectionDistance += step;
+            //skip to next section if we have out run this one
+            while (sectionDistance > span[section].distance)
+            {
+                sectionDistance -= span[section].distance;
+                section++;
+            }
+
+        }
+        //generate last point
+        percent = sectionDistance / span[section].distance;
+        newPoint = new vector3();
+        newPoint.x = span[section].start.x + span[section].xstep * percent;
+        newPoint.y = span[section].start.y + span[section].ystep * percent;
+        newPoint.z = forcedZ;
+        newTrack.points.push(newPoint);
+
+        TrackHelper.Getlength(newTrack);
+        return newTrack;
+    }
+
+    /** 
+     * creates a sinewave with a rotating z component 
+     * this will allow ever changing circular Z values that can be used for scaling effects
+     * or just to add nice parallax effects
+     * @param {string} trackName The debug name to give the track
+     * @param {int} numberOfpoints How many points to place in the final track
+     * @param {float} start The right hand X position of the sine wave
+     * @param {float} end The left hand X position of the sine wave
+     * @param {float} waveAmplitude The amplitude (the vertical size) of the wave
+     * @param {float} waveFrequency The number of cycles of the sine wave you want
+     * @param {float} waveStartAngle The phase (angle) to start sine wave at in radians - 
+     * use MathHelper.ToRadians(45) to specify value in degrees
+     * @param {float} waveDirection specify either 1 or -1
+     * @param {float} centreHeight The central height of the wave form
+     * @param {float} helixAmplitude The amplitude of the Z value (depth movement front to back)
+     * @param {float} helixPhaseOffset altering this effects where the track is furthest away. Leave as 0 unless you want to experiment
+     * @param {float} helixRadialDirection specify either 1 or -1
+     * @returns {TrackDefinition}  the newly created track
+     * @example
+     * let t = TrackHelper.AddHelixTrack("helix", 400, 830, -30, 80, 2, 0, 1, 300, 80, 0, 1);
+    */
+        static Helix(trackName, numberOfpoints, start, end, waveAmplitude,
+                                waveFrequency, waveStartAngle, waveDirection, centreHeight,
+                                helixAmplitude, helixPhaseOffset, helixRadialDirection){
+        //will hold the track we are creating
+        let newTrack = new TrackDefinition();
+        newTrack.name = trackName;
+        // a new point for holding the points as they are created
+        let newPoint = vector3.zero;
+
+        if (numberOfpoints > 65535) numberOfpoints = 65535;
+
+        let radStep = (Math.PI * 2 * waveFrequency / (numberOfpoints - 1) * waveDirection);
+        let helixStep = (Math.PI * 2 * waveFrequency / (numberOfpoints - 1) * helixRadialDirection);
+        let helixrad = waveStartAngle + helixPhaseOffset;
+
+        let rad = waveStartAngle;
+
+        let x = start;
+        let xStep = (end - start) / (numberOfpoints - 1);
+
+        for (let j = 0; j < numberOfpoints - 1; j++){
+            newPoint = new vector3();
+            newPoint.x = x;
+            newPoint.y = (waveAmplitude * Math.sin(rad) + centreHeight);
+            newPoint.z = (helixAmplitude * Math.cos(helixrad));
+            x += xStep;
+            rad += radStep;
+            helixrad += helixStep;
+            newTrack.points.push(newPoint);
+        }
+        //add last point
+        newPoint = new vector3();
+        newPoint.x = x;
+        newPoint.y = (waveAmplitude * Math.sin(rad) + centreHeight);
+        newPoint.z = (helixAmplitude * Math.cos(helixrad));
+        newTrack.points.push(newPoint);
+
+        TrackHelper.Getlength(newTrack);
+        return newTrack;
+    }
+
+    /** 
+     * Creates a simple sineWave shape
+     * Use AddHelixTrack if you want something that varies the Z position along the track
+     * @param {string} newTrackName The name to give the track
+     * @param {int} numberOfpoints How many points to place in the final track
+     * @param {float} start The right hand X position of the sine wave
+     * @param {float} end The left hand X position of the sine wave
+     * @param {float} waveAmplitude The amplitude (the vertical size) of the wave
+     * @param {float} waveFrequency The number of cycles of the sine wave you want, 
+     * you can use 0.5f to generate half a sine wave
+     * @param {float} centreHeight The central height of the wave form
+     * @param {float} depth the Z position of the sine wave track
+     * @returns {TrackDefinition}  the newly created track
+     * @example
+     * let t = TrackHelper.AddSineWaveTrack("Sine", 100, 800, 0, 200, 0.25f, 300,100);
+    */
+    static SineWaveSimple(newTrackName, numberOfpoints,
+        start,
+        end,
+        waveAmplitude,
+        waveFrequency,
+        centreHeight,
+        depth){
+        //will hold the track we are creating
+        let newTrack = new TrackDefinition();
+        newTrack.name = newTrackName;
+        // a new point for holding the points as they are created
+        let newPoint = vector3.zero;
+
+        if (numberOfpoints > 65535) numberOfpoints = 65535;
+
+        let radStep = (Math.PI * 2 * waveFrequency / (numberOfpoints - 1));
+        let rad = 0;
+
+        let x = start;
+        let xStep = (end - start) / (numberOfpoints - 1);
+
+        //            ReDim myTrack(numpoints)
+        for (let j = 0; j < numberOfpoints - 1; j++){
+            newPoint = new vector3();
+            newPoint.x = x;
+            newPoint.y = (waveAmplitude * Math.sin(rad) + centreHeight);
+            newPoint.z = depth;
+            x += xStep;
+            rad += radStep;
+            newTrack.points.push(newPoint);
+        }
+        //add last point
+        newPoint = new vector3();
+        newPoint.x = x;
+        newPoint.y = (waveAmplitude * Math.sin(rad) + centreHeight);
+        newPoint.z = depth;
+        newTrack.points.push(newPoint);
+
+        TrackHelper.Getlength(newTrack);
+        return newTrack;
+
+    }//AddSineWaveTrack(int numberOfpoints, start, end, waveAmplitude, waveFrequency, centreHeight, depth)
+
+
+    /** 
+     * moves a track in the X, y and z positions specified
+     * @param {TrackDefinition} existingTrack The track definition to translate
+     * @param {float} x the amount in the x direction to move the track
+     * @param {float} y the amount in the y direction to move the track
+     * @param {float} z the amount in the z direction to move the track
+    */
+    static Translate(existingTrack,  x,  y,  z){
+        TrackHelper.Translate(existingTrack, new vector3(x, y, z));
+    }
+    /** 
+     * moves a track in the x, y and z positions specified in the vector3 value, adjust all positions in the track
+     * @param {TrackDefinition} existingTrack The track definition to translate
+     * @param {vector3} translation A vector3 value containing the x, y and z movements for track
+    */
+    static Translate(existingTrack, translation){
+        let p = 0;
+
+        while (p < existingTrack.points.length){
+            existingTrack.points[p] += translation;
+            p++;
+        }
+    }
+    /** 
+     * scales a specific track around the origin given
+     * @param {TrackDefinition} existingTrack The track definition to rotate
+     * @param {vector3} origin The rotational centre
+     * @param {float} x The scale factor for x axis
+     * @param {float} y The scale factor for y axis
+     * @param {float} z The scale factor for z axis
+    */
+    static  Scale(existingTrack, origin,  x,  y,  z){
+        let p = 0;
+        let rotMatrix = Matrix.CreateTranslation(-origin) *
+                            Matrix.CreateScale(new vector3(x, y, z)) *
+                            Matrix.CreateTranslation(origin);
+
+        while (p < existingTrack.points.length){
+            existingTrack.points[p] = vector3.Transform(existingTrack.points[p], rotMatrix);
+            p++;
+        }
+    }
+    /** 
+     * Rotates the supplied track around an arbitrary point, by the angles given
+     * @param {TrackDefinition} existingTrack The track definition to rotate
+     * @param {vector3} origin The rotational centre
+     * @param {float} angleX The rotation in degrees around the X axis
+     * @param {float} angleY The rotation in degrees around the Y axis
+     * @param {float} angleZ The rotation in degrees around the Z axis
+     * You should ideally rotate around each axis separately
+    */
+    static Rotate(existingTrack, origin,  angleX,  angleY,  angleZ){
+        let p = 0;
+        let rotMatrix = Matrix.CreateTranslation(-origin) *
+                            Matrix.CreateRotationX(MathHelper.ToRadians(angleZ)) *
+                            Matrix.CreateRotationY(MathHelper.ToRadians(angleY)) *
+                            Matrix.CreateRotationZ(MathHelper.ToRadians(angleX)) *
+                            Matrix.CreateTranslation(origin);
+
+        while (p < existingTrack.points.length){
+            existingTrack.points[p] = vector3.Transform(existingTrack.points[p], rotMatrix);
+            p++;
+        }
+        existingTrack.Dirty();
+    }//TrackRotate
+
+    /** 
+     * Rotates a track around a central position by the given angles specifed
+     * @param {TrackDefinition} existingTrack The name of the track to rotate
+     * @param {vector3} origin the centre of rotation
+     * @param {vector3} angles the x, y and z axis rotation amounts specified as a vector3
+     * You should ideally rotate around each axis separately
+    */
+    static Rotate(existingTrack, origin, angles){
+        let p = 0;
+        let rotMatrix = Matrix.CreateTranslation(-origin) *
+                            Matrix.CreateRotationX(MathHelper.ToRadians(angles.z)) *
+                            Matrix.CreateRotationZ(MathHelper.ToRadians(angles.y)) *
+                            Matrix.CreateRotationY(MathHelper.ToRadians(angles.x)) *
+                            Matrix.CreateTranslation(origin);
+
+        while (p < existingTrack.points.length){
+            existingTrack.points[p] = vector3.Transform(existingTrack.points[p], rotMatrix);
+            p++;
+        }
+    }//TrackRotate
+
+    /** 
+     * Creates a sine Wave shape wpecifying some more complex parameters
+     * Use AddHelixTrack if you want something that varies the Z position along the track
+     * @param {string} newTrackName The debug name of the track
+     * @param {int} numberOfpoints How many points to place in the final track
+     * @param {float} start The right hand X position of the sine wave
+     * @param {float} end The left hand X position of the sine wave
+     * @param {float} waveAmplitude The amplitude (the vertical size) of the wave
+     * @param {float} waveFrequency The number of cycles of the sine wave you want, 
+     * you can use 0.5f to generate half a sine wave
+     * @param {float} waveStartAngle The phase (angle) to start sine wave at in radians - 
+     * use MathHelper.ToRadians(45) to specify value in degrees
+     * @param {float} waveDirection specify either 1 or -1
+     * @param {float} centreHeight The central height of the wave form
+     * @param {float} depth the Z position of the sine wave track
+     * @returns {TrackDefinition}  the newly created track
+     * @example
+     * let t = TrackHelper.AddSineWaveTrack("sine", 300, 400, 0, 100, 2, Math.PI / 2, 1, 400,100);
+    */
+    static SineWaveComplex( newTrackName,  numberOfpoints,  start,  end,  waveAmplitude,  waveFrequency,
+                                    waveStartAngle,  waveDirection,  centreHeight,  depth){
+        let newTrack = new TrackDefinition();
+        newTrack.name = newTrackName;
+        let newPoint = vector3.zero;
+
+        if (numberOfpoints > 65535) numberOfpoints = 65535;
+
+        let radStep = (Math.PI * 2 * waveFrequency / (numberOfpoints - 1) * waveDirection);
+        let rad = waveStartAngle;
+
+        let x = start;
+        let xStep = (end - start) / (numberOfpoints - 1);
+
+        //            ReDim myTrack(numpoints)
+        for (let j = 0; j < numberOfpoints - 1; j++){
+            newPoint = new vector3();
+            newPoint.x = x;
+            newPoint.y = (waveAmplitude * Math.sin(rad) + centreHeight);
+            newPoint.z = depth;
+            x += xStep;
+            rad += radStep;
+            newTrack.points.push(newPoint);
+        }
+        //add last point
+        newPoint = new vector3();
+        newPoint.x = x;
+        newPoint.y = (waveAmplitude * Math.sin(rad) + centreHeight);
+        newPoint.z = depth;
+        newTrack.points.push(newPoint);
+
+        TrackHelper.Getlength(newTrack);
+        return newTrack;
+
+    }
+
+    /** 
+     * Create a track which is circular, if you want to lean the circle over use the Rotate helpers
+     * @param {string} trackName The debug name to give the track
+     * @param {int} numberOfpoints the number of positions on the track required
+     * @param {vector3} centre The centre position of the circle
+     * @param {float} radius the radius of the track
+     * @returns {TrackDefinition}
+    */
+    static Circle( trackName,  numberOfpoints,  centre,  radius){ return TrackHelper.Ellipse(trackName, numberOfpoints, centre, radius, radius); }
+
+    /** 
+     * Creates an elliptical track
+     * @param {string} newTrackName The debug name of the track
+     * @param {int} numberOfpoints the number of points to create
+     * @param {vector3} centre the centre of the ellipse
+     * @param {float} radiusX the horizontal radius
+     * @param {float} radiusY the vertical radius
+     * @returns {TrackDefinition}
+    */
+    static Ellipse(newTrackName, numberOfpoints, centre,  radiusX,  radiusY){
+        //will hold the track we are creating
+        let newTrack = new TrackDefinition();
+        newTrack.name = newTrackName;
+        // a new point for holding the points as they are created
+        let newPoint = vector3.zero;
+
+        if (numberOfpoints > 65535) numberOfpoints = 65535;
+
+        let arcStep = 2 * Math.PI / numberOfpoints;
+        let rad = 0;
+        for (let j = 0; j < numberOfpoints - 1; j++){
+            newPoint = new vector3();
+            newPoint.x = (radiusX * Math.cos(rad) + centre.x);
+            newPoint.y = (radiusY * Math.sin(rad) + centre.y);
+            newPoint.z = centre.z;
+            rad += arcStep;
+            newTrack.points.push(newPoint);
+        }
+        //add last point
+        newPoint = new vector3();
+        newPoint.x = (radiusX * Math.cos(rad) + centre.x);
+        newPoint.y = (radiusY * Math.sin(rad) + centre.y);
+        newPoint.z = centre.z;
+        newTrack.points.push(newPoint);
+
+        TrackHelper.Getlength(newTrack);
+        return newTrack;
+    }
+
+    /** 
+     * Creates a spiral shape
+     * @param {string} newTrackName The debug name of the track
+     * @param {int} numberOfpoints number of points required along the track
+     * @param {vector3} centre The centre of the spiral
+     * @param {float} radiusX the horizontal radius
+     * @param {float} radiusY the vertical radius
+     * @param {float} smallestRadius the smallest value wanted for either radius. 
+     * the rate at which the radii shrink is determined by this and number of revolutions
+     * @param {float} revolutions number of revolutions you want, 
+     * this can be a fractional value 1.5f would be a spiral with 1 and half turns
+     * @param {float} startZ The starting Z value (depth into the screen)
+     * @param {float} endZ The ending z value (depth into the screen)
+     * @returns {TrackDefinition}
+    */
+    static Spiral(newTrackName,numberOfpoints,centre,radiusX,radiusY,smallestRadius,revolutions,startZ,endZ){
+        //will hold the track we are creating
+        let newTrack = new TrackDefinition();
+        newTrack.name = newTrackName;
+        // a new point for holding the points as they are created
+        let newPoint = vector3.zero;
+
+        if (numberOfpoints > 65535) numberOfpoints = 65535;
+
+        let arcStep = revolutions * 2 * Math.PI / numberOfpoints;
+        let rad = 0;
+        let shrinkX = (radiusX - smallestRadius) / numberOfpoints;
+        let shrinkY = (radiusY - smallestRadius) / numberOfpoints;
+        let dz = (endZ - startZ) / numberOfpoints;
+        let sz = startZ;
+        for (let j = 0; j < numberOfpoints - 1; j++){
+            newPoint = new vector3();
+            newPoint.x = (radiusX * Math.cos(rad) + centre.x);
+            newPoint.y = (radiusY * Math.sin(rad) + centre.y);
+            newPoint.z = sz;
+            rad += arcStep;
+            newTrack.points.push(newPoint);
+            radiusX -= shrinkX;
+            radiusY -= shrinkY;
+            sz += dz;
+        }
+        //add last point
+        newPoint = new vector3();
+        newPoint.x = (radiusX * Math.cos(rad) + centre.x);
+        newPoint.y = (radiusY * Math.sin(rad) + centre.y);
+        newPoint.z = centre.z;
+        newTrack.points.push(newPoint);
+
+        TrackHelper.Getlength(newTrack);
+        return newTrack;
+    }
+
+    /** 
+     * Creates a new track which is made up of the points from all the tracks specified int the 
+     * array tracks, starting with the first track and adding points from each subsequent one
+     * @param {string} newTrackName The name of the track created
+     * @param {[]TrackDefinition} tracks an array of tracks to join
+     * @returns {TrackDefinition}  a new track definition containing the points of all the tracks given
+    */
+    static Join(newTrackName, tracks){
+        if (tracks.length > 0){
+            let newTrack = new TrackDefinition();
+            for (let i = 0; i < tracks.length; i++)
+                newTrack.points.push(tracks[i].points);
+
+            newTrack.points = newTrack.points.flat();
+            TrackHelper.Getlength(newTrack);
+            return newTrack;
+        }
+        else
+            return null;
+    }    
+}
+
+//NEED ADDRANGE helper for point lists - push then x = x.flat();
+/******************************
+ * vector2.js by Hurray Banana 2023-2024
+ ******************************/ 
+
+/**
+ * @classdesc used in some methods to lock directions to ordinal or leave in a free direction
+ */
+class DirectionAccuracy {
+
+    /** x propery */
+    x= 45;
+    /** y property */
+    y;
+    /** clamp value for rotation or direction to ordinal values NSEW */
+    static ordinals = "ordinals";
+    /** calculate the direction or rotation as it occurs */
+    static free = "free";
+}
+
+/**
+ * @classdesc 
+ * provides support for 2d values and associated helper functions and arithmetic
+ */
+class vector2{
+    /** base storage if 1st component @type {float} */
+    #x=0;
+    /** base storage if 2nd component @type {float} */
+    #y=0;
+    /** dirty storage of length pre-calculated when components change @type {float}*/
+    #length;
+    /**
+     * gets the pre-calculated magnitude of the vector
+     * @returns {float}
+     * */
+    get length(){return this.#length;}
+    /**
+     * gets the pre-calculated magnitude of the vector, alternative name
+     * @returns {float}
+     * */
+    get distance() {return this.#length;}
+    //#mag = 0; - TBR
+    /**
+     * Creates a vector2 value with the two initial values
+     * @param {float} x 
+     * @param {float} y 
+     */
+    constructor(x, y){
+        this.set(x,y);
+    }
+    /**
+     * @returns {bool} true if this vector is (0,0)}
+     */
+    get iszero(){return this.#x == 0 && this.#y == 0;}
+    /**
+     * @returns {bool} true if this vector is (1,1)}
+     */
+    get isone(){return this.#x == 1 && this.#y == 1;}    //creates a new object instance with the values from this
+    // /**
+    //  * @returns {vector2} creates a new vector2 object instance taking the x and y values as copies from this vector2,
+    //  */
+    // get clone(){return new vector2(this.#x, this.#y);}
+    /**
+     * sets the x and y components of the vector2
+     * @param {float} x x value to set
+     * @param {float} y y value to set
+     */
+    set(x,y){
+        this.#x = x;
+        this.#y = y;
+        this.#calcdist();
+    }
+    /**
+     * @returns {float} gets the x component (1st component) of the vector
+     */
+    get x(){return this.#x;}
+    /**
+     * @returns {float} gets the y component (2nd component) of the vector
+     */
+    get y(){return this.#y;}
+    /**
+     * @returns {float} gets the w component (1st component) of the vector, alternative name (of x) for different contexts
+     */
+    get w(){return this.#x;}
+    /**
+     * @returns {float} gets the h component (2nd component) of the vector, alternative name (of y) for different contexts
+     */
+    get h(){return this.#y;}
+    /**
+     * @param {float} value sets the x component (1st component) of the vector
+     */
+    set x(value){
+        if (this.#x != value){
+        this.#x = value;
+        this.#calcdist();
+        } 
+    }
+    /**
+     * @param {float} value sets the y component (1st component) of the vector
+     */
+    set y(value){
+        if (this.#y != value){
+        this.#y = value;
+        this.#calcdist();
+        } 
+    }
+    /**
+     * @param {float} value sets the w component (1st component) of the vector
+     */
+    set w(value){
+        if (this.#x != value){
+        this.#x = value;
+        this.#calcdist();
+        } 
+    }
+    /**
+     * @param {float} value sets the h component (2nd component) of the vector
+     */
+    set h(value){
+        if (this.#y != value){
+        this.#y = value;
+        this.#calcdist();
+        } 
+    }
+    /** calculates the length of the vector */
+    #calcdist(){
+        this.#length = Math.sqrt(this.#x*this.#x + this.#y*this.#y);
+    }
+    /**
+     * produces a vector2 value interpolated between vectors a and b
+     * @param {vector2} a first vector2
+     * @param {vector2} b second vector2
+     * @param {float} p value between 0 and 1 controlling interpolation between a and b
+     * @returns {vector2} interpolated 
+     */
+    static lerp(a, b, p){
+        let v = vector2.zero;
+        v.x = a.x + (b.x - a.x) * p;
+        v.y = a.y + (b.y - a.y) * p;
+        return v;
+    }
+
+    /**
+     * normalises this vector (unit length 1) this destorys the orginal vector, this destroys the previous values.
+     * If you want a normalised version of this vector withouth destroying its value then use @see {@link normalised}
+     */
+    normalise(){
+        this.#x = this.#x/this.#length;
+        this.#y = this.#y/this.#length;
+        this.#length = 1;
+    }
+    /**
+     * @returns {vector2}  a new vector that is the normalised form of this vector
+     */
+    normalised(){
+        return new vector2(this.#x/this.#length, this.#y/this.#length);
+    }
+
+    /**
+     * returns a new vector2 that is the normalised version of component values
+     * @param {float} x the x component of a vector
+     * @param {float} y the y component of a vector
+     * @returns {vector2} a new vector2 instance which is a normalised version of the given component values
+     */
+    static normalised(x,y){
+        let mag = Math.sqrt(x*x + y*y);
+        //let ux = x/mag;
+        //let uy = y/mag;
+        return new vector2(x/mag, y/mag);
+    }
+    /**
+     * The results and additional angles are in degrees use @see {@link anglefromdirectionR} for a version in radians
+     * @param {vector2} direction a 2d vector which you want the angle of
+     * @param {float} additionalAngle additional angle in radians to add on to the 
+     * @returns {float} an angle in degrees which is the direction vector given plus the additional angle specified
+     */
+    static anglefromdirection(direction, additionalAngle){
+        additionalAngle = (additionalAngle === undefined) ? 0 : additionalAngle * Math.PIby180;
+        return vector2.anglefromdirectionR(direction, additionalAngle) * Math.hb180byPI;
+    }
+    /**
+     * The results and additional angles are in radians use @see {@link anglefromdirection} for a version in degrees
+     * @param {vector2} direction a 2d vector which you want the angle of
+     * @param {float} additionalAngle additional angle in radians to add on to the 
+     * @returns {float} an angle in radians which is the direction vector given plus the additional angle specified
+     */
+    static anglefromdirectionR(direction, additionalAngle){
+        additionalAngle = (additionalAngle === undefined) ? 0 : additionalAngle;
+        let bearing = 0;
+        if (direction.y == 0)
+        {
+            if (direction.x < 0)
+                bearing = Math.PI * 1.5;
+            else
+                bearing = Math.PI * 0.5;
+        }
+        else
+        {
+            let r = Math.atan(-direction.x / direction.y);
+            if (direction.y > 0)
+                //rotationAngle = (float)(r + Math.PI);
+                if (direction.x < 0)
+                    bearing = r - Math.PI;
+                else
+                    bearing = r + Math.PI;
+            else
+                bearing = r;
+        }
+        bearing += additionalAngle;
+        return (bearing < Math.PIx2) ? bearing : bearing - Math.PIx2;
+    }
+
+    /**
+     * takes an angle and turns it into a direction vector that can be used for velocities or other movement
+     * @param {float} angle in degrees to convert to direction
+     * @param {float} additionalAngle a further angle to add on in degrees
+     * @returns {vector2} a direction vector in the direction of the 2 angles requested
+     */
+    static directionfromangle(angle, additionalAngle){
+        angle += (additionalAngle === undefined) ? 0 : additionalAngle;
+        angle = angle * Math.PIby180;
+
+        return new vector2(Math.cos(angle - Math.PIby2),
+                                Math.sin(angle - Math.PIby2));
+    }
+    /**
+     * takes an angle and turns it into a direction vector that can be used for velocities or other movement
+     * @param {float} angle in radians to convert to direction
+     * @param {float} additionalAngle a further angle to add on in radians
+     * @returns {vector2} a direction vector in the direction of the 2 angles requested
+     */
+    static directionfromangleR(angle, additionalAngle){
+        angle += (additionalAngle === undefined) ? 0 : additionalAngle;
+
+        return new vector2(Math.cos(angle - Math.PIby2),
+                                Math.sin(angle - Math.PIby2));
+    }
+    /** Returns a normalised direction vector looking from the starting sprite to the other sprite
+    * @param {vector2} from start position
+    * @param {vector2} to the direction to look towards
+    * @param {DirectionAccuracy} accuracy choose either free direction or lock to ordinals NSEW
+    * @returns {vector2} normalised Vector2 direction vector
+    */
+    static lookAt(from, to, accuracy){
+        let d = new vector2();
+        d.x = to.x - from.y;
+        d.y = to.y - from.y;
+        if (d.x == 0 && d.y == 0){
+            d = vector2.zero;
+        }else{
+            switch (accuracy)
+            {
+                case DirectionAccuracy.ordinals:
+                    d = ordinalise(d);
+                    break;
+                case DirectionAccuracy.free:
+                    d.normalise();
+                    break;
+            }
+        }
+        return d;
+    }    
+    /**
+     * attempts to give a direction vector as close to the ordinal directions (NSEW)
+     * @param {vector2} direction vector to ordinalise
+     * @returns {vector2} containing NSEW directions only
+     */
+    static ordinalise(direction){
+        if (!direction.iszero){
+            if (Math.abs(direction.y) > Math.abs(direction.x)){
+                if (direction.y > 0)
+                    return vector2.down;
+                else
+                    return vector2.up;
+            }else{
+                if (direction.x > 0)
+                    return vector2.right;
+                else
+                    return vector2.left;
+            }
+        }
+        return vector2.zero;
+    }       
+    /** calculates the dot product between 2 vector2 values 
+     * @param {vector2} a first vector
+     * @param {vector2} b second vector
+     * @returns {float} the dot product
+    */
+    static dot(a, b){
+        return a.x*b.x + a.y*b.y;
+    }
+    /**
+     * Produces a new vector2 that is this vector multiplied the scalar value
+     * @param {float} scalar value to multiply the components of this vector by
+     * @returns {vector2} a new vector2 that is this vector multiplied by the scalar value
+     */
+    mulNew(scalar){
+        return new vector2(this.#x * scalar, this.#y * scalar);
+    }
+    /**
+     * Produces a new vector2 that is this vector divided the scalar value
+     * @param {float} scalar value to multiply the components of this vector by
+     * @returns {vector2} a new vector2 that is this vector divided by the scalar value
+     */
+    divNew(scalar){
+        return new vector2(this.#x / scalar, this.#y / scalar);
+    }
+    /**
+     * multiplies this vector by the scalar value
+     * @param {float} scalar value to multiply the components of this vector by
+     */
+    mul(scalar){
+        this.x = this.#x * scalar;
+        this.y = this.#y * scalar;
+    }
+    /**
+     * divides this vector by the scalar value
+     * @param {float} scalar value to divide the components of this vector by
+     */
+    div(scalar){
+        this.x = this.#x / scalar;
+        this.y = this.#y / scalar;
+    }
+    /**
+     * Adds either a vector2 to this vector or two component values to this vector
+     * @param {float|vector2} vec if you supply a vector2 value then it is added to this vector2 value
+     * @param {float|undefined} y if defined then the 2 parameters are assumed to be an x and y value to add to this vector2 components
+     */
+    add(vec, y){
+        if (y === undefined){// if just a vector
+        this.#x = this.#x + vec.x;
+        this.#y = this.#y + vec.y;
+
+        } else {
+        this.#x += vec;
+        this.#y += y;
+        }
+        this.#calcdist();
+    }
+    /**
+     * subtracts either a vector2 from this vector or two component values from this vector
+     * @param {float|vector2} vec if you supply a vector2 value then it is subtract from this vector2 value
+     * @param {float|undefined} y if defined then the 2 parameters are assumed to be an x and y value to subtract from this vector2 components
+     */
+    sub(vec, y){
+        if (y === undefined){// if just a vector
+        this.#x -= vec.x;
+        this.#y -= vec.y;
+        } else {
+        this.#x -= vec;
+        this.#y -= y;
+        }
+        this.#calcdist();
+    }
+    /**
+     * creates a new vector2 by adding either a vector2 to this vector or two component values to this vector
+     * @param {float|vector2} vec if you supply a vector2 value then it is added to this vector2 value
+     * @param {float|undefined} y if defined then the 2 parameters are assumed to be an x and y value to add to this vector2 components
+     * @returns {vector2} a new vector2 adding the vectors or components together without affecting this vector2
+     */
+    addNew(vec, y){
+        if (y === undefined){// if just a vector
+            return new vector2(this.#x + vec.x, this.#y + vec.y);
+        } else {
+            return new vector2(this.#x + vec, this.#y + y);
+        }
+    }
+    /**
+     * creates a new vector2 by subtracting either a vector2 from this vector or two component values from this vector
+     * @param {float|vector2} vec if you supply a vector2 value then it is subtracted from this vector2 value
+     * @param {float|undefined} y if defined then the 2 parameters are assumed to be an x and y value to subtract from this vector2 components
+     * @returns {vector2} a new vector2 subtracting the vectors or components together without affecting this vector2
+     */
+    subNew(vec, y){
+        if (y === undefined){// if just a vector
+            return new vector2(this.#x - vec.x, this.#y - vec.y);
+        } else {
+            return new vector2(this.#x - vec, this.#y - y);
+        }
+    }
+    /**
+     * adds 2 vectors together v1 + v2
+     * @param {vector2} v1 first vector to add
+     * @param {vector2} v2 second vector to add
+     * @returns {vector2} a new vector2 adding two supplied vectors
+     */
+    static add(v1, v2){
+        return new vector2(v1.x + v2.x, v1.y + v2.y);
+    }
+    /**
+     * subtracts 2 vectors v1 - v2
+     * @param {vector2} v1 first vector
+     * @param {vector2} v2 second vector to subtract from the first one
+     * @returns {vector2} a new vector2 subtracting two supplied vectors
+     */
+    static sub(v1, v2){
+        return new vector2(v1.x - v2.x, v1.y - v2.y);
+    }
+    /**
+     * calculates the distance between 2 point vectors
+     * @param {vector2} v1 start point
+     * @param {vector2} v2 end point
+     * @returns {float} distance between 2 point vectors
+     */
+    static distance(v1, v2){
+        return Math.sqrt((v2.x-v1.x)**2 + (v2.y-v1.y)**2);
+    }
+    /**
+     * calculates the distance between 2 point vectors without performing square root
+     * @param {vector2} v1 start point
+     * @param {vector2} v2 end point
+     * @returns {float} squared distance between 2 point vectors
+     */
+    static distanceSQ(v1, v2){
+        return (v2.x-v1.x)**2 + (v2.y-v1.y)**2;
+    } 
+     /**returns a new vector2 that is a copy of the values of this one, not a reference a separate object
+     * 
+     * be warned clone creates an object so is about 20x slower than setting individual vector coords
+     * @example
+     * b.x = a.x;
+     * b.y = a.y;
+     * 
+     * //or using a.cloneto(b);
+     * @returns {vector2} a new vector2 with the same values as this vector2
+     */
+    get clone(){
+        return new vector2(this.#x, this.#y);
+    }
+    /**
+     * clones this vector2 to the existing vector passed as a parameter, avoiding the need to instantiate another object
+     * @param {vector2} here a vector2 instance to overwrite the values of
+    */
+    cloneto(here){
+        here.x = this.#x;
+        here.y = this.#y;
+        here.#calcdist();
+    }
+    /** @returns {vector2} new vector (0,0) */
+    static get zero(){return new vector2(0,0);}
+    /** @returns {vector2} new vector (1,1) */
+    static get one(){return new vector2(1,1);}
+    /** @returns {vector2} new vector (-1,0) */
+    static get left(){return new vector2(-1,0);}
+    /** @returns {vector2} new vector (1,0) */
+    static get right(){return new vector2(1,0);}
+    /** @returns {vector2} new vector (0,-1) */
+    static get up(){return new vector2(0,-1);}
+    /** @returns {vector2} new vector (0,1) */
+    static get down(){return new vector2(0,1);}
+
+}
+/******************************
+ * vector3.js by Hurray Banana 2023-2024
+ ******************************/ 
+
+/** @classdesc 3d position and methods */
+class vector3{
+    /** @type {float} holds x component */
+    #x=0;
+    /** @type {float} holds y component */
+    #y=0;
+    /** @type {float} holds z component */
+    #z=0;
+    /** @type {float} holds length of component */
+    #length;
+    //gets the pre-calculated magnitude of the vector
+    /** @returns {float} pre calculated length of vector3, also it's magnitude */
+    get length(){return this.#length;}
+    /** @returns {float} pre calculated length of vector3, also it's magnitude */
+    get distance() {return this.#length;}
+    #mag = 0;
+    /** creates an instance of a new vector3
+     * @param {float} x initial x component of vector
+     * @param {float} y initial y component of vector
+     * @param {float} z initial z component of vector if missing z component is set to zero
+     */
+    constructor(x, y, z){
+        if (z === undefined) z = 0;
+        this.set(x, y, z);
+    }
+    /**@returns {bool} true if all 3 components are 0*/
+    get iszero(){return this.#x == 0 && this.#y == 0 && this.#z == 0;}
+    /**@returns {bool} true if all 3 components are 1*/
+    get isone(){return this.#x == 1 && this.#y == 1 && this.#z == 1;}
+    /**returns true if given vector is the same value as this one 
+     * @param {vector3} a vector to compare
+     * @returns {bool} true if 3 components are the same, false if any one component isn;t
+    */
+    equal(a){
+        return this.#x == a.#x && this.#y == a.#y && this.#z == a.#z;
+    }
+    /**create a new instance of a vector3 with the values of this one - not a reference */
+    get clone(){return new vector3(this.#x, this.#y, this.#z);}
+    /**
+     * sets the vector and calculates its length
+     * @param {float} x 
+     * @param {float} y 
+     * @param {float} z 
+     */
+    set(x, y, z){
+        this.#x = x;
+        this.#y = y;
+        this.#z = z;
+        this.#calcdist();
+    }
+    /** gets the x component of the vector
+     * @returns {float} value 
+     */
+    get x(){return this.#x;}
+    /** gets the y component of the vector
+     * @returns {float} value 
+     */
+    get y(){return this.#y;}
+    /** gets the z component of the vector
+     * @returns {float} value 
+     */
+    get z(){return this.#z;}
+    /** gets the width component of the vector (x component)
+     * @returns {float} value 
+     */
+    get w(){return this.#x;}
+    /** gets the height component of the vector (y component)
+     * @returns {float} value 
+     */
+    get h(){return this.#y;}
+    /** gets the depth component of the vector (z component)
+     * @returns {float} value 
+     */
+    get d(){return this.#z;}
+    /** sets the x component of the vector
+     * @param {float} value 
+     */
+    set x(value){
+        if (this.#x != value){
+            this.#x = value;
+            this.#calcdist();
+        } 
+    }
+    /** sets the y component of the vector
+     * @param {float} value 
+     */
+    set y(value){
+        if (this.#y != value){
+            this.#y = value;
+            this.#calcdist();
+        } 
+    }
+    /** sets the z component of the vector
+     * @param {float} value 
+     */
+    set z(value){
+        if (this.#z != value){
+            this.#z = value;
+            this.#calcdist();
+        } 
+    }
+    /** sets the width component (x component of the vector)
+     * @param {float} value 
+     */
+    set w(value){
+        if (this.#x != value){
+            this.#x = value;
+            this.#calcdist();
+        } 
+    }
+    /** sets the height component (y component of the vector)
+     * @param {float} value 
+     */
+    set h(value){
+        if (this.#y != value){
+            this.#y = value;
+            this.#calcdist();
+        } 
+    }
+    /** sets the depth component (z component of the vector)
+     * @param {float} value 
+     */
+    set d(value){
+        if (this.#z != value){
+            this.#z = value;
+            this.#calcdist();
+        } 
+    }    
+    /** pre-calculates the length of the vector */
+    #calcdist(){
+        this.#length = Math.sqrt(this.#x**2 + this.#y**2 + this.#z**2);
+    }
+
+    /**
+     * produces a vector3 value interpolated between vectors a and b
+     * @param {vector3} a first vector3
+     * @param {vector3} b second vector3
+     * @param {float} p value between 0 and 1 controlling interpolation between a and b
+     * @returns {vector3} interpolated 
+     */
+    static lerp(a, b, p){
+        let v = vector3.zero;
+        v.x = a.x + (b.x - a.x) * p;
+        v.y = a.y + (b.y - a.y) * p;
+        v.z = a.z + (b.z - a.z) * p;
+        return v;
+    }
+    /**normalises this vector (unit length 1) this destroys the orginal vector
+     * 
+     * use normalisedclone if you want a new vector that is the normalised version of this vector
+    */
+    normalise(){
+        this.#x = this.#x/this.#length;
+        this.#y = this.#y/this.#length;
+        this.#z = this.#z/this.#length;
+        this.#length = 1;
+    }
+    /**returns a new vector3 that is the normalised form of this vector3
+     * @returns {vector3} a new vector3 instance which is the normalised version of this vector3
+    */
+    normalisedclone(){
+        return new vector3(this.#x/this.#length, this.#y/this.#length, this.#z/this.#length );
+    }
+    /**
+     * creates a normalised vector based on the x and y and z values
+     * @param {float} x 
+     * @param {float} y 
+     * @param {float} z 
+     * @returns {vector3} unit vector3
+    */
+    static normalised(x,y,z){
+        let mag = Math.sqrt(x**2 + y**2 + z**2);
+        return new vector3(x/mag, y/mag, z/mag);
+    }
+
+    /**returns the angle of the given  direction vector
+     * 
+     * This only examines 2d values as it is a bearing (which is 2d)
+     * @param {vector3} direction direction to convert
+     * @param {float} additionalAngle to add on to the direction in degrees
+     * @returns {float} angle in degrees
+    */
+    static anglefromdirection(direction, additionalAngle){
+        additionalAngle = (additionalAngle === undefined) ? 0 : additionalAngle * Math.PIby180;
+        return vector3.anglefromdirectionR(direction, additionalAngle) * Math.hb180byPI;
+    }
+    /**returns the angle of the given  direction vector
+     * 
+     * This only examines 2d values as it is a bearing (which is 2d)
+     * @param {vector3} direction direction to convert
+     * @param {*} additionalAngle to add on to the direction in radians
+     * @returns {float} angle in radians
+    */
+    static anglefromdirectionR(direction, additionalAngle){
+        if (additionalAngle === undefined){
+            additionalAngle = 0;
+        }
+        let bearing = 0;
+        if (direction.y == 0)
+        {
+            if (direction.x < 0)
+                bearing = Math.PI * 1.5;
+            else
+                bearing = Math.PI * 0.5;
+        }
+        else
+        {
+            let r = Math.atan(-direction.x / direction.y);
+            if (direction.y > 0)
+                //rotationAngle = (float)(r + Math.PI);
+                if (direction.x < 0)
+                    bearing = r - Math.PI;
+                else
+                    bearing = r + Math.PI;
+            else
+                bearing = r;
+        }
+        return bearing + additionalAngle;
+    }
+    /**returns the 3d vector based on the angle
+     * 
+     * The z value is set to zero
+     * @param {float} angle in degrees
+     * @param {float} additionalAngle an angle to add on in degrees
+     * @returns {vector3} a new vector3 unit direction vector
+    */
+    static directionfromangle(angle, additionalAngle){
+        if (additionalAngle === undefined){
+            additionalAngle = 0;
+        }
+
+        angle  = (angle + additionalAngle) * Math.PIby180 - Math.PIby2;
+        return new vector3(Math.cos(angle), Math.sin(angle),0);
+        // return new vector3(Math.cos(angle - Math.PI/2),
+        //     Math.sin(angle - Math.PI/2),0);
+    }
+    /**returns the 3d vector based on the angle
+     * 
+     * The z value is set to zero
+     * @param {float} angle in radians
+     * @param {float} additionalAngle an angle to add on in radians
+     * @returns {vector3} a new vector3 unit direction vector
+    */
+    static directionfromangle(angle, additionalAngle){
+        if (additionalAngle === undefined){
+            additionalAngle = 0;
+        }
+        angle  = (angle + additionalAngle) - Math.PIby2;
+        return new vector3(Math.cos(angle), Math.sin(angle),0);
+        // return new vector3(Math.cos(additionalAngle + angle - Math.PI/2),
+        //                         Math.sin(additionalAngle + angle - Math.PI/2),0);
+    }
+    /** Returns a normalised direction vector looking from the starting position to the other position
+    * @param {vector3} from start position
+    * @param {vector3} to the direction to look towards
+    * @param {DirectionAccuracy} accuracy gives exact direction if DirectionAccuracy.free or ordinalised if DirectionAccuracy.ordinals
+    * @param {bool} includeZ Specify true if you want to take the Z value into account
+    * 
+    * @returns {vector3} A normalised Vector3 direction vector in chosen direction
+    */
+    lookAt(from, to, accuracy, includeZ){
+        let d = new vector3();
+        if (includeZ){
+                d = vector3.sub(to, from);
+            }else{
+                d.x = to.x - from.y;
+                d.y = to.y - from.y;
+            }
+            if (d.x == 0 && d.y == 0 && d.z == 0){
+                d = vector3.zero;
+        }else{
+            switch (accuracy)
+            {
+                case DirectionAccuracy.ordinals:
+                    d = ordinalise(d);
+                    break;
+                case DirectionAccuracy.free:
+                    d.normalise();
+                    break;
+            }
+        }
+        return d;
+    }
+    /**
+     * finds the ordinalised (cardinals NSEW) direction closest to the given direction vector
+     * @param {vector3} direction direction vector to 
+     * @returns {vector3} in one of NSEW directions
+     */
+    static ordinalise(direction){
+        if (!direction.iszero){
+            if (Math.abs(direction.y) > Math.abs(direction.x)){
+                if (direction.y > 0)
+                    return vector3.down;
+                else
+                    return vector3.up;
+            }else{
+                if (direction.x > 0)
+                    return vector3.right;
+                else
+                    return vector3.left;
+            }
+        }
+        return vector3.zero;
+    }    
+    /** Determines whether rotating clockwise or anticlockwise is closest for a given position and direction
+    * Useful for create homing and tracking effects, returns -1 if turned anti-clocwise, 1 if clockwise or 0 if didn't turn
+    * @param {vector3} from Position to look from
+    * @param {vector3} directionVector Direction looking
+    * @param {vector3} to position aiming for
+    * @param {float} minimumAngle the step size to turn by, if rotation required is less than this then 0 will be returned
+    * 
+    * @returns {int}-1 if turned anti-clocwise, 1 if clockwise or 0 if didn't turn */
+    angularDirectionTo(from, directionVector, to, minimumAngle)
+    {
+        let dv = directionVector.normalisedclone;
+
+        //calc direction to target
+        let d = vector3.sub(to,from);
+        d.normalise();
+        let dot = vector3.dot(dv, d);
+        let crossz = vector3.crosszonly(dv, d);
+
+        if (dot < 0 || Math.abs(dot) < Math.cos(minimumAngle* Math.PI / 180))
+            return (crossz < 0) ? -1 : 1;
+        else
+            return 0;
+    }
+    /** calculates just the z component on the normal to 2 given vectors (the angle between 2 vectors)
+     * @param {vector3} a 
+     * @param {vector3} b 
+     * @returns {float}
+    */
+    static crosszonly(a, b){
+        return a.x*b.y - a.y*b.x;
+    }
+    /** calculates just the normal to the 2 given vectors
+     * @param {vector3} a 
+     * @param {vector3} b 
+    */
+    static cross(a, b){
+        return new vector3(a.y*b.z - a.z*b.y,a.z*b.x - a.x*b.z, a.x*b.y - a.y*b.x);
+    }
+    /** calculates the dot product between 2 vector3 values 
+     * @param {vector3} a 
+     * @param {vector3} b 
+    */
+    static dot(a, b){
+        return a.x*b.x + a.y*b.y + a.z*b.z;
+    }
+
+    /**multiplies this vector3 by the scaler and returns a new vector3 
+     * @param {float} scalar 
+     * @returns {vector3} new instance
+    */
+    mulNew(scalar){
+        return new vector3(this.#x * scalar, this.#y * scalar, this.#z * scalar);
+    }
+    /**divides this vector3 by the scaler and returns a new vector3 
+     * @param {float} scalar 
+     * @returns {vector3} new instance
+    */
+    divNew(scalar){
+        return new vector3(this.#x / scalar, this.#y / scalar,this.#z/scalar);
+    }
+    /**multiplies this vector by the scaler value 
+     * @param {float} scalar 
+     * 
+    */
+    mul(scalar){
+        this.x *= scalar;
+        this.y *= scalar;
+        this.z *= scalar;
+    }
+    /**divides this vector by the scaler value 
+     * 
+     * vector3 / scaler
+     * 
+     * @param {float} scalar 
+    */
+    div(scalar){
+        this.x /= scalar;
+        this.y /= scalar;
+        this.z /= scalar;
+    }
+    /**if the first parameter is a vector3 object then it is added to this vector 
+     * 
+     * if all 3 parameters are suppied then they are taken as individual
+     * x y and z value
+     * @param {float|vector3} x either the x component of a vector (supply y and z parameters) or a vector3 value (don't supply y or z parameters)
+     * @param {float} y y component of a vector
+     * @param {float} z z component of a vector
+    */
+    add(x, y, z){
+        if (y === undefined){// if just a vector
+        this.#x += x.x;
+        this.#y += x.y;
+        this.#z += x.z;
+
+        } else {
+        this.#x += x;
+        this.#y += y;
+        this.#z += z;
+        }
+        this.#calcdist();
+    }
+    /**add the 2 given vector3's returning a new instance v1 + v2
+     * @param {vector3} a first vector
+     * @param {vector3} b second vector
+     * @returns {vector3}
+    */
+    static add(a, b){
+        return  new vector3(a.x + b.x, a.y + b.y, a.z + b.z);
+    }
+    /**if the first parameter is a vector3 object then it is subtracted from this vector 
+     * 
+     * this - vector3 or this - vector3(x,y,z)
+     * 
+     * if all 3 parameters are suppied then they are taken as individual
+     * x y and z value
+     * @param {float|vector3} x either the x component of a vector (supply y and z parameters) or a vector3 value (don't supply y or z parameters)
+     * @param {float} y y component of a vector
+     * @param {float} z z component of a vector
+    */
+    sub(x, y, z){
+        if (y === undefined){// if just a vector
+        this.#x -= x.x;
+        this.#y -= x.y;
+        this.#z -= x.z;
+        } else {
+        this.#x -= x;
+        this.#y -= y;
+        this.#z -= z;
+        }
+        this.#calcdist();
+    }
+    /**subtract the 2 given vector3's returning a new one a - b
+     * @param {vector3} a first vector
+     * @param {vector3} b second vector
+     * @returns {vector3}
+    */
+    static sub(a, b){
+        return  new vector3(a.x - b.x, a.y - b.y, a.z - b.z);
+    }
+    /**returns the distance between the 2 vector3 objects 
+     * @param {vector3} a first vector
+     * @param {vector3} b second vector
+     * @returns {float} 
+    */
+    static distance(a, b){
+        return Math.sqrt((b.x-a.x)**2 + (b.y-a.y)**2+ (b.z-a.z)**2);
+    }
+    /**
+     * returns the square distance between 2 vector3's
+     * 
+     * faster to compare squares if only relative difference is required
+     * @param {vector3} a first vector
+     * @param {vector3} b second vector
+     * @returns {float} 
+     */
+    static distanceSQ(a, b){
+        return (b.x-a.x)**2 + (b.y-a.y)**2 + (b.z-a.z)**2;
+    }
+    /**returns a new vector3 that is a copy of the values of this one, not a reference a separate object
+     * 
+     * be warned clone creates an object so is about 20x slower than setting individual vector coords
+     * 
+     * b.x = a.x;
+     * 
+     * b.y = a.y;
+     * 
+     * b.z = a.z;
+     * @returns {vector3} new vector3 instance based on this ones values
+     */
+    get clone(){
+        return new vector3(this.#x, this.#y, this.#z);
+    }
+    /**clones this vector3 to the existing vector passed as a parameter 
+     * @param {vector3} here 
+    */
+    cloneto(here){
+        here.x = this.#x;
+        here.y = this.#y;
+        here.z = this.#z;
+    }
+
+    /**@returns {vector3}  a new vector3 object (0,0,0) */
+    static get zero(){return new vector3(0,0);}
+    /**@returns {vector3}  a new vector3 object (1,1,1) */
+    static get one(){return new vector3(1,1,1);}
+    /**@returns {vector3}  a new vector3 object (-1,0,0) */
+    static get left(){return new vector3(-1,0,0);}
+    /**@returns {vector3}  a new vector3 object (1,0,0) */
+    static get right(){return new vector3(1,0,0);}
+    /**@returns {vector3}  a new vector3 object (0,-1,0) */
+    static get up(){return new vector3(0,-1,0);}
+    /**@returns {vector3}  a new vector3 object (0,1,0) */
+    static get down(){return new vector3(0,1,0);}
+    /**@returns {vector3} a new vector3 object (0,0,-1) */
+    static get backward(){return new vector3(0,0,-1);}
+    /**@returns {vector3}  a new vector3 object (0,0,1) */
+    static get forward(){return new vector3(0,0,1);}
+
+}
+"use strict";
+/******************************
+ * view.js by Hurray Banana 2023-2024
+ ******************************/
+/**
+ * @classdesc describes a rectangle viewport to control display areas, defaults to same size of canvas
+ */
+class View{
+    /** determines if viewport is prevented from extended beyond the world defined area
+     * when moving or positioning the viewport
+     * @type {bool}
+     */
+    clamp = true;
+    /** current position of the viewport @type {vector3} */
+    #position;
+    /**
+     * rectangular area of the viewport x and y values are always zero but does state width and height
+     * @type {Rectangle}
+     */
+    #area;
+    /**
+     * as area but the x and y positions reflect the current position of the viewport
+     * @returns {Rectangle}
+     */
+    #movedarea;
+    /**  rectangular area of the viewport x and y values are always zero but does state width and height
+     * @returns {Rectangle}
+     */
+    get area(){return this.#area;}
+    /**
+     * as area but the x and y positions reflect the current position of the viewport in the world
+     * @returns {Rectangle}
+     */
+    get worldarea(){return this.#movedarea;}
+    /** the position of the viewport, it's displacement as a vector3 value
+     * @returns {vector3}
+     */
+    get position(){return this.#position;}
+    /** sets the position of the viewport in the world using a vector3 value
+     * if clamp is set to true then the viewport will be restricted to the world area
+     * @param {vector3} value 
+     */
+    set position(value){
+        if (this.clamp){
+            this.#position.x = clamp(value.x, 0, Engine.worldWidth - this.#area.w);
+            this.#position.y = clamp(value.y, 0, Engine.worldHeight - this.#area.h);
+            this.#position.z = value.z;
+            this.#movedarea.x = this.#position.x | 0;
+            this.#movedarea.y = this.#position.y | 0;
+        }else{
+            this.#position = value;
+        }
+    }
+    /** the position of the viewport, it's displacement as a vector2 value
+     * @returns {vector2}
+     */
+    get position2d(){return new vector2(this.#position.x, this.#position.y);}
+    /** sets the position of the viewport in the world using a vector2 value
+     * if clamp is set to true then the viewport will be restricted to the world area
+     * @param {vector2} value 
+     */
+    set position2d(value){
+        if (this.clamp){
+            this.#position.x = clamp(value.x, 0, Engine.worldWidth - this.#area.w);
+            this.#position.y = clamp(value.y, 0, Engine.worldHeight - this.#area.h);
+            this.#movedarea.x = this.#position.x | 0;
+            this.#movedarea.y = this.#position.y | 0;
+        }else{
+            this.#position.x = value.x;
+            this.#position.y = value.y;
+        }
+    }
+    /**
+     * gets the width of the viewport @returns {float}
+     */
+    get w(){return this.#area.w;}
+    /**
+     * gets the height of the viewport @returns {float}
+     */
+    get h(){return this.#area.h;}
+    
+    /**
+     * gets the horizontal position (offset) of the viewport @returns {float}
+     */
+    get x(){return this.#position.x;};
+    /**
+     * sets the horizontal position (offset) of the viewport @param {float} value
+     * if clamp is set the horizontal position will be set such that the viewport stays within the world area defined
+     */
+    set x(value){this.#position.x = this.clamp ? clamp(value, 0, Engine.worldWidth - this.#area.w) : value;this.#movedarea.x = this.#position.x | 0;};
+    /**
+     * gets the vertical position (offset) of the viewport @returns {float}
+     */
+    get y(){return this.#position.y;};
+    /**
+     * sets the vertical position (offset) of the viewport @param {float} value
+     * if clamp is set the vertical position will be set such that the viewport stays within the world area defined
+     */
+    set y(value){this.#position.y = this.clamp ? clamp(value, 0, Engine.worldHeight - this.#area.h) : value;this.#movedarea.y = this.#position.y | 0;};
+    /**
+     * Creates a new viewport
+     * @param {Rectangle} viewport a rectangular region to size the viewport (the width and height are what is taken from the rectangle)
+     * @param {float} startx a start position for the horizontal position of the viewport in the world
+     * @param {float} starty a start position for the vertical position of the viewport in the world
+     */
+    constructor(viewport, startx, starty){
+        this.#area = viewport;
+        this.#movedarea = new Rectangle(startx, starty, viewport.w, viewport.h);
+        startx= (startx === undefined) ? 0 : startx;
+        starty = (starty === undefined) ? 0 : starty;
+        this.#position = new vector3(startx, starty, 0);
+    }
+    /**
+     * I don't know what this is actually supposed to do, Sprite draw is using the rectangle version, this might be old/not needed in this form
+     * I'm going to rename to see if it breaks anything
+     * @param {Rectangle} r 
+     * @param {bool} world 
+     * @returns {bool}
+     */
+    AM_I_NEEDED_in(r, world){//
+        if (world)
+                return !(r.left >= this.#movedarea.right ||
+                        r.right <= this.#movedarea.left ||
+                        r.top >= this.#movedarea.bottom ||
+                        r.bottom <= this.#movedarea.top
+                );
+            else
+                return !(r.left >= this.#area.width ||
+                        r.right <= 0 ||
+                        r.top >= this.#area.height ||
+                        r.bottom <= 0
+                );
     }
 }
