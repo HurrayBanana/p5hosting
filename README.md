@@ -6,7 +6,7 @@
 ## Graphy 
 Dijkstra and A* realtime solver
 
-[Graphy readme](https://hurraybanana.github.io/p5hosting/graphy/readme.md)
+[Graphy readme](https://hurraybanana.github.io/p5hosting/graphy/README.md)
 
 [Graphy application](https://hurraybanana.github.io/p5hosting/graphy/index.html)
 
