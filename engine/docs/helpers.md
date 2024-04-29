@@ -10,7 +10,7 @@ global scope
 #### Math.PIx2
 > default value **Math.PI * 2**
 > 
-> use the name **this.Math.PIx2** directly to use this global value
+> just use the name **Math.PIx2** directly to use this global value
 > 
 > 
 > type {**float**} 360 degrees as radians
@@ -22,7 +22,7 @@ global scope
 #### Math.PIby2
 > default value **Math.PI/2**
 > 
-> use the name **this.Math.PIby2** directly to use this global value
+> just use the name **Math.PIby2** directly to use this global value
 > 
 > 
 > type {**float**} 180 degress as radians
@@ -34,7 +34,7 @@ global scope
 #### Math.PIby4
 > default value **Math.PI/4**
 > 
-> use the name **this.Math.PIby4** directly to use this global value
+> just use the name **Math.PIby4** directly to use this global value
 > 
 > 
 > type {**float**} 90 degrees as radians
@@ -46,7 +46,7 @@ global scope
 #### Math.PIby180
 > default value **Math.PI/180**
 > 
-> use the name **this.Math.PIby180** directly to use this global value
+> just use the name **Math.PIby180** directly to use this global value
 > 
 > 
 > type {**float**} multiply with a number of degrees to get radians
@@ -58,7 +58,7 @@ global scope
 #### Math.PIx180
 > default value **Math.PI*180**
 > 
-> use the name **this.Math.PIx180** directly to use this global value
+> just use the name **Math.PIx180** directly to use this global value
 > 
 > 
 > type {**float**} multiply with a number of radians to get degrees
@@ -70,7 +70,7 @@ global scope
 #### Math.hb180byPI
 > default value **180/Math.PI**
 > 
-> use the name **this.Math.hb180byPI** directly to use this global value
+> just use the name **Math.hb180byPI** directly to use this global value
 > 
 > divide an angle in degrees by this to get a radians value
 > 
@@ -270,7 +270,7 @@ global scope
 > 
 > {**int**} **linedrop** distance to drop down on each string from the array
 > 
-> {****} **surface** if specified the drawing will be attempted on the given image/surface or texture, if ommitted tet will appear on the default canvas
+> {**texture|image**} **surface** if specified the drawing will be attempted on the given image/surface or texture, if ommitted tet will appear on the default canvas
 > 
 > ```js
 > example
