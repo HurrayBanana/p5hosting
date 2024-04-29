@@ -1,7 +1,7 @@
 engine created by Hurray Banana &copy;2023-2024
 
-this can be found in file **limit.js**
-## class Limitmo
+this can be found in file **track.js**
+## class Limitmode
 > actions to be taken once a Sprite meets or passes the limit box edge that is defined
 > 
 > The limit box can be any given rectangular or 3d box area or
@@ -10,6 +10,11 @@ this can be found in file **limit.js**
 > 
 > if you are having trouble with a limit box make sure you make it visible using
 > 
+> ```js
+> example
+> this.limit.Show()
+>    
+> ```
 > 
 
 ---
@@ -307,21 +312,6 @@ this can be found in file **limit.js**
 > only wrap in Y direction, but bounce in X direction
 > 
 > Use this if you want the sprite to wrap vertically but bounce off the sides
-> 
-> 
-
----
-
-#### // wrapExact [static]
-> default value **"wrapExact"**
-> 
-> to use write **Limitmode.// wrapExact**
-> 
-> makes sprite appear on other side of limit box taking
-> 
-> account of exact position when leaving the limit box
-> 
-> use this for scrolling text or groups of sprites for an Asteroid wrapping effect
 > 
 > 
 

@@ -1,9 +1,15 @@
 engine created by Hurray Banana &copy;2023-2024
 
-this can be found in file **limit.js**
-## class Limi
+this can be found in file **track.js**
+## class Limit
 >  class to provide various types of interactions between sprites and bounding Boxes (depth based rectangles)
 > 
+> ```js
+> example
+>     //initiate a limit box using
+>     this.limit = new Limit(this);
+>   
+> ```
 > 
 
 ---

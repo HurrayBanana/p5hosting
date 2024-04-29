@@ -156,7 +156,7 @@ this can be found in file **track.js**
 > 
 > **Parameters**
 > 
-> {**TrackDefinition**} **existingTrack** The track you want to use
+> {**TrackDefinition**} **existingTrack** The track you want to use for the control points of the smoother
 > 
 > {**int**} **numberOfpoints** The number of points to use on the track
 > 
@@ -286,7 +286,7 @@ this can be found in file **track.js**
 > 
 > {**float**} **angleY** The rotation in degrees around the Y axis
 > 
-> {**float**} **angleZ** The rotation in degrees around the Z axis
+> {**float**} **angleZ** The rotation in degrees around the Z axis You should ideally rotate around each axis separately
 > 
 > 
 
@@ -304,7 +304,7 @@ this can be found in file **track.js**
 > 
 > {**vector3**} **origin** the centre of rotation
 > 
-> {**vector3**} **angles** the x, y and z axis rotation amounts specified as a vector3
+> {**vector3**} **angles** the x, y and z axis rotation amounts specified as a vector3 You should ideally rotate around each axis separately
 > 
 > 
 
@@ -373,9 +373,9 @@ this can be found in file **track.js**
 > 
 > {**float**} **radiusY** the vertical radius
 > 
-> {**float**} **smallestRadius** the smallest value wanted for either radius.
+> {**float**} **smallestRadius** the smallest value wanted for either radius. the rate at which the radii shrink is determined by this and number of revolutions
 > 
-> {**float**} **revolutions** number of revolutions you want,
+> {**float**} **revolutions** number of revolutions you want, this can be a fractional value 1.5f would be a spiral with 1 and half turns
 > 
 > {**float**} **startZ** The starting Z value (depth into the screen)
 > 
@@ -436,7 +436,7 @@ this can be found in file **track.js**
 > 
 > {**string**} **newTrackName** The debug name of the track to create
 > 
-> {**int**} **numberOfpoints** How many points you want the entire track to contain
+> {**int**} **numberOfpoints** How many points you want the entire track to contain (they are distributed along the entire track length, the more points the more flexability you have with speeds travelling along the path
 > 
 > {**[]vector3]**} **points** a list of points defining the fixed position along the track
 > 
@@ -457,7 +457,7 @@ this can be found in file **track.js**
 > 
 > {**string**} **newTrackName** The debug name of the track
 > 
-> {**int**} **numberOfpoints** How many points you want the entire track to contain
+> {**int**} **numberOfpoints** How many points you want the entire track to contain (they are distributed along the entire track length, the more points the more flexability you have with speeds travelling along the path
 > 
 > {**[]vector3**} **points** The points which define the track
 > 

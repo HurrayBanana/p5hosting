@@ -1,6 +1,6 @@
 engine created by Hurray Banana &copy;2023-2024
 
-this can be found in file **engine.js**
+this can be found in file **track.js**
 ## class Engine
 >  provides global functionality for other engine components
 > 
@@ -10,11 +10,12 @@ this can be found in file **engine.js**
 
 ## properties
 ####  cols3bit [static]
-> default value **[**
+> default value **[[255,255,255],[255,0,0],[0,255,0],[0,0,255],[0,255,255],[255,255,0],[255,0,255],[0,0,0],]**
 > 
 > to use write **Engine.cols3bit**
 > 
-> set of colours primary, secondary, black and white @type {color[]}
+> 
+> type {**color[]**} set of colours primary, secondary, black and white
 > 
 > 
 
@@ -25,7 +26,8 @@ this can be found in file **engine.js**
 > 
 > to use write **Engine.cols3bitlen**
 > 
-> length of cols3bit for modulus work @type {int}
+> 
+> type {**int**} length of cols3bit for modulus work
 > 
 > 
 
@@ -36,7 +38,8 @@ this can be found in file **engine.js**
 > 
 > to use write **Engine.debug**
 > 
-> if true debug output will be shown @type {bool}
+> 
+> type {**bool**} if true debug output will be shown
 > 
 > 
 
@@ -47,7 +50,8 @@ this can be found in file **engine.js**
 > 
 > to use write **Engine.debugcolour**
 > 
-> colour to display debug information @type {color}
+> 
+> type {**color**} colour to display debug information
 > 
 > 
 
@@ -124,7 +128,8 @@ this can be found in file **engine.js**
 ####  particleM [static]
 > to use write **Engine.particleM**
 > 
-> reference to the particle manager @type {particleManager}
+> 
+> type {**particleManager**} reference to the particle manager
 > 
 > 
 
@@ -145,7 +150,8 @@ this can be found in file **engine.js**
 ####  spM [static]
 > to use write **Engine.spM**
 > 
-> reference to the sprite manager @type {Spritemanager}
+> 
+> type {**Spritemanager**} reference to the sprite manager
 > 
 > 
 
@@ -174,7 +180,64 @@ this can be found in file **engine.js**
 ####  tilemapM [static]
 > to use write **Engine.tilemapM**
 > 
-> reference to the tilemap manager @type {TilemapManager}
+> 
+> type {**TilemapManager**} reference to the tilemap manager
+> 
+> 
+
+---
+
+####  viewHeight [static]
+> to use write **Engine.viewHeight**
+> 
+> 
+> type {**int**}
+> 
+> 
+
+---
+
+####  viewWidth [static]
+> to use write **Engine.viewWidth**
+> 
+> 
+> type {**int**}
+> 
+> 
+
+---
+
+####  viewports [static]
+> default value **[]**
+> 
+> to use write **Engine.viewports**
+> 
+> 
+> type {**View[]**} a list of viewport regions defined
+> 
+> 
+
+---
+
+####  zHalf [static]
+> default value **this.zRange / 2**
+> 
+> to use write **Engine.zHalf**
+> 
+> 
+> type {**float**} the maximum +ve z value
+> 
+> 
+
+---
+
+####  zRange [static]
+> default value **5000**
+> 
+> to use write **Engine.zRange**
+> 
+> 
+> type {**float**} range of z values avaialable z, z value of a sprite controls draw order
 > 
 > 
 
@@ -234,6 +297,26 @@ this can be found in file **engine.js**
 
 ---
 
+####   mainview [getter] [static]
+> to use write **Engine.mainview**
+> 
+> 
+> returns {**View**} gets the first viewport defined
+> 
+> 
+
+---
+
+####   mainviewArea [getter] [static]
+> to use write **Engine.mainviewArea**
+> 
+> 
+> returns {**Rectangle**} get the rectangle area of the viewport (0, 0, width, height)
+> 
+> 
+
+---
+
 ####   midmap [getter] [static]
 > to use write **Engine.midmap**
 > 
@@ -253,6 +336,36 @@ this can be found in file **engine.js**
 > 
 > 
 > returns {**vector3**}
+> 
+> 
+
+---
+
+####   viewCentrex [getter] [static]
+> to use write **Engine.viewCentrex**
+> 
+> 
+> returns {**float**}
+> 
+> 
+
+---
+
+####   viewCentrey [getter] [static]
+> to use write **Engine.viewCentrey**
+> 
+> 
+> returns {**float**}
+> 
+> 
+
+---
+
+####   viewcount [getter] [static]
+> to use write **Engine.viewcount**
+> 
+> 
+> returns {**int**} number of viewports defined
 > 
 > 
 
@@ -380,7 +493,7 @@ this can be found in file **engine.js**
 > 
 > **Parameters**
 > 
-> {**{viewW:int,viewH:int,worldW:int,worldH:int,layers:int,glowdivisor:int,compositor:string}**} **settings** all settings are optional, if none are set or nothing is passed then defaults (listed below will be used)
+> {**{viewW:int,viewH:int,worldW:int,worldH:int,layers:int,glowdivisor:int,compositor:string}**} **settings** all settings are optional, if none are set or nothing is passed then defaults (listed below will be used) pass a settings object to change some of the defaults
 > 
 > ```js
 > example
@@ -432,10 +545,17 @@ this can be found in file **engine.js**
 > 
 > **Parameters**
 > 
-> {**function**} **handler** 
+> {**function|method**} **handler** the method of a class or a global function to execute
 > 
-> {**object**} **instance** 
+> {**object**} **instance** the object instance (or null if a global function being called)
 > 
+> ```js
+> example
+>     //execute the starttitle() method of an object (this is the reference to the object)
+>     //after 5 seconds 
+>     Engine.eventM.delaycall(5, Engine.makeCallback(this.starttitle, this));
+>    
+> ```
 > 
 
 ---
@@ -505,6 +625,20 @@ this can be found in file **engine.js**
 >     Engine.riptiles(mytiles, txtiles, {w:32,h:32}, {rowstall:3,colswide:10,left:10,top:5,xpad:2,ypad:2});
 >   
 > ```
+> 
+
+---
+
+####  update(delta) [static]
+> to use write **Engine.update(delta)**
+> 
+> updates all the engine components
+> 
+> 
+> **Parameters**
+> 
+> {**float**} **delta** fraction of a second for this update period
+> 
 > 
 
 ---

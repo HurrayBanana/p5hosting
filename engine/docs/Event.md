@@ -1,6 +1,6 @@
 engine created by Hurray Banana &copy;2023-2024
 
-this can be found in file **timer.js**
+this can be found in file **track.js**
 ## class Event
 > base functionality for general timing events
 > 
@@ -189,7 +189,8 @@ this can be found in file **timer.js**
 > ```js
 > example
 >       //setup a custom timer in the sprites constructor for auto fire/shoot interval restriction
->       this.shoottimer = new Timer(this)
+>       //Event objects don't require a sprite reference like Timer objects do
+>       this.shoottimer = new Event()
 >       this.shoottimer.interval(0.25);
 >       
 >       //in an update method add this sort of code to check for keypress and timer elapsed
@@ -319,12 +320,12 @@ this can be found in file **timer.js**
 > 
 > {**float**} **interval** time to wait before calling method/function
 > 
-> {**{callback:method|function,instance:object}**} **callback** the code to call when the event occurs use
+> {**{callback:method|function,instance:object}**} **callback** the code to call when the event occurs use Engine.makeCallback() to create your callback
 > 
 > ```js
 > example
 >       //call the increaseDifficulty method every 20 seconds
->       Engine.eventM.event(203, Engine.makeCallback(this.increaseDifficulty, this));
+>       Engine.eventM.event(20, Engine.makeCallback(this.increaseDifficulty, this));
 >       to stop calling the method/function use the events remove() method
 >      
 > ```
@@ -344,7 +345,7 @@ this can be found in file **timer.js**
 > 
 > {**float**} **stopAfter** period of time to wait before stopping the event
 > 
-> {**{callback:method|function,instance:object}**} **callback** the code to call when the event occurs use
+> {**{callback:method|function,instance:object}**} **callback** the code to call when the event occurs use Engine.makeCallback() to create your callback
 > 
 > ```js
 > example
@@ -368,12 +369,12 @@ this can be found in file **timer.js**
 > 
 > {**float**} **callAfter** time to wait before calling method/function
 > 
-> {**{callback:method|function,instance:object}**} **callback** the code to call when the event occurs use
+> {**{callback:method|function,instance:object}**} **callback** the code to call when the event occurs use Engine.makeCallback() to create your callback
 > 
 > ```js
 > example
 >       //call the startgame method after 3 seconds
->       Engine.eventM.eventonce(3, Engine.makeCallback(this.startgame, this));
+>       myevent.eventonce(3, Engine.makeCallback(this.startgame, this));
 >      
 > ```
 > 

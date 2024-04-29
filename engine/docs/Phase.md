@@ -1,6 +1,6 @@
 engine created by Hurray Banana &copy;2023-2024
 
-this can be found in file **timer.js**
+this can be found in file **track.js**
 ## class Phase
 > Determines what phase timer sub system is in (used internally)
 > 
@@ -26,17 +26,6 @@ this can be found in file **timer.js**
 > to use write **Phase.stopafter**
 > 
 > waiting for flashing to stop
-> 
-> 
-
----
-
-#### // killafter [static]
-> default value **"killafter"**
-> 
-> to use write **Phase.// killafter**
-> 
-> waiting to kill sprite
 > 
 > 
 

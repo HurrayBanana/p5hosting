@@ -1,7 +1,7 @@
 engine created by Hurray Banana &copy;2023-2024
 
-this can be found in file **rectangle.js**
-## class Rectang
+this can be found in file **track.js**
+## class Rectangle
 >  support for rectangular areas and actions upon them
 > 
 > 

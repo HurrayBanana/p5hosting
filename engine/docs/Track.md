@@ -134,7 +134,7 @@ this can be found in file **track.js**
 > 
 > **Parameters**
 > 
-> {**vector3**} **value** The offset to displace the original track positions by
+> {**vector3**} **value** The offset to displace the original track positions by This can be used to make use of the shape of a pre-defined track but starting at a different position to its original definition
 > 
 > 
 

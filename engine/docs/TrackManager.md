@@ -6,6 +6,11 @@ this can be found in file **track.js**
 > 
 > In order to use Tracks with a Sprite you need to make sure you create one normally in your constructor
 > 
+> ```js
+> example
+> this.track = new TrackManager(this);
+>  
+> ```
 > 
 
 ---
@@ -22,7 +27,7 @@ this can be found in file **track.js**
 > 
 > **Parameters**
 > 
-> {**Sprite**} **s** The sprite to associate the trackmanager with
+> {**Sprite**} **s** The sprite to associate the trackmanager with This is created by the Sprite itself if you passed a TrackBank when you create it
 > 
 > 
 
@@ -366,7 +371,7 @@ this can be found in file **track.js**
 > 
 > **Parameters**
 > 
-> {**int**} **value** trackindex you want
+> {**int**} **value** trackindex you want Allows you to manually change the track index at any time Use with caution, you can often achieve the effect you want using the correct means of working with tracks
 > 
 > 
 
@@ -536,7 +541,7 @@ this can be found in file **track.js**
 > 
 > **Parameters**
 > 
-> {**bool**} **value** if set to true then manual track position changes instantly afect the position of the sprite
+> {**bool**} **value** if set to true then manual track position changes instantly afect the position of the sprite defaults to true, if this causes problems then set this to false
 > 
 > 
 
@@ -568,7 +573,7 @@ this can be found in file **track.js**
 > 
 > **Parameters**
 > 
-> {****} **trackDef** The previously generated track definition
+> {****} **trackDef** The previously generated track definition Make sure you have added Tracks to your TrackBank first
 > 
 > 
 
@@ -586,7 +591,7 @@ this can be found in file **track.js**
 > 
 > {**TrackDefinition**} **trackDef** Track definition
 > 
-> {**vector3**} **startPos** The position to start the track
+> {**vector3**} **startPos** The position to start the track Use this for a track shape that will be used for a sprite generated at a specific position (e.g bullet hell tracks)
 > 
 > 
 

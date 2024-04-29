@@ -1,6 +1,6 @@
 engine created by Hurray Banana &copy;2023-2024
 
-this can be found in file **spritemanager.js**
+this can be found in file **track.js**
 ## class Spritemanager
 > manages and processes sprites - you should not have to use this directly apart from setting debug output
 > 
@@ -132,7 +132,7 @@ this can be found in file **spritemanager.js**
 > 
 > **Parameters**
 > 
-> {**Sprite**} **spr** sprite to remove
+> {**Sprite**} **spr** sprite to remove called by cleanup code, no need to manually call
 > 
 > 
 
@@ -160,7 +160,7 @@ this can be found in file **spritemanager.js**
 > 
 > **Parameters**
 > 
-> {**Sprite**} **spr** sprite to remove
+> {**Sprite**} **spr** sprite to remove called by cleanup code, no need to manually call
 > 
 > 
 

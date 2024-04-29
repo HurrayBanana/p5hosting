@@ -1,6 +1,6 @@
 engine created by Hurray Banana &copy;2023-2024
 
-this can be found in file **vector3.js**
+this can be found in file **track.js**
 ## class vector3
 >  3d position and methods
 > 
@@ -123,15 +123,6 @@ this can be found in file **vector3.js**
 #### clone [getter]
 > to use write **this.clone**
 > 
-> create a new instance of a vector3 with the values of this one - not a reference
-> 
-> 
-
----
-
-#### clone [getter]
-> to use write **this.clone**
-> 
 > returns a new vector3 that is a copy of the values of this one, not a reference a separate object
 > 
 > be warned clone creates an object so is about 20x slower than setting individual vector coords
@@ -144,6 +135,15 @@ this can be found in file **vector3.js**
 > 
 > 
 > returns {**vector3**} new vector3 instance based on this ones values
+> 
+> 
+
+---
+
+#### clone [getter]
+> to use write **this.clone**
+> 
+> create a new instance of a vector3 with the values of this one - not a reference
 > 
 > 
 
@@ -455,9 +455,9 @@ this can be found in file **vector3.js**
 > 
 > **Parameters**
 > 
-> {**float**} **angle** in degrees
+> {**float**} **angle** in radians
 > 
-> {**float**} **additionalAngle** an angle to add on in degrees
+> {**float**} **additionalAngle** an angle to add on in radians
 > 
 > 
 
@@ -476,9 +476,9 @@ this can be found in file **vector3.js**
 > 
 > **Parameters**
 > 
-> {**float**} **angle** in radians
+> {**float**} **angle** in degrees
 > 
-> {**float**} **additionalAngle** an angle to add on in radians
+> {**float**} **additionalAngle** an angle to add on in degrees
 > 
 > 
 

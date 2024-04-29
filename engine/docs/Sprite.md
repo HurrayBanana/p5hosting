@@ -1,6 +1,6 @@
 engine created by Hurray Banana &copy;2023-2024
 
-this can be found in file **sprite.js**
+this can be found in file **track.js**
 ## class Sprite
 > for drawing and manipulating moving graphic objects
 > 
@@ -8,6 +8,38 @@ this can be found in file **sprite.js**
 > 
 > it's important to clone object values as you'll generally want a new object (with the values) rather than a reference to the original vector3 object
 > 
+> ```js
+> example
+>  class Bullet extends Sprite{
+>      myboss;
+>      constructor(start, velocity, owner){
+>        super();
+>        this.myboss = owner;
+>        Engine.spM.add(this);
+>        this.frame.define(txtiles, new Rectangle(162,8,4,4));
+>        this.position = start.clone; //make a new vector3 from these values
+>        this.velocity = velocity.clone; //make a new vector3 from these values
+>        this.timer = new Timer(this);
+>        this.timer.killafter(2.5);
+>        this.limit = new Limit(Limit.wrap, Engine.mainview);
+>  
+>        this.callbackCollide = this.hitsomething;
+>        this.collisionPrimary = true;
+>        this.collisionList = [Invader];
+>      }
+>  
+>       if (hit instanceof Invader){
+>            hit.kill();     // kill sprite we hit
+>            this.kill();    // kill this bullet
+>            return true;    //stop processing anymore collisions for this bullet
+>       } else {
+>            return false;   //continue collision processing for this sprite
+>       }
+>    }
+>  }
+> 
+> 
+> ```
 > 
 
 ---
@@ -30,23 +62,6 @@ this can be found in file **sprite.js**
 ---
 
 ## properties
-#### //callbackHide
-> default value **null**
-> 
-> to use write **this.//callbackHide**
-> 
-> method called when the sprite is hidden with
-> 
-> or settting visible to false, or from flashing
-> 
-> ```js
-> example
-> this.hide();
-> ```
-> 
-
----
-
 #### align
 > default value **Align.centre**
 > 
@@ -479,34 +494,6 @@ this can be found in file **sprite.js**
 ---
 
 ## getters and setters
-####  [getter] [static]
-> to use write **Sprite.**
-> 
-> true if the sprite is not moving for collision response purposes default is false
-> 
-> 
-> returns {**bool**}
-> 
-> 
-
----
-
-####  [setter] [static]
-> to use write **Sprite.**
-> 
-> sets the moving property, if true during collisions no momentum will be transferred during collision response
-> 
-> if sprites are not repsonding to collisions properly ensure this is set to false
-> 
-> 
-> **Parameters**
-> 
-> {**float**} **value** 
-> 
-> 
-
----
-
 #### alive [getter]
 > to use write **this.alive**
 > 
@@ -1212,6 +1199,36 @@ this can be found in file **sprite.js**
 
 ---
 
+#### kright [getter]
+> to use write **this.kright**
+> 
+> gets the x value of the right of the sprite (the x and y values represent the centre of a sprite)
+> 
+> 
+> returns {**float**}
+> 
+> 
+
+---
+
+#### kright [setter]
+> to use write **this.kright = value**
+> 
+> sets sprites bottom to be this value y value is adjusted accordingly (the x and y values represent the centre of a sprite)
+> 
+> 
+> **Parameters**
+> 
+> {**float**} **value** 
+> 
+> ```js
+> example
+> this.right = 200;
+> ```
+> 
+
+---
+
 #### lasttrackposition [getter]
 > to use write **this.lasttrackposition**
 > 
@@ -1317,36 +1334,6 @@ this can be found in file **sprite.js**
 
 ---
 
-#### right [getter]
-> to use write **this.right**
-> 
-> gets the x value of the right of the sprite (the x and y values represent the centre of a sprite)
-> 
-> 
-> returns {**float**}
-> 
-> 
-
----
-
-#### right [setter]
-> to use write **this.right = value**
-> 
-> sets sprites bottom to be this value y value is adjusted accordingly (the x and y values represent the centre of a sprite)
-> 
-> 
-> **Parameters**
-> 
-> {**float**} **value** 
-> 
-> ```js
-> example
-> this.right = 200;
-> ```
-> 
-
----
-
 #### scale [getter]
 > to use write **this.scale**
 > 
@@ -1444,6 +1431,34 @@ this can be found in file **sprite.js**
 > **Parameters**
 > 
 > {**float**} **width** 
+> 
+> 
+
+---
+
+#### static [getter]
+> to use write **this.static**
+> 
+> true if the sprite is not moving for collision response purposes default is false
+> 
+> 
+> returns {**bool**}
+> 
+> 
+
+---
+
+#### static [setter]
+> to use write **this.static = value**
+> 
+> sets the moving property, if true during collisions no momentum will be transferred during collision response
+> 
+> if sprites are not repsonding to collisions properly ensure this is set to false
+> 
+> 
+> **Parameters**
+> 
+> {**float**} **value** 
 > 
 > 
 

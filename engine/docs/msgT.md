@@ -1,10 +1,10 @@
 engine created by Hurray Banana &copy;2023-2024
 
-this can be found in file **messagebus.js**
+this can be found in file **track.js**
 ## class msgT
 > list of static message types to send or subscribe to
 > 
-> add your own messages here give it a name and set it to a string with the same name.
+> add your own messages type by inheriting from this class, give it a name and set it to a string with the same name.
 > 
 > this will help with debugging. These are just examples, create your own with an inherited class (I usually call this mymess)
 > 
@@ -12,6 +12,26 @@ this can be found in file **messagebus.js**
 > 
 > can't directly show in this example because it breaks the JsDoc comment !
 > 
+> ```js
+> example
+>   class mymess extends msgT{
+>     // data {score:1234,player:"blinky"} 
+>     static scored = "scored";
+>     // data {pos:vector3} 
+>     static clydepos = "clydepos";
+>     // data {loc:{x:int,y:int}} 
+>     static placeinky = "placeinky";
+>     // data {loc:{x:int,y:int}} 
+>     static targettest = "targettest";
+>     // no data required 
+>     static move = "move";
+>     // data {loc:{x:int,y:int},di:Tilemap.Direction} 
+>     static pacman = "pacman";
+>     // data {loc:{x:int,y:int}} 
+>     static blinky = "blinky";
+>  }
+> 
+> ```
 > 
 
 ---

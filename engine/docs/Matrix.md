@@ -1,6 +1,6 @@
 engine created by Hurray Banana &copy;2023-2024
 
-this can be found in file **mathhelper.js**
+this can be found in file **track.js**
 ## class Matrix
 >  holds a 4x4 matrix to hold combinatoral transformation in a single matrix
 > 
@@ -17,7 +17,7 @@ this can be found in file **mathhelper.js**
 > 
 > **Parameters**
 > 
-> {**float[][]**} **matrixarr** if an array with 4 rows and columns is supplied a matrix will be
+> {**float[][]**} **matrixarr** if an array with 4 rows and columns is supplied a matrix will be created with those values. If ommitted then an Identity matrix will be created
 > 
 > ```js
 > example

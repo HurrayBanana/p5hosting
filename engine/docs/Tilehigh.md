@@ -1,6 +1,6 @@
 engine created by Hurray Banana &copy;2023-2024
 
-this can be found in file **tilemap.js**
+this can be found in file **track.js**
 ## class Tilehigh extends Sprite
 > a simple sprite for highlighting tiles in a tilemap
 > 

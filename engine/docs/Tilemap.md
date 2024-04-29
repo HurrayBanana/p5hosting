@@ -1,6 +1,6 @@
 engine created by Hurray Banana &copy;2023-2024
 
-this can be found in file **tilemap.js**
+this can be found in file **track.js**
 ## class Tilemap
 >  manages a fixed grid based entity that can be used for scrolling background graphics as well
 > 
@@ -39,26 +39,6 @@ this can be found in file **tilemap.js**
 > 
 > 
 > type {**int**} represents an empty tile (easy to check for)
-> 
-> 
-
----
-
-#### //#rawarea
-> default value **Rectangle.one old renderer**
-> 
-> to use write **this.//#rawarea**
-> 
-> holds raw area of the tilemap
-> 
-> 
-
----
-
-#### //#txhigh
-> to use write **this.//#txhigh**
-> 
-> nuber of offscreen textures used vertically
 > 
 > 
 
@@ -825,7 +805,7 @@ this can be found in file **tilemap.js**
 > 
 > **Parameters**
 > 
-> {**TileDirection**} **tiledirection** a direction or a bitwise OR'd set of directions to obtain the opposite of
+> {**TileDirection**} **tiledirection** a direction or a bitwise OR'd set of directions to obtain the opposite of stick to ordinals NSEW or minor ordinals NE SE SW NW
 > 
 > ```js
 > example
@@ -862,7 +842,7 @@ this can be found in file **tilemap.js**
 > 
 > {**TileDirection[]**} **possibleDirections** an array of potential directions
 > 
-> {**TileDirection**} **direction** a direction that we want to remove the opposite directino from (if it exist)
+> {**TileDirection**} **direction** a direction that we want to remove the opposite directino from (if it exist) Pac-Man uses this system to stop ghost going backwards when given a choice (keeps them moving forwards)
 > 
 > 
 
@@ -965,7 +945,7 @@ this can be found in file **tilemap.js**
 > 
 > {**{x:int,y:int}**} **loc** is a tile location to interrogate
 > 
-> {**float**} **tolerance** distance good enough to say it's at the centre.
+> {**float**} **tolerance** distance good enough to say it's at the centre. the value you pick for this will depend on how fast the sprite is moving/how far it can move in a particular frame
 > 
 > 
 
@@ -1253,7 +1233,7 @@ this can be found in file **tilemap.js**
 > 
 > {**Sprite**} **actor** the sprite to find the tile it's centre is over
 > 
-> {**int|int[]**} **distance** number of tiles to offset by, if you want to offset differently in horizontal and vertical directions suppy an array with 2 integers
+> {**int|int[]**} **distance** number of tiles to offset by, if you want to offset differently in horizontal and vertical directions suppy an array with 2 integers first index is x distance, 2nd index is y distance
 > 
 > 
 
@@ -1276,7 +1256,7 @@ this can be found in file **tilemap.js**
 > 
 > {**TileDirection**} **direction** a direction or a bitwise OR'd set of directions (for diagonals)
 > 
-> {**int|int[]**} **distance** number of tiles to offset by, if you want to offset differently in horizontal and vertical directions suppy an array with 2 integers
+> {**int|int[]**} **distance** number of tiles to offset by, if you want to offset differently in horizontal and vertical directions suppy an array with 2 integers first index is x distance, 2nd index is y distance
 > 
 > ```js
 > example
@@ -1519,7 +1499,7 @@ this can be found in file **tilemap.js**
 > 
 > **Parameters**
 > 
-> {**{callback:method|function,instance:object}**} **callback** - a callback use Engine.makeCallback to prepare your callback object.
+> {**{callback:method|function,instance:object}**} **callback** - a callback use Engine.makeCallback to prepare your callback object. The callback should accept a data parameter which is an object of the form {tile:int,loc:{x:int,y:int}} where: tile is the tile number to examine loc is the x and y tile location where the tile was found
 > 
 > ```js
 > example
@@ -1556,7 +1536,7 @@ this can be found in file **tilemap.js**
 > 
 > **Parameters**
 > 
-> {**{x:int,y:int}**} **points** array must be in x y object form and consist of integer values (as they are tile locations),
+> {**{x:int,y:int}**} **points** array must be in x y object form and consist of integer values (as they are tile locations), these all need to be valid locations, process them first to make sure they are before calling them
 > 
 > ```js
 > example
@@ -1728,7 +1708,7 @@ this can be found in file **tilemap.js**
 > 
 > {**int**} **endindex** which tile to start drawing from
 > 
-> {**{fillcol:color,strokecol:color,textsize:int,strokeweight:int,xoff:int,yoff:int}**} **indexinfo** if omitted then the tile index will not ne displayed,
+> {**{fillcol:color,strokecol:color,textsize:int,strokeweight:int,xoff:int,yoff:int}**} **indexinfo** if omitted then the tile index will not ne displayed, use this to specify how the tileindex should be overlayed on the tile sprite, see example for details of these values
 > 
 > ```js
 > example
@@ -1795,7 +1775,7 @@ this can be found in file **tilemap.js**
 > 
 > {**int**} **endindex** which tile to start drawing from
 > 
-> {**{fillcol:color,strokecol:color,textsize:int,strokeweight:int,xoff:int,yoff:int}**} **indexinfo** if omitted then the tile index will not ne displayed,
+> {**{fillcol:color,strokecol:color,textsize:int,strokeweight:int,xoff:int,yoff:int}**} **indexinfo** if omitted then the tile index will not ne displayed, use this to specify how the tileindex should be overlayed on the tile sprite, see example for details of these values
 > 
 > ```js
 > example
@@ -1915,7 +1895,7 @@ this can be found in file **tilemap.js**
 > 
 > {**vector2**} **position:** position to start tiling the texture too (if it goes out of the map then it will error)
 > 
-> {**object{area:{w,h},tilesize:{w:h}}**} **areadata** if specified then the area is based on these dimensions, if not then the texture is tiled at the position given
+> {**object{area:{w,h},tilesize:{w:h}}**} **areadata** if specified then the area is based on these dimensions, if not then the texture is tiled at the position given make sure the area can accomodate all the textures you wish to tile
 > 
 > ```js
 > example
@@ -2037,7 +2017,7 @@ this can be found in file **tilemap.js**
 > 
 > {**{w:int,h:int}**} **tilesize** an object with w and h properties containing the widht and height of the tiles (they are all the same)
 > 
-> {**{rowstall:int,colswide:int,left:int,top:int,xpad:int,ypad:int}**} **data** an object containing various properties
+> {**{rowstall:int,colswide:int,left:int,top:int,xpad:int,ypad:int}**} **data** an object containing various properties rowstall: how many rows of tiles to rip fro the texture colswide: how many columns to rip left: the left and edge to start reading pixel data from the texture top: the top edge to start reading pixel data from the texture (left and top provide the top left hand corner fo the block of graphics) xpad: how far apart horizontally are each tile columns in the texture ypad: how far apart vertically are each of the tile rows in the texture
 > 
 > 
 
@@ -2067,7 +2047,7 @@ this can be found in file **tilemap.js**
 > 
 > {**{w:int,h:int}**} **tilesize** an object with w and h properties containing the widht and height of the tiles (they are all the same)
 > 
-> {**{rowstall:int,colswide:int,left:int,top:int,xpad:int,ypad:int}**} **data** an object containing various properties
+> {**{rowstall:int,colswide:int,left:int,top:int,xpad:int,ypad:int}**} **data** an object containing various properties rowstall: how many rows of tiles to rip fro the texture colswide: how many columns to rip left: the left and edge to start reading pixel data from the texture top: the top edge to start reading pixel data from the texture (left and top provide the top left hand corner fo the block of graphics) xpad: how far apart horizontally are each tile columns in the texture ypad: how far apart vertically are each of the tile rows in the texture
 > 
 > 
 

@@ -1,6 +1,6 @@
 engine created by Hurray Banana &copy;2023-2024
 
-this can be found in file **view.js**
+this can be found in file **track.js**
 ## class View
 > describes a rectangle viewport to control display areas, defaults to same size of canvas
 > 

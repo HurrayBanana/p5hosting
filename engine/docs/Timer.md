@@ -1,6 +1,6 @@
 engine created by Hurray Banana &copy;2023-2024
 
-this can be found in file **timer.js**
+this can be found in file **track.js**
 ## class Timer extends Event
 > implements sprite specific timers (you can only have one)
 > 
@@ -63,7 +63,7 @@ this can be found in file **timer.js**
 > 
 > {**float**} **onduration** number of seconds or fraction of
 > 
-> {**float**} **offduration** number of seconds or fraction of
+> {**float**} **offduration** number of seconds or fraction of slightly longer on than off looks best
 > 
 > 
 
@@ -101,7 +101,7 @@ this can be found in file **timer.js**
 > 
 > {**float**} **offduration** number of seconds or fraction of
 > 
-> {**{callback:method|function,instance:object}**} **callback** the code to call when the sprite starts flashing
+> {**{callback:method|function,instance:object}**} **callback** the code to call when the sprite starts flashing Engine.makeCallback() to create your callback
 > 
 > 
 
@@ -123,7 +123,7 @@ this can be found in file **timer.js**
 > 
 > {**float**} **offduration** number of seconds or fraction of
 > 
-> {**{callback:method|function,instance:object}**} **callback** the code to call when the sprite starts flashing
+> {**{callback:method|function,instance:object}**} **callback** the code to call when the sprite starts flashing Engine.makeCallback() to create your callback
 > 
 > 
 
@@ -145,7 +145,7 @@ this can be found in file **timer.js**
 > 
 > {**float**} **offduration** number of seconds or fraction of
 > 
-> {**{callback:method|function,instance:object}**} **callback** the code to call when the sprite starts flashing and again when it stops
+> {**{callback:method|function,instance:object}**} **callback** the code to call when the sprite starts flashing and again when it stops Engine.makeCallback() to create your callback
 > 
 > 
 
@@ -165,7 +165,7 @@ this can be found in file **timer.js**
 > 
 > {**float**} **offduration** number of seconds or fraction of
 > 
-> {**{callback:method|function,instance:object}**} **callback** the code to call when the sprite stops flashing
+> {**{callback:method|function,instance:object}**} **callback** the code to call when the sprite stops flashing Engine.makeCallback() to create your callback
 > 
 > 
 
@@ -181,7 +181,7 @@ this can be found in file **timer.js**
 > 
 > {**float**} **hideAfter** number of seconds to wait before hiding
 > 
-> {**{callback:method|function,instance:object}**} **callback** the code to call when sprite is hidden
+> {**{callback:method|function,instance:object}**} **callback** the code to call when sprite is hidden Engine.makeCallback() to create your callback
 > 
 > 
 
@@ -199,7 +199,7 @@ this can be found in file **timer.js**
 > 
 > {**vector3**} **force** 
 > 
-> {**{callback:method|function,instance:object}**} **callback** the code to call when the event occurs use
+> {**{callback:method|function,instance:object}**} **callback** the code to call when the event occurs use Engine.makeCallback() to create your callback
 > 
 > ```js
 > example
@@ -220,7 +220,7 @@ this can be found in file **timer.js**
 > 
 > **Parameters**
 > 
-> {**float**} **killtime** timer period
+> {**float**} **killtime** timer period set a callbackFuneral or override the Kill() method of your sprite if you want to know when it's killed
 > 
 > 
 
@@ -250,7 +250,7 @@ this can be found in file **timer.js**
 > 
 > {**float**} **showAfter** number of seconds to wait before showing
 > 
-> {**{callback:method|function,instance:object}**} **callback** the code to call when the sprite is shown
+> {**{callback:method|function,instance:object}**} **callback** the code to call when the sprite is shown Engine.makeCallback() to create your callback
 > 
 > 
 
@@ -270,7 +270,7 @@ this can be found in file **timer.js**
 > 
 > {**float**} **offduration** number of seconds or fraction of
 > 
-> {**{callback:method|function,instance:object}**} **callback** the code to call when the sprite starts flashing
+> {**{callback:method|function,instance:object}**} **callback** the code to call when the sprite starts flashing Engine.makeCallback() to create your callback
 > 
 > ```js
 > example
@@ -292,7 +292,7 @@ this can be found in file **timer.js**
 > 
 > {**float**} **killAfter** time to kill sprite after displaying
 > 
-> {**{callback:method|function,instance:object}**} **callback** the code to call when the sprite is shown
+> {**{callback:method|function,instance:object}**} **callback** the code to call when the sprite is shown Engine.makeCallback() to create your callback
 > 
 > 
 

@@ -1,6 +1,6 @@
 engine created by Hurray Banana &copy;2023-2024
 
-this can be found in file **tilemap.js**
+this can be found in file **track.js**
 ## class TilemapManager
 >  organises and manages active tilemaps
 > 
@@ -38,7 +38,7 @@ this can be found in file **tilemap.js**
 > 
 > **Parameters**
 > 
-> {**Tilemap**} **tilemap** tilemap reference to manage
+> {**Tilemap**} **tilemap** tilemap reference to manage to remove a tilemap just set it's remove property to false, make sure no objects are making reference to the tilemap after you have removed it as it's internal components will be destroyed
 > 
 > 
 

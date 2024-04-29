@@ -1,6 +1,6 @@
 engine created by Hurray Banana &copy;2023-2024
 
-this can be found in file **timer.js**
+this can be found in file **track.js**
 ## class EventAction
 > Basic Event/Timer actions
 > 
@@ -51,10 +51,6 @@ this can be found in file **timer.js**
 > 
 > has to be checked using elapsed
 > 
-> ```js
-> example
->      
-> ```
 > 
 
 ---

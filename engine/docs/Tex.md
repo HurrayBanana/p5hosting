@@ -1,6 +1,6 @@
 engine created by Hurray Banana &copy;2023-2024
 
-this can be found in file **textures.js**
+this can be found in file **track.js**
 ## class Tex
 >  support to help with textures, loading and manipulating
 > 
@@ -299,7 +299,7 @@ this can be found in file **textures.js**
 > 
 > **Parameters**
 > 
-> {**int**} **number** number of images to be loaded in this session
+> {**int**} **number** number of images to be loaded in this session use this if you are loading a lot and need to hold up further processing until they have loaded use Tex.loadcomplete to let you know if this has happend or not
 > 
 > 
 

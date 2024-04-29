@@ -1,6 +1,6 @@
 engine created by Hurray Banana &copy;2023-2024
 
-this can be found in file **timer.js**
+this can be found in file **track.js**
 ## class EventManager
 > 
 > 
@@ -59,6 +59,31 @@ this can be found in file **timer.js**
 > 
 > {**Timer|Event**} **timer** 
 > 
+> 
+
+---
+
+#### delaycall(callAfter, callback)
+> to use write **this.delaycall(callAfter, callback)**
+> 
+> Delays calling a method or function until after a period of time
+> 
+> 
+> **Parameters**
+> 
+> {**float**} **callAfter** time to wait before calling method/function
+> 
+> {**{callback:method|function,instance:object}**} **callback** the code to call when the event occurs use Engine.makeCallback() to create your callback
+> 
+> ```js
+> example
+>       //call the startgame method after 3 seconds
+>       Engine.eventM.delaycall(3, Engine.makeCallback(this.startgame, this));
+>       
+>       // this is the equivalent of creating an event and calling the eventOnce method, but doen't require you
+>       // to create an Event object
+>      
+> ```
 > 
 
 ---
