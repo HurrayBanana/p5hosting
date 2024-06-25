@@ -130,11 +130,15 @@ class neighbour extends Clickable{
       super.show(s);
       
       s.textAlign(s.CENTER, s.CENTER);
+      // s.noStroke();
       s.stroke(255); 
       s.circle(this.x, this.y, 25);
   
       //value
-      s.stroke(255); s.fill(255); 
+      // s.stroke(255); 
+      s.noStroke();
+      s.fill(255); 
+      // s.fill(0); 
       s.text(this.cost, this.x, this.y);
       s.pop();
     }
