@@ -1,0 +1,8 @@
+.powerup{
+    position:absolute;
+    width:30px;
+    height:30px;
+	object-fit: fill;
+    background-image:url("../graphics/students/powerup.fw.png");
+
+}

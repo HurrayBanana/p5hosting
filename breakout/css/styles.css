@@ -1,0 +1,151 @@
+﻿/*
+container for screen
+*/
+#main{
+    position:relative;
+    left:0;
+    right:0;
+    height:100%;
+    margin: auto;
+    width:550px;
+}
+/*
+screen area container 
+set to centre horizontally within its container
+*/
+#gameScreen {
+    position:relative;
+    width:500px;
+    height:610px;
+    border: 3px solid white;
+    background-color:black;
+    overflow:hidden;
+    left:0;
+    right:0;
+    margin: auto;
+}
+/*
+a brick in the game, a semi transparent image is 
+used to sit on top of the containers colour to give the
+illusion of bevelled edges
+*/
+.brick {
+    position:absolute;
+    width:50px;
+    height:20px;
+    transform-origin: 0% 0%;
+    background-image:url("..\\graphics\\block.fw.png");
+	background-size: 100% 100%;
+}
+.pickupLabel {
+    position:relative;
+    text-align:center;
+    /*left:10px;*/
+}
+/*
+styling for the pickup objects
+*/
+.pickup
+{
+    position:absolute;
+    width: 30px;
+    height: 20px;
+    border-radius: 6px;
+    background-image:url("../graphics/block.fw.png");
+    overflow: hidden;
+}
+/*
+paddle graphic
+*/
+#paddle {
+    position:absolute;
+    width:80px;
+    height:20px;
+	transform-origin: 0% 0%;/*add this*/
+
+    background-image:url("../graphics/paddlegraphic.fw.png");
+}
+/*
+copyright message
+*/
+#copy{
+    background-image:url("../graphics/hbcopy.fw.png");
+    position:absolute;
+    width:500px;
+    height:24px;
+    overflow: hidden;
+}
+/*
+demo message
+*/
+#demo{
+    background-image:url("../graphics/demo.fw.png");
+    position:absolute;
+    width:500px;
+    height:50px;
+	z-index:1000;
+}
+/*
+round ball graphic used for ball
+*/
+.ball{
+    position:absolute;
+    width:10px;
+    height:10px;
+    background-image:url("../graphics/ball.fw.png");
+}
+/*
+style used for large UI graphics
+*/
+.imageoverlay{
+    position:absolute;
+    left:0;
+    right:0;
+    margin: auto;
+    z-index:500;
+	/* transform-origin: center center 0; */
+	transform:rotateY(30deg);
+}
+/*
+float left makes container position to left
+*/
+#currentscore{
+    padding: 10px 10px 10px 10px; 
+    float:left;
+    top:0px;
+    color:white;
+}
+
+#topscore{
+	padding: 10px 10px 10px 10px; 
+    float:left;
+    top:0px;
+    color:yellow;
+}
+/*
+float right makes container position to right
+*/
+#lives{
+    padding: 10px 10px 10px 10px; 
+    float:right;
+    top:0px;
+    color:white;
+}
+
+#creditsAuthor{
+    padding: 10px 10px 10px 10px; 
+    position:absolute;
+    top:10px;
+    left:0px;
+    color:aquamarine;
+    font-family: 'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif;
+}
+#creditsName{
+    padding: 10px 10px 10px 10px; 
+    position:absolute;
+    top:10px;
+    /*text-align: right;*/
+    left:0px;
+    color:aquamarine;
+    font-family: 'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif;
+}
