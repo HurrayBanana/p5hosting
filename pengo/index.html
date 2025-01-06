@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.9.0/p5.js"></script>
+    <!--<script src="https://cdn.jsdelivr.net/gh/LingDong-/q5xjs/q5.min.js"></script>-->
+    <link rel="stylesheet" type="text/css" href="style.css">
+    <meta charset="utf-8" />
+    <title>??</title>
+  </head>
+  <body>
+    <!-- engine components-->
+    <!-- <script defer src="../documentation/enginejall.js"></script> -->
+    <script defer src="./engineall.js"></script>
+    <!-- <script defer src="./engine-1-24-0-2/animation.js"></script>
+    <script defer src="./engine-1-24-0-2/textures.js"></script>
+    <script defer src="./engine-1-24-0-2/engine.js"></script>
+    <script defer src="./engine-1-24-0-2/gravitywell.js"></script>
+    <script defer src="./engine-1-24-0-2/helpers.js"></script>
+    <script defer src="./engine-1-24-0-2/history.js"></script>
+    <script defer src="./engine-1-24-0-2/limit.js"></script>
+    <script defer src="./engine-1-24-0-2/messagebus.js"></script>
+    <script defer src="./engine-1-24-0-2/particle.js"></script>
+    <script defer src="./engine-1-24-0-2/rectangle.js"></script>
+    <script defer src="./engine-1-24-0-2/sprite.js"></script>
+    <script defer src="./engine-1-24-0-2/clickable.js"></script>
+    <script defer src="./engine-1-24-0-2/spritemanager.js"></script>
+    <script defer src="./engine-1-24-0-2/tilemap.js"></script>
+    <script defer src="./engine-1-24-0-2/timer.js"></script>
+    <script defer src="./engine-1-24-0-2/vector2.js"></script>
+    <script defer src="./engine-1-24-0-2/vector3.js"></script>
+    <script defer src="./engine-1-24-0-2/view.js"></script> -->
+    <!-- end of engine -->
+    <script defer src="./pengomap.js"></script>
+    <script defer src="./pengoran.js"></script>
+    <script defer src="./game.js"></script>
+
+    <script defer src="./sketch.js"></script>
+    <h2>Pengo maze generation algorithm</h2>
+    <div style="clear: both;">
+      <p>A simple visualisation of the pengo maze generation algorithm. This implementation uses the same random number generator and direction picking system, which is very 
+        ineficient but good enough to generate the mazes at the start of each round. The stunned snow bees mark the start points of each of the depth first searches performed by the 
+        algorithm. Sometimes you get long delays even when there is an obvious direction to choose because the directions are picked at random, so the same inappropriate
+        direction may be chosen several times.
+      </p>
+      <p>Original pengo maze is a 13 x 15 block area, the width and height settings will be used when the next maze is generated.</p>
+      <p>Move delay is the number of frames that pengo will wait before moving to the next location in the current depth first tunnelling process, the lower the faster the maze will be
+        generated. Higher numbers will slow it down so you can see the logic occuring</p>
+        <p>The next maze generation in x frames, is the wait time between finishing and starting the next maze, increase it to give you time to look at the maze. Decrease to get it to move onto the next maze sooner. 60 is 1 second of wait time.</p>
+    </div>
+    <div style="background-color: #aaa;">
+    <div style="float:left;padding: 0 20px 0 20px;">
+    <input type="range" id="mzwidth" min="5" max= "35" step="2" value="13"
+      onmousemove="setlabel(this,'mzw', 'Width ')" onclick="setlabel(this,'mzw', 'Width ')"/>
+    <label style="display: block;text-align: center;" id="mzw" for="mzwidth">Width 13</label>
+    </div>
+    <div>
+      <div style="float:left;padding: 0 20px 0 20px;">
+        <input type="range" id="mzheight" min="5" max="23" step="2" value="15"
+        onmousemove="setlabel(this,'mzh', 'Height ')" onclick="setlabel(this,'mzh', 'Height ')"/>
+     <label style="display: block;text-align: center;" id="mzh" for="mzheight">Height 15</label>
+    </div>
+    <div style="float:left;padding: 0 20px 0 20px;">
+      <input type="range" id="mzdelay" min="0" max="30" step="1" value="15" 
+      onmousemove="setlabel(this,'mzd', 'Move delay ',' frames')" onclick="setlabel(this,'mzd', 'Move delay ',' frames')"/>
+     <label style="display: block;text-align: center;" id="mzd" for="mzdelay">Move delay 15 frames</label>
+    </div>
+    <div style="float:left;padding: 0 20px 0 20px;">
+      <input type="range" id="mzgenwait" min="0" max="600" step="10" value="240" 
+      onmousemove="setlabel(this,'mzgw', 'Next maze generation in ', ' frames')" onclick="setlabel(this,'mzgw', 'Next maze generation in ', ' frames')"/>
+     <label style="display: block;text-align: center;" id="mzgw" for="mzgenwait">Next maze generation in 240 frames</label>
+    </div>
+  </div>
+  <main id="sketcharea">
+    </main>
+   </body>
+</html>
